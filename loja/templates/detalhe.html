@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ produto.nome }} — Barrs Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--radius:14px;--radius-sm:8px}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* NAVBAR */
+  .navbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .nav-logo{font-size:15px;font-weight:600;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
+  .nav-logo::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+  .nav-links{display:flex;align-items:center;gap:28px}
+  .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-cart{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);text-decoration:none;background:var(--bg);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-weight:500;transition:border-color .15s}
+  .nav-cart:hover{border-color:#bbb}
+  .cart-badge{background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+
+  /* BREADCRUMB */
+  .breadcrumb{max-width:1100px;margin:24px auto 0;padding:0 40px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .breadcrumb a{color:var(--muted);text-decoration:none}
+  .breadcrumb a:hover{color:var(--text)}
+  .breadcrumb span{color:var(--text);font-weight:500}
+
+  /* PÁGINA */
+  .page{max-width:1100px;margin:32px auto 60px;padding:0 40px;display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:start}
+
+  /* IMAGEM */
+  .img-wrap{position:sticky;top:84px}
+  .img-principal{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);display:block}
+  .img-placeholder{width:100%;aspect-ratio:1/1;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:64px;color:#ddd}
+
+  /* INFO */
+  .badge-novo{display:inline-block;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:var(--text);color:#fff;padding:4px 10px;border-radius:4px;margin-bottom:16px}
+  .produto-nome{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,38px);font-weight:700;line-height:1.15;letter-spacing:-0.5px;margin-bottom:12px}
+  .produto-preco{font-size:26px;font-weight:600;color:var(--green);margin-bottom:8px}
+  .estoque-ok{font-size:12px;color:var(--green);margin-bottom:20px;display:flex;align-items:center;gap:5px}
+  .estoque-ok::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .estoque-zero{font-size:12px;color:#c0392b;margin-bottom:20px}
+  .sep{border:none;border-top:1px solid var(--border);margin:20px 0}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .chip{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--surface)}
+  .produto-desc-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .produto-desc{font-size:14px;color:#555;line-height:1.8}
+  .produto-desc-vazia{font-size:14px;color:#bbb;font-style:italic}
+
+  /* BOTÃO COMPRAR */
+  .btn-comprar{display:block;width:100%;padding:15px;background:var(--text);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:opacity .2s;margin-top:24px}
+  .btn-comprar:hover{opacity:0.85}
+  .btn-comprar.indisponivel{opacity:0.4;pointer-events:none;cursor:not-allowed}
+  .btn-voltar{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:none;transition:color .15s}
+  .btn-voltar:hover{color:var(--text)}
+
+  /* GARANTIAS */
+  .garantias{margin-top:24px;display:flex;flex-direction:column;gap:10px}
+  .garantia-item{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+  .garantia-icon{width:28px;height:28px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+  /* RELACIONADOS */
+  .relacionados{max-width:1100px;margin:0 auto 60px;padding:0 40px}
+  .relacionados h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
+  .rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+  .rel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;text-decoration:none;color:var(--text);transition:border-color .2s,transform .2s}
+  .rel-card:hover{border-color:#bbb;transform:translateY(-3px)}
+  .rel-card img{width:100%;aspect-ratio:1/1;object-fit:cover}
+  .rel-card-body{padding:12px}
+  .rel-card-nome{font-size:13px;font-weight:600}
+  .rel-card-preco{font-size:14px;font-weight:600;color:var(--green);margin-top:3px}
+
+  @media(max-width:760px){
+    .page{grid-template-columns:1fr;padding:0 20px}
+    .navbar{padding:0 20px}
+    .breadcrumb{padding:0 20px}
+    .relacionados{padding:0 20px}
+    .nav-links{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="nav-logo">Barrs Store</a>
+  <div class="nav-links">
+    <a href="/">Início</a>
+    <a href="/#produtos">Produtos</a>
+  </div>
+  <a href="{% url 'carrinho' %}" class="nav-cart">
+    &#128717; Carrinho
+    {% if qtd_carrinho > 0 %}<span class="cart-badge">{{ qtd_carrinho }}</span>{% endif %}
+  </a>
+</nav>
+
+<div class="breadcrumb">
+  <a href="/">Início</a> &rsaquo;
+  <a href="/#produtos">Produtos</a> &rsaquo;
+  <span>{{ produto.nome }}</span>
+</div>
+
+<div class="page">
+  <div class="img-wrap">
+    {% if produto.imagem %}
+      <img class="img-principal" src="{{ produto.imagem.url }}" alt="{{ produto.nome }}">
+    {% else %}
+      <div class="img-placeholder">&#128717;</div>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="badge-novo">Novo</div>
+    <h1 class="produto-nome">{{ produto.nome }}</h1>
+    <div class="produto-preco">R$ {{ produto.preco }}</div>
+
+    {% if produto.disponivel %}
+      <div class="estoque-ok">Em estoque ({{ produto.estoque }} disponíveis)</div>
+    {% else %}
+      <div class="estoque-zero">Fora de estoque</div>
+    {% endif %}
+
+    <div class="chips">
+      <span class="chip">Frete grátis</span>
+      <span class="chip">Devolução em 30 dias</span>
+      <span class="chip">Garantia de qualidade</span>
+    </div>
+
+    <hr class="sep">
+
+    <div class="produto-desc-label">Descrição</div>
+    {% if produto.descricao %}
+      <p class="produto-desc">{{ produto.descricao }}</p>
+    {% else %}
+      <p class="produto-desc-vazia">Sem descrição cadastrada.</p>
+    {% endif %}
+
+    <a href="{% url 'add_carrinho' produto.id %}?next=detalhe"
+       class="btn-comprar {% if not produto.disponivel %}indisponivel{% endif %}">
+      {% if produto.disponivel %}Adicionar ao carrinho{% else %}Indisponível{% endif %}
+    </a>
+
+    <a href="/" class="btn-voltar">← Voltar para a loja</a>
+
+    <div class="garantias">
+      <div class="garantia-item"><div class="garantia-icon">&#128274;</div>Pagamento 100% seguro</div>
+      <div class="garantia-item"><div class="garantia-icon">&#128230;</div>Entrega para todo o Brasil</div>
+      <div class="garantia-item"><div class="garantia-icon">&#9734;</div>Qualidade garantida</div>
+    </div>
+  </div>
+</div>
+
+{% if relacionados %}
+<div class="relacionados">
+  <h2>Você também pode gostar</h2>
+  <div class="rel-grid">
+    {% for p in relacionados %}
+    <a href="{% url 'detalhe_produto' p.id %}" class="rel-card">
+      {% if p.imagem %}
+        <img src="{{ p.imagem.url }}" alt="{{ p.nome }}">
+      {% endif %}
+      <div class="rel-card-body">
+        <div class="rel-card-nome">{{ p.nome }}</div>
+        <div class="rel-card-preco">R$ {{ p.preco }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+</body>
+</html>
