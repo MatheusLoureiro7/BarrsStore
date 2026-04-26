@@ -90,12 +90,23 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Cloudinary — armazenamento de imagens
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'dsw5fkmwp'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY', '588886952591175'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET', 'pq7sOsziSiKTlia5R-odj2oEPNw'),
+)
+
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dsw5fkmwp'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '588886952591175'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'pq7sOsziSiKTlia5R-odj2oEPNw'),
 }
 
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
