@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sobre — Barrs Store</title>
+<meta name="description" content="Conheça a história da Barrs Store, nossa missão e valores.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--radius:14px;--radius-sm:8px}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .navbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .nav-logo{font-size:15px;font-weight:600;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
+  .nav-logo::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+  .nav-links{display:flex;gap:24px}
+  .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-cart{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);text-decoration:none;background:var(--bg);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-weight:500}
+
+  .page{max-width:720px;margin:60px auto 80px;padding:0 20px}
+  .tag{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:16px}
+  h1{font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,48px);font-weight:700;line-height:1.15;letter-spacing:-0.5px;margin-bottom:24px}
+  .lead{font-size:17px;color:#444;line-height:1.8;margin-bottom:40px;font-weight:300}
+  .sep{border:none;border-top:1px solid var(--border);margin:40px 0}
+  h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:16px}
+  p{font-size:14px;color:#555;line-height:1.8;margin-bottom:16px}
+  .valores{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:32px}
+  .valor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+  .valor-icon{font-size:28px;margin-bottom:12px}
+  .valor-titulo{font-size:14px;font-weight:600;margin-bottom:6px}
+  .valor-desc{font-size:13px;color:var(--muted);line-height:1.6}
+  .cta-box{background:var(--text);color:#fff;border-radius:var(--radius);padding:40px;text-align:center;margin-top:48px}
+  .cta-box h2{color:#fff;margin-bottom:12px}
+  .cta-box p{color:#aaa;margin-bottom:24px}
+  .cta-btn{display:inline-block;padding:12px 28px;background:#fff;color:var(--text);border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none}
+  .whatsapp-btn{position:fixed;bottom:24px;right:24px;z-index:999;width:56px;height:56px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.4);text-decoration:none;transition:transform .2s}
+  .whatsapp-btn:hover{transform:scale(1.1)}
+  .whatsapp-btn svg{width:28px;height:28px;fill:#fff}
+  @media(max-width:600px){.valores{grid-template-columns:1fr}.navbar{padding:0 20px}.nav-links{display:none}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="nav-logo">Barrs Store</a>
+  <div class="nav-links">
+    <a href="/">Início</a>
+    <a href="/#produtos">Produtos</a>
+    <a href="/sobre/">Sobre</a>
+    <a href="/contato/">Contato</a>
+  </div>
+  <a href="{% url 'carrinho' %}" class="nav-cart">&#128717; Carrinho</a>
+</nav>
+
+<div class="page">
+  <div class="tag">Nossa história</div>
+  <h1>Acessórios que definem seu estilo</h1>
+  <p class="lead">A Barrs Store nasceu da paixão por acessórios únicos e da vontade de oferecer peças exclusivas para mulheres que não passam despercebidas.</p>
+
+  <hr class="sep">
+
+  <h2>Quem somos</h2>
+  <p>Somos uma loja especializada em acessórios modernos e exclusivos, com foco em qualidade e estilo. Cada peça é cuidadosamente selecionada para garantir que você se sinta especial em qualquer ocasião.</p>
+  <p>Acreditamos que os acessórios certos podem transformar qualquer look e expressar a personalidade única de cada mulher.</p>
+
+  <hr class="sep">
+
+  <h2>Nossos valores</h2>
+  <div class="valores">
+    <div class="valor-card">
+      <div class="valor-icon">💎</div>
+      <div class="valor-titulo">Qualidade</div>
+      <div class="valor-desc">Selecionamos cada peça com cuidado para garantir durabilidade e beleza.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-icon">🚚</div>
+      <div class="valor-titulo">Entrega rápida</div>
+      <div class="valor-desc">Frete grátis para todo o Brasil com entrega ágil e segura.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-icon">💬</div>
+      <div class="valor-titulo">Atendimento</div>
+      <div class="valor-desc">Suporte personalizado via WhatsApp para tirar todas as suas dúvidas.</div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h2>Pronta para se destacar?</h2>
+    <p>Conheça nossa coleção e encontre o acessório perfeito para você.</p>
+    <a href="/#produtos" class="cta-btn">Ver coleção</a>
+  </div>
+</div>
+
+<a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!" class="whatsapp-btn" target="_blank">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+</body>
+</html>

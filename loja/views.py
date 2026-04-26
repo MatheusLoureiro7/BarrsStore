@@ -173,3 +173,15 @@ def confirmacao(request, pedido_id):
 # ── 404 CUSTOMIZADO ────────────────────────────────────────────────
 def pagina_404(request, exception):
     return render(request, '404.html', status=404)
+
+
+def sobre(request):
+    return render(request, 'sobre.html', {'qtd_carrinho': get_carrinho_info(request)})
+
+
+def contato(request):
+    return render(request, 'contato.html', {'qtd_carrinho': get_carrinho_info(request)})
+
+
+def politica(request):
+    return render(request, 'politica.html')

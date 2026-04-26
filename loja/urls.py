@@ -10,4 +10,7 @@ urlpatterns = [
     path('deletar/<int:item_id>/', views.deletar_item, name='deletar_item'),
     path('finalizar/', views.checkout, name='finalizar_compra'),
     path('pedido/<int:pedido_id>/', views.confirmacao, name='confirmacao'),
+    path('sobre/', views.sobre, name='sobre'),
+    path('contato/', views.contato, name='contato'),
+    path('politica/', views.politica, name='politica'),
 ]
