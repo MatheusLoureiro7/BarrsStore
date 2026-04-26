@@ -9,6 +9,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-(u+i!8va1dl!+cy0)qn-n
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
+
 CSRF_TRUSTED_ORIGINS = [
     'https://web-production-c4971.up.railway.app',
     'https://barrsstore.com.br',
@@ -22,6 +23,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
+    'cloudinary_storage',
     'loja',
 ]
 
@@ -55,7 +58,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'barrs_store.wsgi.application'
 
-# Banco de dados — usa PostgreSQL no Railway, SQLite local
+# Banco de dados
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -86,7 +89,15 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Arquivos de mídia (imagens dos produtos)
+# Cloudinary — armazenamento de imagens
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dsw5fkmwp'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '588886952591175'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'pq7sOsziSiKTlia5R-odj2oEPNw'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
