@@ -74,6 +74,10 @@ def ver_carrinho(request):
         return render(request, 'carrinho.html', {
             'itens': [],
             'total': 0,
+            'frete': 0,
+            'total_com_frete': 0,
+            'frete_gratis': False,
+            'falta_frete_gratis': 150,
             'qtd_carrinho': 0,
         })
 
@@ -81,6 +85,10 @@ def ver_carrinho(request):
     return render(request, 'carrinho.html', {
         'itens': carrinho.itens.all(),
         'total': carrinho.total(),
+        'frete': carrinho.frete(),
+        'total_com_frete': carrinho.total_com_frete(),
+        'frete_gratis': carrinho.frete_gratis(),
+        'falta_frete_gratis': carrinho.falta_para_frete_gratis(),
         'qtd_carrinho': get_carrinho_info(request),
     })
 
@@ -146,6 +154,10 @@ def checkout(request):
         return redirect('carrinho')
 
     if request.method == 'POST':
+        subtotal = carrinho.total()
+        frete = carrinho.frete()
+        total = carrinho.total_com_frete()
+
         pedido = Pedido.objects.create(
             cliente=request.user if request.user.is_authenticated else None,
             nome=request.POST['nome'],
@@ -159,7 +171,9 @@ def checkout(request):
             cidade=request.POST['cidade'],
             estado=request.POST['estado'],
             forma_pagamento=request.POST['forma_pagamento'],
-            total=carrinho.total(),
+            subtotal=subtotal,
+            frete=frete,
+            total=total,
         )
 
         for item in itens:
@@ -176,7 +190,6 @@ def checkout(request):
 
         return redirect('confirmacao', pedido_id=pedido.id)
 
-    # Pré-preenche com dados do perfil se logado
     perfil = None
     if request.user.is_authenticated:
         perfil, _ = PerfilCliente.objects.get_or_create(user=request.user)
@@ -184,6 +197,9 @@ def checkout(request):
     return render(request, 'checkout.html', {
         'itens': itens,
         'total': carrinho.total(),
+        'frete': carrinho.frete(),
+        'total_com_frete': carrinho.total_com_frete(),
+        'frete_gratis': carrinho.frete_gratis(),
         'qtd_carrinho': get_carrinho_info(request),
         'perfil': perfil,
     })
@@ -209,6 +225,15 @@ def criar_preferencia(request, pedido_id):
             "title": item.nome_produto,
             "quantity": int(item.quantidade),
             "unit_price": float(item.preco_unitario),
+            "currency_id": "BRL",
+        })
+
+    # Adiciona frete como item separado se houver
+    if pedido.frete > 0:
+        items.append({
+            "title": "Frete",
+            "quantity": 1,
+            "unit_price": float(pedido.frete),
             "currency_id": "BRL",
         })
 

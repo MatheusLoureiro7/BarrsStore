@@ -29,6 +29,14 @@
   .grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
   .lista{display:flex;flex-direction:column;gap:12px}
 
+  /* BARRA FRETE GRÁTIS */
+  .frete-banner{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px}
+  .frete-banner-texto{font-size:13px;color:var(--text);margin-bottom:8px}
+  .frete-banner-texto strong{color:var(--green)}
+  .frete-banner-texto.gratis{color:var(--green);font-weight:600}
+  .frete-progress{height:6px;background:var(--border);border-radius:10px;overflow:hidden}
+  .frete-progress-bar{height:100%;background:var(--green);border-radius:10px;transition:width .4s ease}
+
   .item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
   .item-card:hover{border-color:var(--green-light)}
   .item-img{width:68px;height:68px;border-radius:var(--radius-sm);object-fit:cover;background:var(--bg);flex-shrink:0}
@@ -48,7 +56,8 @@
   .resumo h2{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
   .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:10px}
   .resumo-linha span:last-child{color:var(--text);font-weight:500}
-  .frete-gratis{color:var(--green)!important;font-weight:500!important}
+  .frete-gratis-tag{color:var(--green)!important;font-weight:600!important}
+  .frete-valor{color:var(--text);font-weight:500}
   .separador{border:none;border-top:1px solid var(--border);margin:14px 0}
   .resumo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600}
   .resumo-total span:last-child{color:var(--green)}
@@ -87,6 +96,23 @@
   </div>
 
   {% if itens %}
+
+  <!-- BARRA FRETE GRÁTIS -->
+  {% if frete_gratis %}
+    <div class="frete-banner">
+      <div class="frete-banner-texto gratis">🎉 Você ganhou frete grátis!</div>
+      <div class="frete-progress"><div class="frete-progress-bar" style="width:100%"></div></div>
+    </div>
+  {% else %}
+    <div class="frete-banner">
+      <div class="frete-banner-texto">Falta <strong>R$ {{ falta_frete_gratis }}</strong> para ganhar <strong>frete grátis</strong> 🚚</div>
+      <div class="frete-progress">
+        {% widthratio total 150 100 as pct %}
+        <div class="frete-progress-bar" style="width:{{ pct }}%"></div>
+      </div>
+    </div>
+  {% endif %}
+
   <div class="grid">
     <div class="lista">
       {% for item in itens %}
@@ -117,13 +143,21 @@
     <div class="resumo">
       <h2>Resumo do pedido</h2>
       <div class="resumo-linha"><span>Subtotal</span><span>R$ {{ total }}</span></div>
-      <div class="resumo-linha"><span>Frete</span><span class="frete-gratis">Grátis</span></div>
+      <div class="resumo-linha">
+        <span>Frete</span>
+        {% if frete_gratis %}
+          <span class="frete-gratis-tag">Grátis 🎉</span>
+        {% else %}
+          <span class="frete-valor">R$ {{ frete }}</span>
+        {% endif %}
+      </div>
       <hr class="separador">
-      <div class="resumo-total"><span>Total</span><span>R$ {{ total }}</span></div>
+      <div class="resumo-total"><span>Total</span><span>R$ {{ total_com_frete }}</span></div>
       <a href="{% url 'finalizar_compra' %}" class="btn-finalizar">Finalizar compra</a>
       <a href="/" class="voltar">← Continuar comprando</a>
     </div>
   </div>
+
   {% else %}
   <div class="carrinho-vazio">
     <p>Seu carrinho está vazio.</p>

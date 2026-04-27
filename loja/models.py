@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+FRETE_GRATIS_MINIMO = 150  # R$ mínimo para frete grátis
+FRETE_FIXO = 15            # R$ valor do frete quando abaixo do mínimo
+
+
 class Produto(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True, default='')
@@ -26,6 +30,24 @@ class Carrinho(models.Model):
 
     def quantidade_total(self):
         return sum(item.quantidade for item in self.itens.all())
+
+    def frete(self):
+        from decimal import Decimal
+        if self.total() >= Decimal(str(FRETE_GRATIS_MINIMO)):
+            return Decimal('0')
+        return Decimal(str(FRETE_FIXO))
+
+    def total_com_frete(self):
+        return self.total() + self.frete()
+
+    def frete_gratis(self):
+        from decimal import Decimal
+        return self.total() >= Decimal(str(FRETE_GRATIS_MINIMO))
+
+    def falta_para_frete_gratis(self):
+        from decimal import Decimal
+        falta = Decimal(str(FRETE_GRATIS_MINIMO)) - self.total()
+        return max(falta, Decimal('0'))
 
 
 class ItemCarrinho(models.Model):
@@ -69,6 +91,8 @@ class Pedido(models.Model):
     forma_pagamento = models.CharField(max_length=20, choices=PAGAMENTO_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
 
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    frete = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     criado_em = models.DateTimeField(auto_now_add=True)
 

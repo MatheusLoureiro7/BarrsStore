@@ -76,7 +76,7 @@
   .sep{border:none;border-top:1px solid var(--border);margin:14px 0}
   .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px}
   .resumo-linha span:last-child{color:var(--text);font-weight:500}
-  .frete-gratis{color:var(--green)!important}
+  .frete-gratis-tag{color:var(--green)!important;font-weight:600!important}
   .resumo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
   .resumo-total span:last-child{color:var(--green)}
 
@@ -237,8 +237,15 @@
     {% endfor %}
     <hr class="sep">
     <div class="resumo-linha"><span>Subtotal</span><span>R$ {{ total }}</span></div>
-    <div class="resumo-linha"><span>Frete</span><span class="frete-gratis">Grátis</span></div>
-    <div class="resumo-total"><span>Total</span><span>R$ {{ total }}</span></div>
+    <div class="resumo-linha">
+      <span>Frete</span>
+      {% if frete_gratis %}
+        <span class="frete-gratis-tag">Grátis 🎉</span>
+      {% else %}
+        <span>R$ {{ frete }}</span>
+      {% endif %}
+    </div>
+    <div class="resumo-total"><span>Total</span><span>R$ {{ total_com_frete }}</span></div>
     <button type="submit" class="btn-finalizar">Confirmar pedido</button>
   </div>
 </div>
