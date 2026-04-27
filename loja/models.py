@@ -2,8 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-FRETE_GRATIS_MINIMO = 150  # R$ mínimo para frete grátis
-FRETE_FIXO = 15            # R$ valor do frete quando abaixo do mínimo
+FRETE_GRATIS_MINIMO = 90  # R$ mínimo para frete grátis
+FRETE_FIXO = 9.90         # R$ valor do frete quando abaixo do mínimo
 
 
 class Produto(models.Model):
