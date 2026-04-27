@@ -11,6 +11,44 @@ from django.contrib import messages
 from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente
 import mercadopago
 import json
+import requests as http_requests
+
+
+# ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
+def enviar_whatsapp_pedido(pedido):
+    """Envia notificação no WhatsApp quando chegar um novo pedido."""
+    try:
+        itens_texto = ', '.join(
+            f"{item.quantidade}x {item.nome_produto}"
+            for item in pedido.itens.all()
+        )
+
+        frete_texto = f"R$ {pedido.frete}" if pedido.frete > 0 else "Grátis"
+
+        mensagem = (
+            f"🛍️ NOVO PEDIDO #{pedido.id}\n\n"
+            f"👤 {pedido.nome}\n"
+            f"📱 {pedido.telefone}\n"
+            f"📧 {pedido.email}\n\n"
+            f"📦 Itens: {itens_texto}\n\n"
+            f"💰 Subtotal: R$ {pedido.subtotal}\n"
+            f"🚚 Frete: {frete_texto}\n"
+            f"💎 Total: R$ {pedido.total}\n\n"
+            f"💳 Pagamento: {pedido.get_forma_pagamento_display()}\n"
+            f"📍 Endereço: {pedido.rua}, {pedido.numero} - {pedido.cidade}/{pedido.estado}"
+        )
+
+        http_requests.get(
+            'https://api.callmebot.com/whatsapp.php',
+            params={
+                'phone': '5511913225256',
+                'text': mensagem,
+                'apikey': '7650859',
+            },
+            timeout=10,
+        )
+    except Exception:
+        pass  # Nunca quebra o pedido se o WhatsApp falhar
 
 
 # ── HELPER: dados do carrinho para navbar ──────────────────────────
@@ -187,6 +225,9 @@ def checkout(request):
 
         carrinho.delete()
         del request.session['carrinho_id']
+
+        # Notificação WhatsApp
+        enviar_whatsapp_pedido(pedido)
 
         return redirect('confirmacao', pedido_id=pedido.id)
 
