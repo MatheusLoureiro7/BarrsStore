@@ -1,1 +1,1 @@
-web: python manage.py collectstatic --noinput && gunicorn barrs_store.wsgi --log-file -
+web: python manage.py migrate && gunicorn barrs_store.wsgi --log-file -
