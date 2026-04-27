@@ -17,6 +17,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 INSTALLED_APPS = [
+    'jazzmin', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -116,5 +117,28 @@ STORAGES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Barrs Store Admin",
+    "site_header": "Barrs Store",
+    "site_brand": "💎 Barrs Store",
+    "welcome_sign": "Bem-vinda ao painel da Barrs Store",
+    "copyright": "Barrs Store © 2026",
+    "search_model": ["loja.Produto", "loja.Pedido"],
+    "topmenu_links": [
+        {"name": "Ver site", "url": "/", "new_window": True},
+    ],
+    "icons": {
+        "loja.Produto": "fas fa-gem",
+        "loja.Pedido": "fas fa-shopping-bag",
+        "loja.Carrinho": "fas fa-cart-shopping",
+        "loja.ItemCarrinho": "fas fa-box",
+        "auth.User": "fas fa-user",
+    },
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "order_with_respect_to": ["loja"],
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
