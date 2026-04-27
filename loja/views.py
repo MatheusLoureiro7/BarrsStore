@@ -4,7 +4,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente
 import mercadopago
 import json
 
@@ -143,6 +147,7 @@ def checkout(request):
 
     if request.method == 'POST':
         pedido = Pedido.objects.create(
+            cliente=request.user if request.user.is_authenticated else None,
             nome=request.POST['nome'],
             email=request.POST['email'],
             telefone=request.POST.get('telefone', ''),
@@ -157,7 +162,6 @@ def checkout(request):
             total=carrinho.total(),
         )
 
-        # Salva os itens no pedido antes de deletar o carrinho
         for item in itens:
             ItemPedido.objects.create(
                 pedido=pedido,
@@ -172,10 +176,16 @@ def checkout(request):
 
         return redirect('confirmacao', pedido_id=pedido.id)
 
+    # Pré-preenche com dados do perfil se logado
+    perfil = None
+    if request.user.is_authenticated:
+        perfil, _ = PerfilCliente.objects.get_or_create(user=request.user)
+
     return render(request, 'checkout.html', {
         'itens': itens,
         'total': carrinho.total(),
         'qtd_carrinho': get_carrinho_info(request),
+        'perfil': perfil,
     })
 
 
@@ -280,6 +290,106 @@ def webhook_mercadopago(request):
             pass
 
     return JsonResponse({"status": "ok"})
+
+
+# ── CADASTRO ───────────────────────────────────────────────────────
+def cadastro(request):
+    if request.user.is_authenticated:
+        return redirect('minha_conta')
+
+    if request.method == 'POST':
+        nome = request.POST.get('nome', '').strip()
+        email = request.POST.get('email', '').strip()
+        senha = request.POST.get('senha', '')
+        senha2 = request.POST.get('senha2', '')
+
+        if senha != senha2:
+            messages.error(request, 'As senhas não coincidem.')
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, 'Este e-mail já está cadastrado.')
+        elif len(senha) < 6:
+            messages.error(request, 'A senha deve ter pelo menos 6 caracteres.')
+        else:
+            partes = nome.split()
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                password=senha,
+                first_name=partes[0] if partes else '',
+                last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
+            )
+            PerfilCliente.objects.create(user=user)
+            login(request, user)
+            messages.success(request, 'Conta criada com sucesso!')
+            return redirect('minha_conta')
+
+    return render(request, 'cadastro.html', {'qtd_carrinho': get_carrinho_info(request)})
+
+
+# ── LOGIN ──────────────────────────────────────────────────────────
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('minha_conta')
+
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        senha = request.POST.get('senha', '')
+        user = authenticate(request, username=email, password=senha)
+        if user:
+            login(request, user)
+            next_url = request.GET.get('next', 'minha_conta')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'E-mail ou senha incorretos.')
+
+    return render(request, 'login.html', {'qtd_carrinho': get_carrinho_info(request)})
+
+
+# ── LOGOUT ─────────────────────────────────────────────────────────
+def logout_view(request):
+    logout(request)
+    return redirect('home')
+
+
+# ── MINHA CONTA ────────────────────────────────────────────────────
+@login_required(login_url='/login/')
+def minha_conta(request):
+    perfil, _ = PerfilCliente.objects.get_or_create(user=request.user)
+    pedidos = Pedido.objects.filter(cliente=request.user).order_by('-criado_em')
+
+    if request.method == 'POST':
+        request.user.first_name = request.POST.get('primeiro_nome', '').strip()
+        request.user.last_name = request.POST.get('ultimo_nome', '').strip()
+        request.user.save()
+
+        perfil.telefone = request.POST.get('telefone', '').strip()
+        perfil.cep = request.POST.get('cep', '').strip()
+        perfil.rua = request.POST.get('rua', '').strip()
+        perfil.numero = request.POST.get('numero', '').strip()
+        perfil.complemento = request.POST.get('complemento', '').strip()
+        perfil.bairro = request.POST.get('bairro', '').strip()
+        perfil.cidade = request.POST.get('cidade', '').strip()
+        perfil.estado = request.POST.get('estado', '').strip()
+        perfil.save()
+
+        messages.success(request, 'Dados atualizados com sucesso!')
+        return redirect('minha_conta')
+
+    return render(request, 'minha_conta.html', {
+        'perfil': perfil,
+        'pedidos': pedidos,
+        'qtd_carrinho': get_carrinho_info(request),
+    })
+
+
+# ── DETALHE DO PEDIDO (cliente) ────────────────────────────────────
+@login_required(login_url='/login/')
+def detalhe_pedido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
+    return render(request, 'detalhe_pedido.html', {
+        'pedido': pedido,
+        'qtd_carrinho': get_carrinho_info(request),
+    })
 
 
 # ── PÁGINAS ESTÁTICAS ──────────────────────────────────────────────

@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criar conta — Barrs Store</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--green-bg:#edf7f2;--red:#c0392b;--red-bg:#fdf0ef;--radius:14px;--radius-sm:8px}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+  .nav{background:rgba(247,246,243,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
+  .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%}
+
+  .main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px 40px;width:100%;max-width:420px}
+
+  .card-titulo{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:6px}
+  .card-sub{font-size:13px;color:var(--muted);margin-bottom:32px;line-height:1.6}
+
+  .campo{margin-bottom:16px}
+  .campo label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+  .campo input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+  .campo input:focus{border-color:var(--text);background:#fff}
+  .campo-hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+  .btn-submit{width:100%;padding:13px;background:var(--text);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
+  .btn-submit:hover{opacity:0.85}
+
+  .erro{background:var(--red-bg);border:1px solid #f5c6c2;border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--red);margin-bottom:20px}
+
+  .divisor{display:flex;align-items:center;gap:12px;margin:24px 0;font-size:12px;color:var(--muted)}
+  .divisor::before,.divisor::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  .link-login{display:block;text-align:center;font-size:13px;color:var(--muted)}
+  .link-login a{color:var(--text);font-weight:600;text-decoration:none}
+  .link-login a:hover{text-decoration:underline}
+
+  footer{border-top:1px solid var(--border);padding:20px 40px;text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Barrs Store</a>
+  <a href="{% url 'carrinho' %}" style="font-size:13px;color:var(--muted);text-decoration:none">🛒 Carrinho{% if qtd_carrinho > 0 %} ({{ qtd_carrinho }}){% endif %}</a>
+</nav>
+
+<main class="main">
+  <div class="card">
+    <h1 class="card-titulo">Criar sua conta</h1>
+    <p class="card-sub">Acompanhe seus pedidos e tenha uma experiência personalizada.</p>
+
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="erro">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="campo">
+        <label>Nome completo</label>
+        <input type="text" name="nome" placeholder="Seu nome completo" required autofocus>
+      </div>
+      <div class="campo">
+        <label>E-mail</label>
+        <input type="email" name="email" placeholder="seu@email.com" required>
+      </div>
+      <div class="campo">
+        <label>Senha</label>
+        <input type="password" name="senha" placeholder="••••••••" required>
+        <p class="campo-hint">Mínimo de 6 caracteres</p>
+      </div>
+      <div class="campo">
+        <label>Confirmar senha</label>
+        <input type="password" name="senha2" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-submit">Criar conta</button>
+    </form>
+
+    <div class="divisor">ou</div>
+
+    <p class="link-login">Já tem conta? <a href="{% url 'login' %}">Entrar</a></p>
+  </div>
+</main>
+
+<footer>© 2026 Barrs Store — Todos os direitos reservados</footer>
+
+</body>
+</html>

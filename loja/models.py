@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Produto(models.Model):
@@ -51,6 +52,8 @@ class Pedido(models.Model):
         ('boleto', 'Boleto bancário'),
     ]
 
+    cliente = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='pedidos')
+
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     telefone = models.CharField(max_length=20, blank=True, default='')
@@ -72,10 +75,11 @@ class Pedido(models.Model):
     def __str__(self):
         return f'Pedido #{self.id} — {self.nome}'
 
+
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, related_name='itens', on_delete=models.CASCADE)
     produto = models.ForeignKey(Produto, on_delete=models.SET_NULL, null=True)
-    nome_produto = models.CharField(max_length=100)  # guarda o nome mesmo se produto for deletado
+    nome_produto = models.CharField(max_length=100)
     quantidade = models.IntegerField(default=1)
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -84,3 +88,18 @@ class ItemPedido(models.Model):
 
     def __str__(self):
         return f'{self.quantidade}x {self.nome_produto}'
+
+
+class PerfilCliente(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    telefone = models.CharField(max_length=20, blank=True, default='')
+    cep = models.CharField(max_length=9, blank=True, default='')
+    rua = models.CharField(max_length=200, blank=True, default='')
+    numero = models.CharField(max_length=20, blank=True, default='')
+    complemento = models.CharField(max_length=100, blank=True, default='')
+    bairro = models.CharField(max_length=100, blank=True, default='')
+    cidade = models.CharField(max_length=100, blank=True, default='')
+    estado = models.CharField(max_length=2, blank=True, default='')
+
+    def __str__(self):
+        return f'Perfil de {self.user.email}'

@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--radius:14px;--radius-sm:8px}
+  :root{--bg:#F5F2EC;--surface:#fff;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--radius:14px;--radius-sm:8px}
   body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
   .navbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
   .nav-logo{font-size:15px;font-weight:600;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
@@ -26,6 +26,13 @@
 <body>
 <nav class="navbar">
   <a href="/" class="nav-logo">Barrs Store</a>
+  <div style="display:flex;align-items:center;gap:10px">
+    {{% if user.is_authenticated %}}
+      <a href="{{% url 'minha_conta' %}}" style="font-size:13px;font-weight:500;color:#9E9488;text-decoration:none">👤 {{{{ user.first_name|default:user.email }}}}</a>
+    {{% else %}}
+      <a href="{{% url 'login' %}}" style="font-size:13px;font-weight:500;color:#9E9488;text-decoration:none">Entrar</a>
+    {{% endif %}}
+  </div>
 </nav>
 <div class="page">
   <h1>Política de Privacidade</h1>

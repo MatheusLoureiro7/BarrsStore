@@ -5,67 +5,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Carrinho — Barrs Store</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--green-bg:#edf7f2;--red:#c0392b;--red-bg:#fdf2f1;--radius:14px;--radius-sm:8px}
+  :root{--bg:#F5F2EC;--surface:#FFFFFF;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--green-light:#B7C1A8;--green-bg:#E8EDE3;--gold:#C8A96A;--red:#b84c3a;--red-bg:#fdf2f0;--radius:14px;--radius-sm:8px}
   body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-  /* NAVBAR */
-  .navbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .nav-logo{font-size:15px;font-weight:600;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
+  .navbar{background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
   .nav-logo::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
   .nav-links{display:flex;align-items:center;gap:24px}
   .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
   .nav-links a:hover{color:var(--text)}
+  .nav-right{display:flex;align-items:center;gap:10px}
+  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+  .nav-conta:hover{color:var(--text)}
 
-  /* PAGE */
   .page{max-width:860px;margin:40px auto;padding:0 20px}
   .topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-  .topo h1{font-size:22px;font-weight:600;letter-spacing:-0.3px}
-  .badge-itens{background:var(--text);color:#fff;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px}
+  .topo h1{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;letter-spacing:-0.3px}
+  .badge-itens{background:var(--green);color:#fff;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px}
   .grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
   .lista{display:flex;flex-direction:column;gap:12px}
 
-  /* CARD */
   .item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
-  .item-card:hover{border-color:#ccc}
+  .item-card:hover{border-color:var(--green-light)}
   .item-img{width:68px;height:68px;border-radius:var(--radius-sm);object-fit:cover;background:var(--bg);flex-shrink:0}
   .item-info{flex:1;min-width:0}
   .item-nome{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .item-unit{font-size:12px;color:var(--muted);margin-top:3px}
   .qtd-wrap{display:flex;align-items:center;gap:8px;margin-top:10px}
   .btn-qtd{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
-  .btn-qtd:hover{background:#ece9e4;border-color:#bbb}
+  .btn-qtd:hover{background:var(--green-bg);border-color:var(--green)}
   .qtd-num{font-size:14px;font-weight:600;min-width:22px;text-align:center}
   .item-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
   .item-subtotal{font-size:16px;font-weight:600;color:var(--green)}
   .btn-remover{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,color .15s,border-color .15s}
   .btn-remover:hover{background:var(--red-bg);border-color:#e8b4b0;color:var(--red)}
 
-  /* RESUMO */
   .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:80px}
-  .resumo h2{font-size:15px;font-weight:600;margin-bottom:16px}
+  .resumo h2{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
   .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:10px}
   .resumo-linha span:last-child{color:var(--text);font-weight:500}
   .frete-gratis{color:var(--green)!important;font-weight:500!important}
   .separador{border:none;border-top:1px solid var(--border);margin:14px 0}
   .resumo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600}
   .resumo-total span:last-child{color:var(--green)}
-  .btn-finalizar{display:block;width:100%;margin-top:16px;padding:13px;background:var(--text);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:opacity .2s}
-  .btn-finalizar:hover{opacity:0.85}
+  .btn-finalizar{display:block;width:100%;margin-top:16px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s}
+  .btn-finalizar:hover{background:var(--text)}
   .voltar{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:none;transition:color .15s}
   .voltar:hover{color:var(--text)}
 
-  /* VAZIO */
   .carrinho-vazio{text-align:center;padding:80px 24px;color:var(--muted)}
   .carrinho-vazio p{font-size:15px;margin-bottom:16px}
-  .carrinho-vazio a{display:inline-block;padding:10px 22px;background:var(--text);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:600}
+  .carrinho-vazio a{display:inline-block;padding:10px 22px;background:var(--green);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:600}
 
-  @media(max-width:680px){
-    .grid{grid-template-columns:1fr}
-    .navbar{padding:0 20px}
-  }
+  @media(max-width:680px){.grid{grid-template-columns:1fr}.navbar{padding:0 20px}}
 </style>
 </head>
 <body>
@@ -75,14 +71,19 @@
   <div class="nav-links">
     <a href="/">← Continuar comprando</a>
   </div>
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <a href="{% url 'minha_conta' %}" class="nav-conta">👤 {{ user.first_name|default:user.email }}</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-conta">Entrar</a>
+    {% endif %}
+  </div>
 </nav>
 
 <div class="page">
   <div class="topo">
     <h1>Carrinho</h1>
-    {% if itens %}
-      <span class="badge-itens">{{ itens|length }} {% if itens|length == 1 %}item{% else %}itens{% endif %}</span>
-    {% endif %}
+    {% if itens %}<span class="badge-itens">{{ itens|length }} {% if itens|length == 1 %}item{% else %}itens{% endif %}</span>{% endif %}
   </div>
 
   {% if itens %}
@@ -93,7 +94,7 @@
         {% if item.produto.imagem %}
           <img class="item-img" src="{{ item.produto.imagem.url }}" alt="{{ item.produto.nome }}">
         {% else %}
-          <div class="item-img" style="display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px;">&#128717;</div>
+          <div class="item-img" style="display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px;">🛍️</div>
         {% endif %}
         <div class="item-info">
           <div class="item-nome">{{ item.produto.nome }}</div>

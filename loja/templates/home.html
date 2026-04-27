@@ -4,92 +4,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- SEO -->
 <title>Barrs Store — Acessórios Modernos e Exclusivos</title>
 <meta name="description" content="Descubra acessórios modernos e exclusivos na Barrs Store. Brincos, colares e muito mais com frete grátis e entrega para todo o Brasil.">
 <meta name="keywords" content="acessórios, brincos, colares, joias, moda feminina, barrs store">
 <meta name="author" content="Barrs Store">
 <meta name="robots" content="index, follow">
-
-<!-- Open Graph (WhatsApp, Facebook) -->
 <meta property="og:title" content="Barrs Store — Acessórios Modernos e Exclusivos">
 <meta property="og:description" content="Peças exclusivas, modernas e feitas para quem não passa despercebida.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://barrsstore.com.br">
 <meta property="og:locale" content="pt_BR">
-
-<!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
-
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--radius:16px;--radius-sm:8px}
+  :root{
+    --bg:#F5F2EC;
+    --surface:#FFFFFF;
+    --border:#D9D3C7;
+    --text:#6B5E53;
+    --muted:#9E9488;
+    --green:#8A947C;
+    --green-light:#B7C1A8;
+    --green-bg:#E8EDE3;
+    --gold:#C8A96A;
+    --radius:16px;
+    --radius-sm:8px;
+  }
   html{scroll-behavior:smooth}
   body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-  .nav{position:sticky;top:0;z-index:100;background:rgba(247,246,243,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
+  .nav{position:sticky;top:0;z-index:100;background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
   .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
   .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0}
-  .nav-links{display:flex;align-items:center;gap:32px;list-style:none}
+  .nav-links{display:flex;align-items:center;gap:28px;list-style:none}
   .nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
   .nav-links a:hover{color:var(--text)}
+  .nav-right{display:flex;align-items:center;gap:10px}
+  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s;padding:7px 4px}
+  .nav-conta:hover{color:var(--text)}
   .nav-cart{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 14px;transition:border-color .2s,background .2s}
-  .nav-cart:hover{border-color:#aaa;background:#f0eeea}
-  .cart-badge{background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+  .nav-cart:hover{border-color:var(--green);background:var(--green-bg)}
+  .cart-badge{background:var(--gold);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
 
   .hero{background:var(--text);color:#fff;padding:44px 40px 64px;display:flex;align-items:flex-end;justify-content:space-between;gap:40px;position:relative;overflow:hidden}
-  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,#2a2a2a 0%,#111 100%);z-index:0}
+  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,#7a6d62 0%,#4a3f38 100%);z-index:0}
   .hero-left{position:relative;z-index:1;max-width:560px}
-  .hero-tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:20px}
-  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,58px);font-weight:700;line-height:1.1;letter-spacing:-1px}
-  .hero h1 em{font-style:italic;font-weight:400;color:#aaa}
-  .hero-sub{margin-top:20px;font-size:14px;color:#888;font-weight:300;line-height:1.7;max-width:400px}
-  .hero-cta{margin-top:32px;display:inline-block;padding:12px 28px;background:#fff;color:var(--text);border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;transition:opacity .2s}
+  .hero-tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--green-light);margin-bottom:20px}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,58px);font-weight:700;line-height:1.1;letter-spacing:-1px;color:#fff}
+  .hero h1 em{font-style:italic;font-weight:400;color:var(--green-light)}
+  .hero-sub{margin-top:20px;font-size:14px;color:#c8bfb8;font-weight:300;line-height:1.7;max-width:400px}
+  .hero-cta{margin-top:32px;display:inline-block;padding:12px 28px;background:var(--gold);color:#fff;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;transition:opacity .2s}
   .hero-cta:hover{opacity:0.85}
   .hero-right{position:relative;z-index:1;text-align:right;flex-shrink:0}
   .hero-stat{font-family:'Playfair Display',serif;font-size:64px;font-weight:700;color:#fff;line-height:1}
-  .hero-stat-label{font-size:12px;color:#666;font-weight:400;margin-top:4px}
+  .hero-stat-label{font-size:12px;color:#a09890;font-weight:400;margin-top:4px}
 
   .filtros-wrap{max-width:1200px;margin:0 auto;padding:32px 40px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .busca-form{display:flex;gap:8px;flex:1;min-width:200px}
   .busca-input{flex:1;padding:10px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;min-width:0}
-  .busca-input:focus{border-color:var(--text)}
-  .busca-btn{padding:10px 18px;background:var(--text);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;white-space:nowrap;flex-shrink:0}
-  .busca-btn:hover{opacity:0.85}
+  .busca-input:focus{border-color:var(--green)}
+  .busca-btn{padding:10px 18px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;white-space:nowrap;flex-shrink:0}
+  .busca-btn:hover{background:var(--text)}
   .ordem-select{padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);cursor:pointer;outline:none;width:100%}
   .busca-resultado{max-width:1200px;margin:12px auto 0;padding:0 40px;font-size:13px;color:var(--muted)}
   .busca-resultado a{color:var(--text);font-weight:500;text-decoration:none}
 
   .section{max-width:1200px;margin:0 auto;padding:32px 40px 60px}
   .section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:28px}
-  .section-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-0.5px}
+  .section-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-0.5px;color:var(--text)}
   .section-count{font-size:13px;color:var(--muted)}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s,transform .25s;animation:fadeUp .4s ease both}
-  .card:hover{border-color:#c8c5bf;transform:translateY(-4px)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s,transform .25s,box-shadow .25s;animation:fadeUp .4s ease both}
+  .card:hover{border-color:var(--green-light);transform:translateY(-4px);box-shadow:0 8px 32px rgba(138,148,124,0.12)}
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
   .card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.10s}.card:nth-child(3){animation-delay:.15s}.card:nth-child(4){animation-delay:.20s}.card:nth-child(5){animation-delay:.25s}.card:nth-child(6){animation-delay:.30s}
-  .card-img-wrap{position:relative;overflow:hidden;aspect-ratio:1/1;background:#f0eeea}
+  .card-img-wrap{position:relative;overflow:hidden;aspect-ratio:1/1;background:#EDE9E2}
   .card-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
   .card:hover .card-img-wrap img{transform:scale(1.05)}
   .card-sem-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px;color:#ccc}
-  .badge-novo{position:absolute;top:12px;left:12px;background:var(--text);color:#fff;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px}
-  .badge-destaque{position:absolute;top:12px;right:12px;background:#c0841a;color:#fff;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+  .badge-novo{position:absolute;top:12px;left:12px;background:var(--green);color:#fff;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+  .badge-destaque{position:absolute;top:12px;right:12px;background:var(--gold);color:#fff;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px}
   .card-body{padding:16px;display:flex;flex-direction:column;flex:1;gap:4px}
   .card-nome{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card-preco{font-size:16px;font-weight:600;color:var(--green)}
   .card-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .card-footer{padding:0 16px 16px;display:flex;gap:8px}
-  .btn-ver{flex:1;display:block;padding:10px;background:var(--text);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;transition:opacity .2s}
-  .btn-ver:hover{opacity:0.82}
+  .btn-ver{flex:1;display:block;padding:10px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;transition:background .2s}
+  .btn-ver:hover{background:var(--text)}
   .btn-add{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:18px;text-decoration:none;color:var(--text);transition:background .15s,border-color .15s;flex-shrink:0}
-  .btn-add:hover{background:#ece9e4;border-color:#bbb}
+  .btn-add:hover{background:var(--green-bg);border-color:var(--green)}
 
   .vazio{text-align:center;padding:80px 24px;color:var(--muted);font-size:15px}
-  .vazio a{display:inline-block;margin-top:12px;padding:10px 22px;background:var(--text);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:600}
+  .vazio a{display:inline-block;margin-top:12px;padding:10px 22px;background:var(--green);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:600}
 
   .footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted)}
   .footer-logo{font-family:'Playfair Display',serif;font-weight:700;font-size:15px;color:var(--text)}
@@ -97,7 +105,6 @@
   .footer-links a{color:var(--muted);text-decoration:none;transition:color .15s}
   .footer-links a:hover{color:var(--text)}
 
-  /* WHATSAPP */
   .whatsapp-btn{position:fixed;bottom:24px;right:24px;z-index:999;width:56px;height:56px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.4);text-decoration:none;transition:transform .2s,box-shadow .2s}
   .whatsapp-btn:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(37,211,102,0.5)}
   .whatsapp-btn svg{width:28px;height:28px;fill:#fff}
@@ -111,7 +118,6 @@
     .hero-right{display:none}
     .filtros-wrap{padding:20px 20px 0;flex-direction:column;align-items:stretch}
     .busca-form{width:100%}
-    .ordem-select{width:100%}
     .busca-resultado{padding:0 20px}
     .section{padding:24px 20px 48px}
     .grid{grid-template-columns:repeat(2,1fr);gap:12px}
@@ -130,10 +136,17 @@
     <li><a href="/sobre/">Sobre</a></li>
     <li><a href="/contato/">Contato</a></li>
   </ul>
-  <a href="{% url 'carrinho' %}" class="nav-cart">
-    &#128717; Carrinho
-    {% if qtd_carrinho > 0 %}<span class="cart-badge">{{ qtd_carrinho }}</span>{% endif %}
-  </a>
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <a href="{% url 'minha_conta' %}" class="nav-conta">👤 {{ user.first_name|default:user.email }}</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-conta">Entrar</a>
+    {% endif %}
+    <a href="{% url 'carrinho' %}" class="nav-cart">
+      🛒 Carrinho
+      {% if qtd_carrinho > 0 %}<span class="cart-badge">{{ qtd_carrinho }}</span>{% endif %}
+    </a>
+  </div>
 </nav>
 
 <section class="hero">
@@ -218,8 +231,7 @@
   <span>© 2026 • Todos os direitos reservados</span>
 </footer>
 
-<!-- WHATSAPP FLUTUANTE -->
-<a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20produtos." 
+<a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20produtos."
    class="whatsapp-btn" target="_blank" rel="noopener" title="Fale conosco no WhatsApp">
   <span class="whatsapp-tooltip">Fale conosco!</span>
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

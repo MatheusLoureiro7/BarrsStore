@@ -1,0 +1,190 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedido #{{ pedido.id }} — Barrs Store</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--green-bg:#edf7f2;--red:#c0392b;--red-bg:#fdf0ef;--yellow:#b07d00;--yellow-bg:#fdf8ec;--radius:14px;--radius-sm:8px}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+  .nav{position:sticky;top:0;z-index:100;background:rgba(247,246,243,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
+  .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%}
+  .nav-links{display:flex;align-items:center;gap:20px}
+  .nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .15s}
+  .nav-links a:hover{color:var(--text)}
+
+  .main{flex:1;max-width:680px;margin:0 auto;width:100%;padding:40px 20px 60px}
+
+  .voltar{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:28px;transition:color .15s}
+  .voltar:hover{color:var(--text)}
+
+  .pedido-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+  .pedido-titulo{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
+  .pedido-data{font-size:13px;color:var(--muted);margin-top:4px}
+
+  .badge-status{font-size:12px;font-weight:600;letter-spacing:.5px;padding:6px 14px;border-radius:20px}
+  .badge-pendente{background:var(--yellow-bg);color:var(--yellow)}
+  .badge-confirmado{background:var(--green-bg);color:var(--green)}
+  .badge-enviado{background:#e8f0fe;color:#1a56db}
+  .badge-entregue{background:#f0fdf4;color:#166534}
+  .badge-cancelado{background:var(--red-bg);color:var(--red)}
+
+  /* TIMELINE */
+  .timeline{display:flex;gap:0;margin-bottom:32px;position:relative}
+  .timeline::before{content:'';position:absolute;top:16px;left:16px;right:16px;height:2px;background:var(--border);z-index:0}
+  .timeline-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1}
+  .timeline-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .3s}
+  .timeline-dot.ativo{background:var(--green);border-color:var(--green);color:#fff}
+  .timeline-dot.passado{background:var(--green);border-color:var(--green);color:#fff}
+  .timeline-label{font-size:11px;color:var(--muted);text-align:center;font-weight:500}
+  .timeline-label.ativo{color:var(--green);font-weight:600}
+
+  .bloco{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:20px;margin-bottom:16px}
+  .bloco-titulo{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+  .info-linha{display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px;gap:16px}
+  .info-linha:last-child{margin-bottom:0}
+  .info-label{color:var(--muted);font-weight:500;flex-shrink:0}
+  .info-valor{font-weight:500;text-align:right}
+
+  .item-linha{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid var(--border);gap:16px}
+  .item-linha:last-child{border-bottom:none}
+  .item-nome{font-weight:500}
+  .item-qtd{font-size:12px;color:var(--muted)}
+  .item-preco{font-weight:600;color:var(--green);white-space:nowrap}
+
+  .total-linha{display:flex;justify-content:space-between;font-size:16px;font-weight:700;margin-top:4px}
+  .total-linha span:last-child{color:var(--green)}
+
+  .btn-voltar{display:inline-block;padding:12px 24px;background:var(--text);color:#fff;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;transition:opacity .2s;margin-top:8px}
+  .btn-voltar:hover{opacity:0.85}
+
+  footer{border-top:1px solid var(--border);padding:20px 40px;text-align:center;font-size:12px;color:var(--muted)}
+
+  @media(max-width:600px){
+    .nav{padding:0 20px}
+    .timeline-label{font-size:10px}
+    footer{padding:20px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Barrs Store</a>
+  <div class="nav-links">
+    <a href="{% url 'minha_conta' %}">Minha conta</a>
+    <a href="{% url 'carrinho' %}">🛒{% if qtd_carrinho > 0 %} ({{ qtd_carrinho }}){% endif %}</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <a href="{% url 'minha_conta' %}" class="voltar">← Voltar para minha conta</a>
+
+  <div class="pedido-header">
+    <div>
+      <h1 class="pedido-titulo">Pedido #{{ pedido.id }}</h1>
+      <p class="pedido-data">{{ pedido.criado_em|date:"d \d\e F \d\e Y" }} às {{ pedido.criado_em|time:"H:i" }}</p>
+    </div>
+    <span class="badge-status badge-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
+  </div>
+
+  <!-- TIMELINE DE STATUS -->
+  <div class="timeline" style="margin-bottom:32px">
+    {% with status=pedido.status %}
+    <div class="timeline-step">
+      <div class="timeline-dot passado">✓</div>
+      <span class="timeline-label {% if status == 'pendente' %}ativo{% endif %}">Recebido</span>
+    </div>
+    <div class="timeline-step">
+      <div class="timeline-dot {% if status == 'confirmado' or status == 'enviado' or status == 'entregue' %}passado{% endif %}">{% if status == 'confirmado' or status == 'enviado' or status == 'entregue' %}✓{% else %}2{% endif %}</div>
+      <span class="timeline-label {% if status == 'confirmado' %}ativo{% endif %}">Confirmado</span>
+    </div>
+    <div class="timeline-step">
+      <div class="timeline-dot {% if status == 'enviado' or status == 'entregue' %}passado{% endif %}">{% if status == 'enviado' or status == 'entregue' %}✓{% else %}3{% endif %}</div>
+      <span class="timeline-label {% if status == 'enviado' %}ativo{% endif %}">Enviado</span>
+    </div>
+    <div class="timeline-step">
+      <div class="timeline-dot {% if status == 'entregue' %}passado{% endif %}">{% if status == 'entregue' %}✓{% else %}4{% endif %}</div>
+      <span class="timeline-label {% if status == 'entregue' %}ativo{% endif %}">Entregue</span>
+    </div>
+    {% endwith %}
+  </div>
+
+  <!-- ITENS DO PEDIDO -->
+  <div class="bloco">
+    <div class="bloco-titulo">Itens do pedido</div>
+    {% for item in pedido.itens.all %}
+    <div class="item-linha">
+      <div>
+        <div class="item-nome">{{ item.nome_produto }}</div>
+        <div class="item-qtd">Quantidade: {{ item.quantidade }} · R$ {{ item.preco_unitario }} cada</div>
+      </div>
+      <div class="item-preco">R$ {{ item.subtotal }}</div>
+    </div>
+    {% endfor %}
+    <div style="padding-top:12px;border-top:2px solid var(--border);margin-top:4px">
+      <div class="total-linha">
+        <span>Total</span>
+        <span>R$ {{ pedido.total }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTREGA -->
+  <div class="bloco">
+    <div class="bloco-titulo">Endereço de entrega</div>
+    <div class="info-linha">
+      <span class="info-label">Destinatário</span>
+      <span class="info-valor">{{ pedido.nome }}</span>
+    </div>
+    <div class="info-linha">
+      <span class="info-label">Endereço</span>
+      <span class="info-valor">{{ pedido.rua }}, {{ pedido.numero }}{% if pedido.complemento %} — {{ pedido.complemento }}{% endif %}</span>
+    </div>
+    <div class="info-linha">
+      <span class="info-label">Bairro</span>
+      <span class="info-valor">{{ pedido.bairro }}</span>
+    </div>
+    <div class="info-linha">
+      <span class="info-label">Cidade/UF</span>
+      <span class="info-valor">{{ pedido.cidade }}/{{ pedido.estado }}</span>
+    </div>
+    <div class="info-linha">
+      <span class="info-label">CEP</span>
+      <span class="info-valor">{{ pedido.cep }}</span>
+    </div>
+  </div>
+
+  <!-- PAGAMENTO -->
+  <div class="bloco">
+    <div class="bloco-titulo">Pagamento</div>
+    <div class="info-linha">
+      <span class="info-label">Forma</span>
+      <span class="info-valor">{{ pedido.get_forma_pagamento_display }}</span>
+    </div>
+    <div class="info-linha">
+      <span class="info-label">Status</span>
+      <span class="info-valor">{{ pedido.get_status_display }}</span>
+    </div>
+    <div class="info-linha">
+      <span class="info-label">Total</span>
+      <span class="info-valor" style="color:var(--green);font-size:15px">R$ {{ pedido.total }}</span>
+    </div>
+  </div>
+
+  <a href="{% url 'minha_conta' %}" class="btn-voltar">← Voltar para minha conta</a>
+
+</main>
+
+<footer>© 2026 Barrs Store — Todos os direitos reservados</footer>
+
+</body>
+</html>
