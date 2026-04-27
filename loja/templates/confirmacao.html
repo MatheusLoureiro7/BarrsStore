@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pedido Confirmado — Barrs Store</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -43,7 +44,6 @@
     text-align: center;
   }
 
-  /* ÍCONE DE SUCESSO */
   .icone-sucesso {
     width: 72px;
     height: 72px;
@@ -76,7 +76,6 @@
     margin-bottom: 32px;
   }
 
-  /* DETALHES DO PEDIDO */
   .detalhes {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -113,7 +112,6 @@
     font-weight: 600;
   }
 
-  /* BADGE PEDIDO */
   .badge-pedido {
     display: inline-block;
     background: var(--text);
@@ -126,7 +124,75 @@
     margin-bottom: 20px;
   }
 
-  /* BOTÕES */
+  /* SEÇÃO DE PAGAMENTO */
+  .secao-pagamento {
+    margin-bottom: 24px;
+  }
+
+  .pagamento-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Loading do botão MP */
+  .mp-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 12px;
+  }
+
+  .mp-loading-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .mp-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .mp-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  .mp-erro {
+    font-size: 13px;
+    color: #c0392b;
+    background: #fdf0ef;
+    border: 1px solid #f5c6c2;
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: none;
+  }
+
+  /* Divisor */
+  .divisor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .divisor::before,
+  .divisor::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
   .btn-home {
     display: block;
     width: 100%;
@@ -165,10 +231,10 @@
 
   <div class="badge-pedido">PEDIDO #{{ pedido.id }}</div>
 
-  <h1 class="titulo">Pedido confirmado!</h1>
+  <h1 class="titulo">Pedido recebido!</h1>
   <p class="subtitulo">
     Obrigada pela sua compra, <strong>{{ pedido.nome }}</strong>!<br>
-    Você receberá um e-mail em <strong>{{ pedido.email }}</strong> com os detalhes.
+    Finalize o pagamento abaixo para confirmarmos seu pedido.
   </p>
 
   <div class="detalhes">
@@ -181,15 +247,59 @@
       <span class="detalhe-valor">{{ pedido.get_forma_pagamento_display }}</span>
     </div>
     <div class="detalhe-linha">
-      <span class="detalhe-label">Total pago</span>
+      <span class="detalhe-label">Total</span>
       <span class="detalhe-valor total-valor">R$ {{ pedido.total }}</span>
     </div>
   </div>
+
+  <!-- BOTÃO MERCADO PAGO -->
+  <div class="secao-pagamento">
+    <p class="pagamento-label">Finalizar pagamento</p>
+    <div id="mp-loading" class="mp-loading">
+      <div class="mp-loading-dot"></div>
+      <div class="mp-loading-dot"></div>
+      <div class="mp-loading-dot"></div>
+      Carregando opções de pagamento...
+    </div>
+    <div id="mp-erro" class="mp-erro">
+      Não foi possível carregar o pagamento. <a href="javascript:location.reload()">Tentar novamente</a>
+    </div>
+    <div id="wallet_container"></div>
+  </div>
+
+  <div class="divisor">ou</div>
 
   <a href="/" class="btn-home">Voltar para a loja</a>
   <a href="/" class="link-continuar">Continuar comprando</a>
 
 </div>
+
+<script>
+  const mp = new MercadoPago('{{ mp_public_key }}', { locale: 'pt-BR' });
+
+  fetch('/pagamento/preferencia/{{ pedido.id }}/')
+    .then(r => {
+      if (!r.ok) throw new Error('Erro na resposta');
+      return r.json();
+    })
+    .then(data => {
+      document.getElementById('mp-loading').style.display = 'none';
+
+      mp.bricks().create("wallet", "wallet_container", {
+        initialization: {
+          preferenceId: data.preference_id,
+          redirectMode: "self",
+        },
+        customization: {
+          texts: { valueProp: 'smart_option' },
+        },
+      });
+    })
+    .catch(() => {
+      document.getElementById('mp-loading').style.display = 'none';
+      document.getElementById('mp-erro').style.display = 'block';
+    });
+</script>
 
 </body>
 </html>

@@ -1,6 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
-from .models import Produto, Carrinho, ItemCarrinho, Pedido
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.conf import settings
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido
+import mercadopago
+import json
 
 
 # ── HELPER: dados do carrinho para navbar ──────────────────────────
@@ -99,7 +105,6 @@ def adicionar_carrinho(request, produto_id):
         item.quantidade += 1
         item.save()
 
-    # Redireciona de volta para onde veio
     next_url = request.GET.get('next', 'carrinho')
     if next_url == 'detalhe':
         return redirect('detalhe_produto', produto_id=produto_id)
@@ -152,6 +157,16 @@ def checkout(request):
             total=carrinho.total(),
         )
 
+        # Salva os itens no pedido antes de deletar o carrinho
+        for item in itens:
+            ItemPedido.objects.create(
+                pedido=pedido,
+                produto=item.produto,
+                nome_produto=item.produto.nome,
+                quantidade=item.quantidade,
+                preco_unitario=item.produto.preco,
+            )
+
         carrinho.delete()
         del request.session['carrinho_id']
 
@@ -167,21 +182,115 @@ def checkout(request):
 # ── CONFIRMAÇÃO ────────────────────────────────────────────────────
 def confirmacao(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    return render(request, 'confirmacao.html', {'pedido': pedido})
+    return render(request, 'confirmacao.html', {
+        'pedido': pedido,
+        'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
+    })
 
 
-# ── 404 CUSTOMIZADO ────────────────────────────────────────────────
+# ── MERCADO PAGO: CRIAR PREFERÊNCIA ───────────────────────────────
+def criar_preferencia(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+
+    items = []
+    for item in pedido.itens.all():
+        items.append({
+            "title": item.nome_produto,
+            "quantity": int(item.quantidade),
+            "unit_price": float(item.preco_unitario),
+            "currency_id": "BRL",
+        })
+
+    preference_data = {
+        "items": items,
+        "payer": {
+            "name": pedido.nome,
+            "email": pedido.email,
+            "phone": {"number": pedido.telefone},
+        },
+        "back_urls": {
+            "success": f"https://www.barrsstore.com.br/pagamento/sucesso/{pedido.id}/",
+            "failure": f"https://www.barrsstore.com.br/pagamento/falha/{pedido.id}/",
+            "pending": f"https://www.barrsstore.com.br/pagamento/pendente/{pedido.id}/",
+        },
+        "auto_return": "approved",
+        "external_reference": str(pedido.id),
+        "statement_descriptor": "BARRS STORE",
+    }
+
+    preference_response = sdk.preference().create(preference_data)
+    preference = preference_response["response"]
+
+    return JsonResponse({
+        "preference_id": preference["id"],
+        "init_point": preference["init_point"],
+    })
+
+
+# ── MERCADO PAGO: RETORNOS ─────────────────────────────────────────
+def pagamento_sucesso(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    pedido.status = 'confirmado'
+    pedido.save()
+    return render(request, 'pagamento_sucesso.html', {'pedido': pedido})
+
+
+def pagamento_falha(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    return render(request, 'pagamento_falha.html', {'pedido': pedido})
+
+
+def pagamento_pendente(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    pedido.status = 'pendente'
+    pedido.save()
+    return render(request, 'pagamento_pendente.html', {'pedido': pedido})
+
+
+# ── MERCADO PAGO: WEBHOOK ──────────────────────────────────────────
+@csrf_exempt
+@require_POST
+def webhook_mercadopago(request):
+    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "erro"}, status=400)
+
+    if data.get("type") == "payment":
+        payment_id = data["data"]["id"]
+        payment_info = sdk.payment().get(payment_id)
+        payment = payment_info["response"]
+
+        pedido_id = payment.get("external_reference")
+        status = payment.get("status")
+
+        try:
+            pedido = Pedido.objects.get(id=pedido_id)
+            if status == "approved":
+                pedido.status = "confirmado"
+            elif status == "pending":
+                pedido.status = "pendente"
+            elif status in ["cancelled", "rejected"]:
+                pedido.status = "cancelado"
+            pedido.save()
+        except Pedido.DoesNotExist:
+            pass
+
+    return JsonResponse({"status": "ok"})
+
+
+# ── PÁGINAS ESTÁTICAS ──────────────────────────────────────────────
 def pagina_404(request, exception):
     return render(request, '404.html', status=404)
-
 
 def sobre(request):
     return render(request, 'sobre.html', {'qtd_carrinho': get_carrinho_info(request)})
 
-
 def contato(request):
     return render(request, 'contato.html', {'qtd_carrinho': get_carrinho_info(request)})
-
 
 def politica(request):
     return render(request, 'politica.html')

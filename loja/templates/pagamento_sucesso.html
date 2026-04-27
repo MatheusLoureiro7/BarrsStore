@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagamento Aprovado — Barrs Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --border: #e5e3de;
+    --text: #1a1a1a; --muted: #888580;
+    --green: #1d7a4f; --green-bg: #edf7f2;
+    --radius: 14px; --radius-sm: 8px;
+  }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex;
+    flex-direction: column; align-items: center;
+    justify-content: center; padding: 40px 20px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 48px 40px;
+    max-width: 480px; width: 100%; text-align: center;
+  }
+  .icone {
+    width: 72px; height: 72px; background: var(--green-bg);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 24px;
+    font-size: 32px;
+    animation: pop .4s cubic-bezier(.175,.885,.32,1.275) both;
+  }
+  @keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .titulo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; margin-bottom: 8px;
+  }
+  .subtitulo {
+    font-size: 14px; color: var(--muted);
+    line-height: 1.6; margin-bottom: 32px;
+  }
+  .detalhes {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px;
+    text-align: left; margin-bottom: 28px;
+  }
+  .detalhe-linha {
+    display: flex; justify-content: space-between;
+    font-size: 13px; margin-bottom: 10px; gap: 16px;
+  }
+  .detalhe-linha:last-child { margin-bottom: 0; }
+  .detalhe-label { color: var(--muted); font-weight: 500; flex-shrink: 0; }
+  .detalhe-valor { font-weight: 500; text-align: right; }
+  .total-valor { color: var(--green); font-size: 15px; font-weight: 600; }
+  .badge {
+    display: inline-block; background: var(--green);
+    color: #fff; font-size: 11px; font-weight: 600;
+    letter-spacing: 1px; padding: 4px 12px;
+    border-radius: 20px; margin-bottom: 20px;
+  }
+  .btn {
+    display: block; width: 100%; padding: 13px;
+    background: var(--text); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: 'Sora', sans-serif;
+    font-size: 14px; font-weight: 600; text-align: center;
+    text-decoration: none; cursor: pointer;
+    transition: opacity .2s; margin-bottom: 10px;
+  }
+  .btn:hover { opacity: 0.85; }
+  .link-continuar {
+    font-size: 13px; color: var(--muted);
+    text-decoration: none; transition: color .15s;
+  }
+  .link-continuar:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icone">✓</div>
+  <div class="badge">PAGAMENTO APROVADO</div>
+  <h1 class="titulo">Tudo certo!</h1>
+  <p class="subtitulo">
+    Seu pagamento foi confirmado, <strong>{{ pedido.nome }}</strong>!<br>
+    Seu pedido já está sendo preparado com carinho. 🎀
+  </p>
+  <div class="detalhes">
+    <div class="detalhe-linha">
+      <span class="detalhe-label">Pedido</span>
+      <span class="detalhe-valor">#{{ pedido.id }}</span>
+    </div>
+    <div class="detalhe-linha">
+      <span class="detalhe-label">Entrega para</span>
+      <span class="detalhe-valor">{{ pedido.rua }}, {{ pedido.numero }} — {{ pedido.cidade }}/{{ pedido.estado }}</span>
+    </div>
+    <div class="detalhe-linha">
+      <span class="detalhe-label">Total pago</span>
+      <span class="detalhe-valor total-valor">R$ {{ pedido.total }}</span>
+    </div>
+  </div>
+  <a href="/" class="btn">Voltar para a loja</a>
+  <a href="/" class="link-continuar">Continuar comprando</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagamento não concluído — Barrs Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --border: #e5e3de;
+    --text: #1a1a1a; --muted: #888580;
+    --red: #c0392b; --red-bg: #fdf0ef;
+    --radius: 14px; --radius-sm: 8px;
+  }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex;
+    flex-direction: column; align-items: center;
+    justify-content: center; padding: 40px 20px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 48px 40px;
+    max-width: 480px; width: 100%; text-align: center;
+  }
+  .icone {
+    width: 72px; height: 72px; background: var(--red-bg);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 24px; font-size: 32px;
+    animation: pop .4s cubic-bezier(.175,.885,.32,1.275) both;
+  }
+  @keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .titulo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; margin-bottom: 8px;
+  }
+  .subtitulo {
+    font-size: 14px; color: var(--muted);
+    line-height: 1.6; margin-bottom: 32px;
+  }
+  .badge {
+    display: inline-block; background: var(--red);
+    color: #fff; font-size: 11px; font-weight: 600;
+    letter-spacing: 1px; padding: 4px 12px;
+    border-radius: 20px; margin-bottom: 20px;
+  }
+  .aviso {
+    background: var(--red-bg); border: 1px solid #f5c6c2;
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    font-size: 13px; color: var(--red);
+    line-height: 1.6; margin-bottom: 24px; text-align: left;
+  }
+  .btn {
+    display: block; width: 100%; padding: 13px;
+    background: var(--text); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: 'Sora', sans-serif;
+    font-size: 14px; font-weight: 600; text-align: center;
+    text-decoration: none; transition: opacity .2s; margin-bottom: 10px;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-outline {
+    display: block; width: 100%; padding: 13px;
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600;
+    text-align: center; text-decoration: none;
+    transition: background .2s; margin-bottom: 10px;
+  }
+  .btn-outline:hover { background: var(--bg); }
+  .link-continuar {
+    font-size: 13px; color: var(--muted);
+    text-decoration: none; transition: color .15s;
+  }
+  .link-continuar:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icone">✕</div>
+  <div class="badge">PAGAMENTO NÃO CONCLUÍDO</div>
+  <h1 class="titulo">Algo deu errado</h1>
+  <p class="subtitulo">
+    Não conseguimos processar seu pagamento, <strong>{{ pedido.nome }}</strong>.<br>
+    Seu pedido foi salvo — tente novamente abaixo.
+  </p>
+  <div class="aviso">
+    ⚠️ Verifique os dados do cartão ou tente outra forma de pagamento.<br>
+    Seu pedido <strong>#{{ pedido.id }}</strong> continua reservado.
+  </div>
+  <a href="/pedido/{{ pedido.id }}/" class="btn">Tentar pagar novamente</a>
+  <a href="/" class="btn-outline">Voltar para a loja</a>
+  <a href="/" class="link-continuar">Continuar comprando</a>
+</div>
+</body>
+</html>

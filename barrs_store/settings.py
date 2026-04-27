@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import dj_database_url
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-(u+i!8va1dl!+cy0)qn-nv7ie^d=(r2tac#mmmw9k&p-&@k3f2')
@@ -140,5 +141,9 @@ JAZZMIN_SETTINGS = {
     "hide_apps": [],
     "order_with_respect_to": ["loja"],
 }
+
+# Mercado Pago
+MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
+MERCADOPAGO_PUBLIC_KEY = os.environ.get('MP_PUBLIC_KEY')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

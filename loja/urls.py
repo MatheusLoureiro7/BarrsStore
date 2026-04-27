@@ -13,4 +13,11 @@ urlpatterns = [
     path('sobre/', views.sobre, name='sobre'),
     path('contato/', views.contato, name='contato'),
     path('politica/', views.politica, name='politica'),
+
+    # Mercado Pago
+    path('pagamento/preferencia/<int:pedido_id>/', views.criar_preferencia, name='criar_preferencia'),
+    path('pagamento/sucesso/<int:pedido_id>/', views.pagamento_sucesso, name='pagamento_sucesso'),
+    path('pagamento/falha/<int:pedido_id>/', views.pagamento_falha, name='pagamento_falha'),
+    path('pagamento/pendente/<int:pedido_id>/', views.pagamento_pendente, name='pagamento_pendente'),
+    path('pagamento/webhook/', views.webhook_mercadopago, name='webhook_mp'),
 ]

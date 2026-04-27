@@ -71,3 +71,16 @@ class Pedido(models.Model):
 
     def __str__(self):
         return f'Pedido #{self.id} — {self.nome}'
+
+class ItemPedido(models.Model):
+    pedido = models.ForeignKey(Pedido, related_name='itens', on_delete=models.CASCADE)
+    produto = models.ForeignKey(Produto, on_delete=models.SET_NULL, null=True)
+    nome_produto = models.CharField(max_length=100)  # guarda o nome mesmo se produto for deletado
+    quantidade = models.IntegerField(default=1)
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def subtotal(self):
+        return self.preco_unitario * self.quantidade
+
+    def __str__(self):
+        return f'{self.quantidade}x {self.nome_produto}'
