@@ -40,8 +40,8 @@
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .form-grid .full{grid-column:1/-1}
   .campo label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-  .campo input,.campo select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s,background .15s}
-  .campo input:focus,.campo select:focus{border-color:var(--green);background:var(--surface)}
+  .campo input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s,background .15s}
+  .campo input:focus{border-color:var(--green);background:var(--surface)}
   .campo input::placeholder{color:#bbb}
 
   .cep-row{display:flex;gap:10px;align-items:flex-end}
@@ -52,19 +52,7 @@
   .cep-ok{color:var(--green)}
   .cep-erro{color:var(--red)}
 
-  .pagamento-opcoes{display:flex;flex-direction:column;gap:10px}
-  .pag-opcao{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s,background .15s}
-  .pag-opcao:hover{border-color:var(--green-light);background:var(--green-bg)}
-  .pag-opcao input[type="radio"]{display:none}
-  .pag-opcao.selecionado{border-color:var(--green);background:var(--green-bg)}
-  .pag-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s}
-  .pag-opcao.selecionado .pag-radio{border-color:var(--green)}
-  .pag-opcao.selecionado .pag-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--green)}
-  .pag-icon{font-size:20px}
-  .pag-info{flex:1}
-  .pag-nome{font-size:13px;font-weight:600}
-  .pag-desc{font-size:11px;color:var(--muted);margin-top:2px}
-
+  /* RESUMO */
   .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:80px}
   .resumo h2{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text)}
   .resumo-item{display:flex;align-items:center;gap:10px;margin-bottom:12px}
@@ -74,11 +62,17 @@
   .resumo-item-qtd{font-size:11px;color:var(--muted)}
   .resumo-item-val{font-size:13px;font-weight:600;color:var(--green);flex-shrink:0}
   .sep{border:none;border-top:1px solid var(--border);margin:14px 0}
-  .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px}
+  .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px;align-items:center}
   .resumo-linha span:last-child{color:var(--text);font-weight:500}
   .frete-gratis-tag{color:var(--green)!important;font-weight:600!important}
+  .frete-pendente{color:var(--muted);font-style:italic;font-size:12px}
   .resumo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
   .resumo-total span:last-child{color:var(--green)}
+
+  /* FRETE CALCULADO */
+  .frete-calculado{background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text);margin-top:8px;display:none}
+  .frete-calculado.show{display:block}
+  .frete-calculado strong{color:var(--green)}
 
   .btn-finalizar{width:100%;margin-top:16px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
   .btn-finalizar:hover{background:var(--text)}
@@ -87,6 +81,8 @@
     .page{grid-template-columns:1fr}
     .navbar{padding:0 20px}
     .resumo{position:static}
+    .form-grid{grid-template-columns:1fr}
+    .form-grid .full{grid-column:1}
   }
 </style>
 </head>
@@ -114,6 +110,7 @@
 
 <form method="POST" action="{% url 'finalizar_compra' %}">
 {% csrf_token %}
+<input type="hidden" name="forma_pagamento" value="pix">
 <div class="page">
   <div>
     <div class="secao">
@@ -180,45 +177,14 @@
         <div class="campo">
           <label>Estado (UF)</label>
           <input type="text" name="estado" id="estado" placeholder="SP" maxlength="2" required
+            oninput="atualizarFrete()"
             value="{% if perfil %}{{ perfil.estado }}{% endif %}">
         </div>
       </div>
     </div>
-
-    <div class="secao">
-      <div class="secao-titulo">Forma de pagamento</div>
-      <div class="pagamento-opcoes">
-        <label class="pag-opcao selecionado" id="pag-pix">
-          <input type="radio" name="forma_pagamento" value="pix" checked onchange="selecionarPag('pag-pix')">
-          <div class="pag-radio"></div>
-          <div class="pag-icon">⚡</div>
-          <div class="pag-info">
-            <div class="pag-nome">PIX</div>
-            <div class="pag-desc">Aprovação instantânea</div>
-          </div>
-        </label>
-        <label class="pag-opcao" id="pag-cartao">
-          <input type="radio" name="forma_pagamento" value="cartao" onchange="selecionarPag('pag-cartao')">
-          <div class="pag-radio"></div>
-          <div class="pag-icon">💳</div>
-          <div class="pag-info">
-            <div class="pag-nome">Cartão de crédito</div>
-            <div class="pag-desc">Em até 12x sem juros</div>
-          </div>
-        </label>
-        <label class="pag-opcao" id="pag-boleto">
-          <input type="radio" name="forma_pagamento" value="boleto" onchange="selecionarPag('pag-boleto')">
-          <div class="pag-radio"></div>
-          <div class="pag-icon">📄</div>
-          <div class="pag-info">
-            <div class="pag-nome">Boleto bancário</div>
-            <div class="pag-desc">Vencimento em 3 dias úteis</div>
-          </div>
-        </label>
-      </div>
-    </div>
   </div>
 
+  <!-- RESUMO -->
   <div class="resumo">
     <h2>Resumo do pedido</h2>
     {% for item in itens %}
@@ -239,19 +205,23 @@
     <div class="resumo-linha"><span>Subtotal</span><span>R$ {{ total }}</span></div>
     <div class="resumo-linha">
       <span>Frete</span>
-      {% if frete_gratis %}
-        <span class="frete-gratis-tag">Grátis 🎉</span>
-      {% else %}
-        <span>R$ {{ frete }}</span>
-      {% endif %}
+      <span id="frete-display" class="frete-pendente">informe o CEP</span>
     </div>
-    <div class="resumo-total"><span>Total</span><span>R$ {{ total_com_frete }}</span></div>
+
+    <div id="frete-info" class="frete-calculado"></div>
+
+    <div class="resumo-total">
+      <span>Total</span>
+      <span id="total-display">R$ {{ total }}</span>
+    </div>
     <button type="submit" class="btn-finalizar">Confirmar pedido</button>
   </div>
 </div>
 </form>
 
 <script>
+  const subtotal = {{ total }};
+
   function mascaraCep(input) {
     let v = input.value.replace(/\D/g, '');
     if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
@@ -262,25 +232,72 @@
   async function buscarCep() {
     const cep = document.getElementById('cep').value.replace(/\D/g, '');
     const status = document.getElementById('cep-status');
-    if (cep.length !== 8) { status.textContent='Digite um CEP válido.'; status.className='cep-status cep-erro'; return; }
-    status.textContent = 'Buscando...'; status.className = 'cep-status';
+    if (cep.length !== 8) {
+      status.textContent = 'Digite um CEP válido.';
+      status.className = 'cep-status cep-erro';
+      return;
+    }
+    status.textContent = 'Buscando...';
+    status.className = 'cep-status';
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const data = await res.json();
-      if (data.erro) { status.textContent='CEP não encontrado.'; status.className='cep-status cep-erro'; return; }
+      if (data.erro) {
+        status.textContent = 'CEP não encontrado.';
+        status.className = 'cep-status cep-erro';
+        return;
+      }
       document.getElementById('rua').value = data.logradouro || '';
       document.getElementById('bairro').value = data.bairro || '';
       document.getElementById('cidade').value = data.localidade || '';
-      document.getElementById('estado').value = data.uf || '';
-      status.textContent = '✓ Endereço encontrado!'; status.className = 'cep-status cep-ok';
+      const estadoInput = document.getElementById('estado');
+      estadoInput.value = data.uf || '';
+      status.textContent = '✓ Endereço encontrado!';
+      status.className = 'cep-status cep-ok';
       document.querySelector('input[name="numero"]').focus();
-    } catch(e) { status.textContent='Erro ao buscar CEP.'; status.className='cep-status cep-erro'; }
+      atualizarFrete();
+    } catch(e) {
+      status.textContent = 'Erro ao buscar CEP.';
+      status.className = 'cep-status cep-erro';
+    }
   }
 
-  function selecionarPag(id) {
-    document.querySelectorAll('.pag-opcao').forEach(el => el.classList.remove('selecionado'));
-    document.getElementById(id).classList.add('selecionado');
+  async function atualizarFrete() {
+    const estado = document.getElementById('estado').value.trim().toUpperCase();
+    if (estado.length !== 2) return;
+
+    try {
+      const res = await fetch(`/frete/calcular/?estado=${estado}&total=${subtotal}`);
+      const data = await res.json();
+
+      const freteDisplay = document.getElementById('frete-display');
+      const totalDisplay = document.getElementById('total-display');
+      const freteInfo = document.getElementById('frete-info');
+
+      if (data.frete_gratis) {
+        freteDisplay.textContent = 'Grátis 🎉';
+        freteDisplay.className = 'frete-gratis-tag';
+        freteInfo.innerHTML = '🎉 <strong>Parabéns!</strong> Você ganhou frete grátis!';
+      } else {
+        freteDisplay.textContent = `R$ ${data.frete.toFixed(2).replace('.', ',')}`;
+        freteDisplay.className = '';
+        const falta = data.falta_frete_gratis.toFixed(2).replace('.', ',');
+        freteInfo.innerHTML = `Falta <strong>R$ ${falta}</strong> para frete grátis nessa região 🚚`;
+      }
+
+      freteInfo.classList.add('show');
+      totalDisplay.textContent = `R$ ${data.total_com_frete.toFixed(2).replace('.', ',')}`;
+
+    } catch(e) {
+      console.error('Erro ao calcular frete', e);
+    }
   }
+
+  // Se já tem estado preenchido (perfil), calcula na hora
+  window.addEventListener('load', () => {
+    const estado = document.getElementById('estado').value.trim();
+    if (estado.length === 2) atualizarFrete();
+  });
 </script>
 </body>
 </html>

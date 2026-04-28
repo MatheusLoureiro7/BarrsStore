@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, calcular_frete_por_estado
 import mercadopago
 import json
 import requests as http_requests
@@ -112,10 +112,6 @@ def ver_carrinho(request):
         return render(request, 'carrinho.html', {
             'itens': [],
             'total': 0,
-            'frete': 0,
-            'total_com_frete': 0,
-            'frete_gratis': False,
-            'falta_frete_gratis': 150,
             'qtd_carrinho': 0,
         })
 
@@ -123,11 +119,31 @@ def ver_carrinho(request):
     return render(request, 'carrinho.html', {
         'itens': carrinho.itens.all(),
         'total': carrinho.total(),
-        'frete': carrinho.frete(),
-        'total_com_frete': carrinho.total_com_frete(),
-        'frete_gratis': carrinho.frete_gratis(),
-        'falta_frete_gratis': carrinho.falta_para_frete_gratis(),
         'qtd_carrinho': get_carrinho_info(request),
+    })
+
+
+# ── CALCULAR FRETE VIA CEP (AJAX) ─────────────────────────────────
+def calcular_frete_ajax(request):
+    """Endpoint chamado pelo JS do checkout quando o cliente digita o CEP."""
+    from decimal import Decimal
+    estado = request.GET.get('estado', '').upper().strip()
+    try:
+        total = Decimal(request.GET.get('total', '0'))
+    except Exception:
+        total = Decimal('0')
+
+    frete, minimo = calcular_frete_por_estado(estado, total)
+    frete_gratis = frete == Decimal('0')
+    falta = max(minimo - total, Decimal('0'))
+
+    return JsonResponse({
+        'frete': float(frete),
+        'total_com_frete': float(total + frete),
+        'frete_gratis': frete_gratis,
+        'falta_frete_gratis': float(falta),
+        'minimo_gratis': float(minimo),
+        'estado': estado,
     })
 
 
@@ -192,9 +208,10 @@ def checkout(request):
         return redirect('carrinho')
 
     if request.method == 'POST':
+        estado_pedido = request.POST.get('estado', 'SP')
         subtotal = carrinho.total()
-        frete = carrinho.frete()
-        total = carrinho.total_com_frete()
+        frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
+        total = subtotal + frete
 
         pedido = Pedido.objects.create(
             cliente=request.user if request.user.is_authenticated else None,
@@ -207,8 +224,8 @@ def checkout(request):
             complemento=request.POST.get('complemento', ''),
             bairro=request.POST['bairro'],
             cidade=request.POST['cidade'],
-            estado=request.POST['estado'],
-            forma_pagamento=request.POST['forma_pagamento'],
+            estado=estado_pedido,
+            forma_pagamento='pix',
             subtotal=subtotal,
             frete=frete,
             total=total,
@@ -238,9 +255,6 @@ def checkout(request):
     return render(request, 'checkout.html', {
         'itens': itens,
         'total': carrinho.total(),
-        'frete': carrinho.frete(),
-        'total_com_frete': carrinho.total_com_frete(),
-        'frete_gratis': carrinho.frete_gratis(),
         'qtd_carrinho': get_carrinho_info(request),
         'perfil': perfil,
     })

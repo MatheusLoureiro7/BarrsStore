@@ -1,9 +1,43 @@
 from django.db import models
 from django.contrib.auth.models import User
+from decimal import Decimal
 
 
-FRETE_GRATIS_MINIMO = 90  # R$ mínimo para frete grátis
-FRETE_FIXO = 9.90         # R$ valor do frete quando abaixo do mínimo
+# ── CONFIGURAÇÃO DE FRETE POR REGIÃO ──────────────────────────────
+# Para alterar os valores, mude apenas os números abaixo:
+
+# São Paulo (capital e Grande SP) — CEPs 01000-000 a 09999-999
+FRETE_SP = Decimal('9.90')
+FRETE_GRATIS_SP = Decimal('79.00')
+
+# Regiões caras: Norte (AM, RR, AC, AP, PA, TO, RO)
+FRETE_NORTE = Decimal('21.90')
+FRETE_GRATIS_NORTE = Decimal('149.00')
+
+# Resto do Brasil
+FRETE_BRASIL = Decimal('16.90')
+FRETE_GRATIS_BRASIL = Decimal('119.00')
+
+# Estados da região Norte
+ESTADOS_NORTE = ['AM', 'RR', 'AC', 'AP', 'PA', 'TO', 'RO']
+
+
+def calcular_frete_por_estado(estado, subtotal):
+    """Retorna (valor_frete, minimo_gratis) baseado no estado."""
+    estado = (estado or '').upper().strip()
+
+    if estado == 'SP':
+        valor = FRETE_SP
+        minimo = FRETE_GRATIS_SP
+    elif estado in ESTADOS_NORTE:
+        valor = FRETE_NORTE
+        minimo = FRETE_GRATIS_NORTE
+    else:
+        valor = FRETE_BRASIL
+        minimo = FRETE_GRATIS_BRASIL
+
+    frete = Decimal('0') if subtotal >= minimo else valor
+    return frete, minimo
 
 
 class Produto(models.Model):
@@ -31,23 +65,24 @@ class Carrinho(models.Model):
     def quantidade_total(self):
         return sum(item.quantidade for item in self.itens.all())
 
-    def frete(self):
-        from decimal import Decimal
-        if self.total() >= Decimal(str(FRETE_GRATIS_MINIMO)):
-            return Decimal('0')
-        return Decimal(str(FRETE_FIXO))
+    def frete(self, estado='SP'):
+        frete, _ = calcular_frete_por_estado(estado, self.total())
+        return frete
 
-    def total_com_frete(self):
-        return self.total() + self.frete()
+    def total_com_frete(self, estado='SP'):
+        return self.total() + self.frete(estado)
 
-    def frete_gratis(self):
-        from decimal import Decimal
-        return self.total() >= Decimal(str(FRETE_GRATIS_MINIMO))
+    def frete_gratis(self, estado='SP'):
+        return self.frete(estado) == Decimal('0')
 
-    def falta_para_frete_gratis(self):
-        from decimal import Decimal
-        falta = Decimal(str(FRETE_GRATIS_MINIMO)) - self.total()
+    def falta_para_frete_gratis(self, estado='SP'):
+        _, minimo = calcular_frete_por_estado(estado, self.total())
+        falta = minimo - self.total()
         return max(falta, Decimal('0'))
+
+    def minimo_frete_gratis(self, estado='SP'):
+        _, minimo = calcular_frete_por_estado(estado, self.total())
+        return minimo
 
 
 class ItemCarrinho(models.Model):
