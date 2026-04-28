@@ -14,6 +14,100 @@ import json
 import requests as http_requests
 
 
+# ── E-MAIL: CONFIRMAÇÃO DE PEDIDO VIA BREVO ───────────────────────
+def enviar_email_confirmacao(pedido):
+    """Envia e-mail de confirmação para o cliente via Brevo."""
+    try:
+        itens_html = ''.join([
+            f"""<tr>
+              <td style="padding:10px 0;border-bottom:1px solid #e8ede3;font-size:14px;color:#6B5E53">{item.nome_produto}</td>
+              <td style="padding:10px 0;border-bottom:1px solid #e8ede3;font-size:14px;color:#6B5E53;text-align:center">{item.quantidade}</td>
+              <td style="padding:10px 0;border-bottom:1px solid #e8ede3;font-size:14px;color:#8A947C;text-align:right;font-weight:600">R$ {item.preco_unitario}</td>
+            </tr>"""
+            for item in pedido.itens.all()
+        ])
+
+        frete_texto = f"R$ {pedido.frete}" if pedido.frete > 0 else "Grátis 🎉"
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="margin:0;padding:0;background:#F5F2EC;font-family:'Arial',sans-serif">
+          <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(107,94,83,0.08)">
+
+            <div style="background:#8A947C;padding:32px 40px;text-align:center">
+              <h1 style="color:#fff;font-size:24px;margin:0;letter-spacing:-0.5px">Barrs Store</h1>
+              <p style="color:#E8EDE3;font-size:13px;margin:8px 0 0">Acessórios modernos e exclusivos</p>
+            </div>
+
+            <div style="padding:40px">
+              <div style="text-align:center;margin-bottom:28px">
+                <div style="width:64px;height:64px;background:#E8EDE3;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px">✓</div>
+                <h2 style="color:#3d2d20;font-size:22px;margin:0 0 8px">Pedido confirmado!</h2>
+                <p style="color:#9E9488;font-size:14px;margin:0">Obrigada pela sua compra, <strong style="color:#6B5E53">{pedido.nome}</strong>!</p>
+              </div>
+
+              <div style="background:#F5F2EC;border-radius:10px;padding:20px;margin-bottom:24px">
+                <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9E9488;margin:0 0 12px">PEDIDO #{pedido.id}</p>
+                <table style="width:100%;border-collapse:collapse">
+                  <tr>
+                    <th style="font-size:11px;text-transform:uppercase;color:#9E9488;text-align:left;padding-bottom:8px">Produto</th>
+                    <th style="font-size:11px;text-transform:uppercase;color:#9E9488;text-align:center;padding-bottom:8px">Qtd</th>
+                    <th style="font-size:11px;text-transform:uppercase;color:#9E9488;text-align:right;padding-bottom:8px">Valor</th>
+                  </tr>
+                  {itens_html}
+                  <tr>
+                    <td colspan="2" style="padding-top:12px;font-size:13px;color:#9E9488">Frete</td>
+                    <td style="padding-top:12px;font-size:13px;color:#8A947C;text-align:right;font-weight:600">{frete_texto}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding-top:8px;font-size:15px;font-weight:700;color:#3d2d20">Total</td>
+                    <td style="padding-top:8px;font-size:15px;font-weight:700;color:#8A947C;text-align:right">R$ {pedido.total}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="background:#F5F2EC;border-radius:10px;padding:20px;margin-bottom:24px">
+                <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9E9488;margin:0 0 12px">ENDEREÇO DE ENTREGA</p>
+                <p style="font-size:14px;color:#6B5E53;margin:0;line-height:1.7">
+                  {pedido.rua}, {pedido.numero}{f" — {pedido.complemento}" if pedido.complemento else ""}<br>
+                  {pedido.bairro} — {pedido.cidade}/{pedido.estado}<br>
+                  CEP {pedido.cep}
+                </p>
+              </div>
+
+              <div style="text-align:center;padding:20px 0;border-top:1px solid #D9D3C7">
+                <p style="font-size:13px;color:#9E9488;margin:0 0 16px">Dúvidas? Fale conosco pelo WhatsApp</p>
+                <a href="https://wa.me/5511913225256" style="display:inline-block;padding:12px 28px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">💬 WhatsApp</a>
+              </div>
+            </div>
+
+            <div style="background:#F5F2EC;padding:20px 40px;text-align:center">
+              <p style="font-size:12px;color:#9E9488;margin:0">© 2026 Barrs Store • barrsstore.com.br</p>
+            </div>
+          </div>
+        </body>
+        </html>
+        """
+
+        http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={
+                'api-key': os.environ.get('BREVO_API_KEY', ''),
+                'Content-Type': 'application/json',
+            },
+            json={
+                'sender': {'name': 'Barrs Store', 'email': 'contato.barrsstore@gmail.com'},
+                'to': [{'email': pedido.email, 'name': pedido.nome}],
+                'subject': f'✓ Pedido #{pedido.id} confirmado — Barrs Store',
+                'htmlContent': html,
+            },
+            timeout=10,
+        )
+    except Exception:
+        pass  # Nunca quebra o pedido se o e-mail falhar
+
+
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
 def enviar_whatsapp_pedido(pedido):
     """Envia notificação no WhatsApp quando chegar um novo pedido."""
@@ -257,8 +351,9 @@ def checkout(request):
         carrinho.delete()
         del request.session['carrinho_id']
 
-        # Notificação WhatsApp
+        # Notificações
         enviar_whatsapp_pedido(pedido)
+        enviar_email_confirmacao(pedido)
 
         return redirect('confirmacao', pedido_id=pedido.id)
 
