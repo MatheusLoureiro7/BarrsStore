@@ -98,18 +98,36 @@
     {% endif %}
   </div>
   <div>
-    <div class="badge-novo">Novo</div>
+    <!-- BADGE DINÂMICO -->
+    <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
+      {% if produto.estoque > 0 and produto.estoque <= 3 %}
+        <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#b84c3a;color:#fff;padding:4px 10px;border-radius:4px">🔥 Últimas unidades</span>
+      {% elif produto.destaque %}
+        <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--gold);color:#fff;padding:4px 10px;border-radius:4px">⭐ Mais vendido</span>
+      {% else %}
+        <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--green);color:#fff;padding:4px 10px;border-radius:4px">🆕 Novo</span>
+      {% endif %}
+    </div>
+
     <h1 class="produto-nome">{{ produto.nome }}</h1>
     <div class="produto-preco">R$ {{ produto.preco }}</div>
+
     {% if produto.disponivel %}
-      <div class="estoque-ok">Em estoque ({{ produto.estoque }} disponíveis)</div>
+      {% if produto.estoque <= 3 %}
+        <div class="estoque-ok" style="color:#b84c3a">⚠️ Apenas {{ produto.estoque }} em estoque!</div>
+      {% elif produto.estoque <= 10 %}
+        <div class="estoque-ok">Em estoque ({{ produto.estoque }} disponíveis)</div>
+      {% else %}
+        <div class="estoque-ok">Em estoque</div>
+      {% endif %}
     {% else %}
       <div class="estoque-zero">Fora de estoque</div>
     {% endif %}
+
     <div class="chips">
-      <span class="chip">Frete grátis</span>
       <span class="chip">Devolução em 30 dias</span>
       <span class="chip">Garantia de qualidade</span>
+      <span class="chip">Entrega para todo o Brasil</span>
     </div>
     <hr class="sep">
     <div class="produto-desc-label">Descrição</div>
