@@ -278,13 +278,22 @@ def criar_preferencia(request, pedido_id):
             "currency_id": "BRL",
         })
 
+    # Limpa telefone — MP só aceita números
+    telefone_limpo = "".join(filter(str.isdigit, pedido.telefone or ""))
+
+    payer = {
+        "name": pedido.nome,
+        "email": pedido.email if pedido.email else "cliente@barrsstore.com.br",
+    }
+    if len(telefone_limpo) >= 10:
+        payer["phone"] = {
+            "area_code": telefone_limpo[:2],
+            "number": telefone_limpo[2:],
+        }
+
     preference_data = {
         "items": items,
-        "payer": {
-            "name": pedido.nome,
-            "email": pedido.email,
-            "phone": {"number": pedido.telefone},
-        },
+        "payer": payer,
         "back_urls": {
             "success": f"https://www.barrsstore.com.br/pagamento/sucesso/{pedido.id}/",
             "failure": f"https://www.barrsstore.com.br/pagamento/falha/{pedido.id}/",
