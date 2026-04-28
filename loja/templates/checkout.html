@@ -221,11 +221,12 @@
 <script>
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
 
-  function mascaraCep(input) {
-    let v = input.value.replace(/\D/g, '');
-    if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
-    input.value = v;
-  }
+function mascaraCep(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
+  input.value = v;
+  if (v.replace('-','').length === 8) buscarCep();
+}
 
   async function buscarCep() {
     const cepInput = document.getElementById('cep');
