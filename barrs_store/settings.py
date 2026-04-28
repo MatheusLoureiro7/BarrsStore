@@ -18,7 +18,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 INSTALLED_APPS = [
-    'jazzmin', 
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -90,7 +90,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Cloudinary — armazenamento de imagens
+# Cloudinary
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -98,13 +98,13 @@ import cloudinary.api
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'dsw5fkmwp'),
     api_key=os.environ.get('CLOUDINARY_API_KEY', '588886952591175'),
-    api_secret=os.environ.get('CLOUDINARY_API_SECRET', 'pq7sOsziSiKTlia5R-odj2oEPNw'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
 )
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dsw5fkmwp'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '588886952591175'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'pq7sOsziSiKTlia5R-odj2oEPNw'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
 
 STORAGES = {
@@ -118,6 +118,35 @@ STORAGES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ── SEGURANÇA ──────────────────────────────────────────────────────
+if not DEBUG:
+    # HTTPS obrigatório
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Cookies seguros
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+
+    # Proteção HSTS (diz ao browser: só HTTPS por 1 ano)
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Proteção XSS e Clickjacking
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
+# Limitar tentativas de login (proteção brute force)
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+
+# Sessão expira ao fechar o browser
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 dias
 
 JAZZMIN_SETTINGS = {
     "site_title": "Barrs Store Admin",
@@ -135,6 +164,7 @@ JAZZMIN_SETTINGS = {
         "loja.Carrinho": "fas fa-cart-shopping",
         "loja.ItemCarrinho": "fas fa-box",
         "auth.User": "fas fa-user",
+        "loja.Categoria": "fas fa-tags",
     },
     "show_sidebar": True,
     "navigation_expanded": True,
