@@ -1,13 +1,26 @@
 from django.contrib import admin
-from .models import Produto, Carrinho, ItemCarrinho, Pedido
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel
+
+
+@admin.register(Categoria)
+class CategoriaAdmin(admin.ModelAdmin):
+    list_display = ('icone', 'nome', 'slug')
+    prepopulated_fields = {'slug': ('nome',)}
+
+
+class TamanhoInline(admin.TabularInline):
+    model = TamanhoAnel
+    extra = 6
+    fields = ('numero', 'estoque')
 
 
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'preco', 'estoque', 'destaque', 'disponivel')
+    list_display = ('nome', 'categoria', 'tipo', 'preco', 'estoque', 'destaque', 'disponivel')
     list_editable = ('preco', 'estoque', 'destaque')
+    list_filter = ('destaque', 'categoria', 'tipo')
     search_fields = ('nome', 'descricao')
-    list_filter = ('destaque',)
+    inlines = [TamanhoInline]
 
     def disponivel(self, obj):
         return obj.disponivel()
@@ -26,7 +39,7 @@ class PedidoAdmin(admin.ModelAdmin):
 
 @admin.register(ItemCarrinho)
 class ItemCarrinhoAdmin(admin.ModelAdmin):
-    list_display = ('produto', 'quantidade', 'carrinho')
+    list_display = ('produto', 'quantidade', 'tamanho', 'carrinho')
 
 
 @admin.register(Carrinho)

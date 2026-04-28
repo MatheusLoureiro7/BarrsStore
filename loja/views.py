@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, calcular_frete_por_estado
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, calcular_frete_por_estado
 import mercadopago
 import json
 import requests as http_requests
@@ -68,6 +68,7 @@ def get_carrinho_info(request):
 def home(request):
     busca = request.GET.get('q', '').strip()
     ordem = request.GET.get('ordem', '')
+    categoria_slug = request.GET.get('categoria', '')
 
     produtos = Produto.objects.all()
 
@@ -75,6 +76,9 @@ def home(request):
         produtos = produtos.filter(
             Q(nome__icontains=busca) | Q(descricao__icontains=busca)
         )
+
+    if categoria_slug:
+        produtos = produtos.filter(categoria__slug=categoria_slug)
 
     if ordem == 'menor':
         produtos = produtos.order_by('preco')
@@ -85,12 +89,16 @@ def home(request):
     else:
         produtos = produtos.order_by('-criado_em')
 
+    categorias = Categoria.objects.all()
+
     return render(request, 'home.html', {
         'produtos': produtos,
         'qtd_carrinho': get_carrinho_info(request),
         'busca': busca,
         'ordem': ordem,
         'total_produtos': Produto.objects.count(),
+        'categorias': categorias,
+        'categoria_ativa': categoria_slug,
     })
 
 
@@ -162,16 +170,22 @@ def adicionar_carrinho(request, produto_id):
         carrinho = Carrinho.objects.create()
         request.session['carrinho_id'] = carrinho.id
 
+    quantidade = int(request.POST.get('quantidade', request.GET.get('quantidade', 1)))
+    tamanho = request.POST.get('tamanho', request.GET.get('tamanho', ''))
+
     item, criado = ItemCarrinho.objects.get_or_create(
         carrinho=carrinho,
-        produto=produto
+        produto=produto,
+        tamanho=tamanho,
     )
 
-    if not criado:
-        item.quantidade += 1
-        item.save()
+    if criado:
+        item.quantidade = quantidade
+    else:
+        item.quantidade += quantidade
+    item.save()
 
-    next_url = request.GET.get('next', 'carrinho')
+    next_url = request.POST.get('next', request.GET.get('next', 'carrinho'))
     if next_url == 'detalhe':
         return redirect('detalhe_produto', produto_id=produto_id)
     return redirect('carrinho')
@@ -484,6 +498,9 @@ def detalhe_pedido(request, pedido_id):
 # ── PÁGINAS ESTÁTICAS ──────────────────────────────────────────────
 def pagina_404(request, exception):
     return render(request, '404.html', status=404)
+
+def entrega(request):
+    return render(request, 'entrega.html', {'qtd_carrinho': get_carrinho_info(request)})
 
 def sobre(request):
     return render(request, 'sobre.html', {'qtd_carrinho': get_carrinho_info(request)})

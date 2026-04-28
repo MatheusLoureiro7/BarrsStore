@@ -4,28 +4,17 @@ from decimal import Decimal
 
 
 # ── CONFIGURAÇÃO DE FRETE POR REGIÃO ──────────────────────────────
-# Para alterar os valores, mude apenas os números abaixo:
-
-# São Paulo (capital e Grande SP) — CEPs 01000-000 a 09999-999
 FRETE_SP = Decimal('9.90')
 FRETE_GRATIS_SP = Decimal('79.00')
-
-# Regiões caras: Norte (AM, RR, AC, AP, PA, TO, RO)
 FRETE_NORTE = Decimal('21.90')
 FRETE_GRATIS_NORTE = Decimal('149.00')
-
-# Resto do Brasil
 FRETE_BRASIL = Decimal('16.90')
 FRETE_GRATIS_BRASIL = Decimal('119.00')
-
-# Estados da região Norte
 ESTADOS_NORTE = ['AM', 'RR', 'AC', 'AP', 'PA', 'TO', 'RO']
 
 
 def calcular_frete_por_estado(estado, subtotal):
-    """Retorna (valor_frete, minimo_gratis) baseado no estado."""
     estado = (estado or '').upper().strip()
-
     if estado == 'SP':
         valor = FRETE_SP
         minimo = FRETE_GRATIS_SP
@@ -35,12 +24,36 @@ def calcular_frete_por_estado(estado, subtotal):
     else:
         valor = FRETE_BRASIL
         minimo = FRETE_GRATIS_BRASIL
-
     frete = Decimal('0') if subtotal >= minimo else valor
     return frete, minimo
 
 
+# ── CATEGORIA ─────────────────────────────────────────────────────
+class Categoria(models.Model):
+    nome = models.CharField(max_length=50)
+    slug = models.SlugField(unique=True)
+    icone = models.CharField(max_length=10, blank=True, default='💎', help_text='Emoji do ícone')
+
+    class Meta:
+        verbose_name = 'Categoria'
+        verbose_name_plural = 'Categorias'
+        ordering = ['nome']
+
+    def __str__(self):
+        return self.nome
+
+
+# ── PRODUTO ───────────────────────────────────────────────────────
 class Produto(models.Model):
+    TIPO_CHOICES = [
+        ('acessorio', 'Acessório geral'),
+        ('anel', 'Anel'),
+        ('brinco', 'Brinco'),
+        ('colar', 'Colar'),
+        ('pulseira', 'Pulseira'),
+        ('tornozeleira', 'Tornozeleira'),
+    ]
+
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True, default='')
     preco = models.DecimalField(max_digits=10, decimal_places=2)
@@ -48,6 +61,8 @@ class Produto(models.Model):
     estoque = models.IntegerField(default=10)
     destaque = models.BooleanField(default=False)
     criado_em = models.DateTimeField(auto_now_add=True)
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True, related_name='produtos')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='acessorio')
 
     def __str__(self):
         return self.nome
@@ -55,7 +70,29 @@ class Produto(models.Model):
     def disponivel(self):
         return self.estoque > 0
 
+    def tem_tamanhos(self):
+        return self.tipo == 'anel'
 
+    def tamanhos_disponiveis(self):
+        return self.tamanhos.filter(estoque__gt=0).order_by('numero')
+
+
+# ── TAMANHO (só para anéis) ────────────────────────────────────────
+class TamanhoAnel(models.Model):
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name='tamanhos')
+    numero = models.CharField(max_length=5, help_text='Ex: 14, 15, 16, 17, 18')
+    estoque = models.IntegerField(default=5)
+
+    class Meta:
+        ordering = ['numero']
+        verbose_name = 'Tamanho'
+        verbose_name_plural = 'Tamanhos'
+
+    def __str__(self):
+        return f'{self.produto.nome} — Nº {self.numero}'
+
+
+# ── CARRINHO ──────────────────────────────────────────────────────
 class Carrinho(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
 
@@ -89,11 +126,13 @@ class ItemCarrinho(models.Model):
     carrinho = models.ForeignKey(Carrinho, related_name='itens', on_delete=models.CASCADE)
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
     quantidade = models.IntegerField(default=1)
+    tamanho = models.CharField(max_length=5, blank=True, default='')  # para anéis
 
     def subtotal(self):
         return self.produto.preco * self.quantidade
 
 
+# ── PEDIDO ────────────────────────────────────────────────────────
 class Pedido(models.Model):
     STATUS_CHOICES = [
         ('pendente', 'Pendente'),
@@ -110,11 +149,9 @@ class Pedido(models.Model):
     ]
 
     cliente = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='pedidos')
-
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     telefone = models.CharField(max_length=20, blank=True, default='')
-
     cep = models.CharField(max_length=9)
     rua = models.CharField(max_length=200)
     numero = models.CharField(max_length=20)
@@ -122,10 +159,8 @@ class Pedido(models.Model):
     bairro = models.CharField(max_length=100)
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=2)
-
     forma_pagamento = models.CharField(max_length=20, choices=PAGAMENTO_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
-
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     frete = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -141,6 +176,7 @@ class ItemPedido(models.Model):
     nome_produto = models.CharField(max_length=100)
     quantidade = models.IntegerField(default=1)
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    tamanho = models.CharField(max_length=5, blank=True, default='')
 
     def subtotal(self):
         return self.preco_unitario * self.quantidade

@@ -13,6 +13,7 @@ urlpatterns = [
     path('sobre/', views.sobre, name='sobre'),
     path('contato/', views.contato, name='contato'),
     path('politica/', views.politica, name='politica'),
+    path('entrega/', views.entrega, name='entrega'),
     path('frete/calcular/', views.calcular_frete_ajax, name='calcular_frete'),
 
     # Mercado Pago
