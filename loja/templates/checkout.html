@@ -220,25 +220,31 @@
 </form>
 
 <script>
-  const subtotal = {{ total }};
+  const subtotal = parseFloat("{{ total }}".replace(',', '.'));
 
   function mascaraCep(input) {
     let v = input.value.replace(/\D/g, '');
     if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
     input.value = v;
-    if (v.replace('-','').length === 8) buscarCep();
   }
 
   async function buscarCep() {
-    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    const cepInput = document.getElementById('cep');
+    const cep = cepInput.value.replace(/\D/g, '');
     const status = document.getElementById('cep-status');
+
     if (cep.length !== 8) {
-      status.textContent = 'Digite um CEP válido.';
+      status.textContent = 'Digite um CEP válido (8 números).';
       status.className = 'cep-status cep-erro';
       return;
     }
+
+    // Aplica máscara se não tiver
+    cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
+
     status.textContent = 'Buscando...';
     status.className = 'cep-status';
+
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const data = await res.json();
@@ -250,14 +256,13 @@
       document.getElementById('rua').value = data.logradouro || '';
       document.getElementById('bairro').value = data.bairro || '';
       document.getElementById('cidade').value = data.localidade || '';
-      const estadoInput = document.getElementById('estado');
-      estadoInput.value = data.uf || '';
+      document.getElementById('estado').value = data.uf || '';
       status.textContent = '✓ Endereço encontrado!';
       status.className = 'cep-status cep-ok';
       document.querySelector('input[name="numero"]').focus();
       atualizarFrete();
     } catch(e) {
-      status.textContent = 'Erro ao buscar CEP.';
+      status.textContent = 'Erro ao buscar CEP. Tente novamente.';
       status.className = 'cep-status cep-erro';
     }
   }
@@ -293,8 +298,13 @@
     }
   }
 
-  // Se já tem estado preenchido (perfil), calcula na hora
+  // Ao carregar: aplica máscara no CEP preenchido e calcula frete
   window.addEventListener('load', () => {
+    const cepInput = document.getElementById('cep');
+    const cep = cepInput.value.replace(/\D/g, '');
+    if (cep.length === 8) {
+      cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
+    }
     const estado = document.getElementById('estado').value.trim();
     if (estado.length === 2) atualizarFrete();
   });
