@@ -339,7 +339,9 @@ def adicionar_carrinho(request, produto_id):
 
     next_url = request.POST.get('next', request.GET.get('next', 'carrinho'))
     if next_url == 'detalhe':
-        return redirect('detalhe_produto', produto_id=produto_id)
+        from django.urls import reverse
+        url = reverse('detalhe_produto', args=[produto_id]) + '?added=1'
+        return redirect(url)
     return redirect('carrinho')
 
 
@@ -415,6 +417,33 @@ def checkout(request):
 
         carrinho.delete()
         del request.session['carrinho_id']
+
+        # Criar conta se solicitado e não estiver logado
+        senha = request.POST.get('senha', '').strip()
+        if senha and not request.user.is_authenticated:
+            email_cadastro = request.POST['email']
+            if not User.objects.filter(email=email_cadastro).exists():
+                user = User.objects.create_user(
+                    username=email_cadastro,
+                    email=email_cadastro,
+                    password=senha,
+                    first_name=request.POST.get('nome', '').split()[0],
+                    last_name=' '.join(request.POST.get('nome', '').split()[1:]),
+                )
+                perfil, _ = PerfilCliente.objects.get_or_create(user=user)
+                perfil.telefone = request.POST.get('telefone', '')
+                perfil.cep = request.POST.get('cep', '')
+                perfil.rua = request.POST.get('rua', '')
+                perfil.numero = request.POST.get('numero', '')
+                perfil.complemento = request.POST.get('complemento', '')
+                perfil.bairro = request.POST.get('bairro', '')
+                perfil.cidade = request.POST.get('cidade', '')
+                perfil.estado = request.POST.get('estado', '')
+                perfil.save()
+                pedido.cliente = user
+                pedido.save()
+                from django.contrib.auth import login as auth_login
+                auth_login(request, user)
 
         # Notificações
         enviar_whatsapp_pedido(pedido)
