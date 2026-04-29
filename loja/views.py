@@ -13,7 +13,10 @@ import mercadopago
 import json
 import requests as http_requests
 import os
+import logging
 from decimal import Decimal, InvalidOperation
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -93,22 +96,34 @@ def enviar_email_confirmacao(pedido):
         </html>
         """
 
-        http_requests.post(
+        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
+        if not brevo_api_key:
+            logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
+            return
+
+        resposta = http_requests.post(
             'https://api.brevo.com/v3/smtp/email',
             headers={
-                'api-key': os.environ.get('BREVO_API_KEY', ''),
+                'api-key': brevo_api_key,
                 'Content-Type': 'application/json',
             },
             json={
                 'sender': {'name': 'Barrs Store', 'email': 'contato.barrsstore@gmail.com'},
                 'to': [{'email': pedido.email, 'name': pedido.nome}],
-                'subject': f'✓ Pedido #{pedido.id} confirmado — Barrs Store',
+                'subject': f'Pedido #{pedido.id} confirmado - Barrs Store',
                 'htmlContent': html,
             },
             timeout=10,
         )
-    except Exception:
-        pass  # Nunca quebra o pedido se o e-mail falhar
+        if resposta.status_code >= 400:
+            logger.warning(
+                'Brevo recusou o e-mail do pedido %s. Status %s: %s',
+                pedido.id,
+                resposta.status_code,
+                resposta.text[:500],
+            )
+    except Exception as exc:
+        logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
 
 
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
