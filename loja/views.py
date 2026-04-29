@@ -762,6 +762,9 @@ def pagina_404(request, exception):
 def entrega(request):
     return render(request, 'entrega.html', {'qtd_carrinho': get_carrinho_info(request)})
 
+def medidas(request):
+    return render(request, 'medidas.html', {'qtd_carrinho': get_carrinho_info(request)})
+
 def sobre(request):
     return render(request, 'sobre.html', {'qtd_carrinho': get_carrinho_info(request)})
 
