@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Carrinho — Barrs Store</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -13,65 +13,96 @@
   body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
   .navbar{background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
-  .nav-logo::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
-  .nav-links{display:flex;align-items:center;gap:24px}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:10px}
+  .nav-logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply}
   .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
   .nav-links a:hover{color:var(--text)}
   .nav-right{display:flex;align-items:center;gap:10px}
-  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none}
   .nav-conta:hover{color:var(--text)}
 
-  .page{max-width:860px;margin:40px auto;padding:0 20px}
+  .page{max-width:920px;margin:40px auto;padding:0 20px}
   .topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-  .topo h1{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;letter-spacing:-0.3px}
+  .topo h1{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
   .badge-itens{background:var(--green);color:#fff;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px}
-  .grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
   .lista{display:flex;flex-direction:column;gap:12px}
-
-  /* BANNER FRETE */
-  .frete-banner{background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--text)}
-  .frete-banner strong{color:var(--green)}
 
   .item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
   .item-card:hover{border-color:var(--green-light)}
-  .item-img{width:68px;height:68px;border-radius:var(--radius-sm);object-fit:cover;background:var(--bg);flex-shrink:0}
+  .item-img{width:72px;height:72px;border-radius:var(--radius-sm);object-fit:cover;background:var(--bg);flex-shrink:0}
   .item-info{flex:1;min-width:0}
-  .item-nome{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item-nome{font-size:14px;font-weight:600}
   .item-unit{font-size:12px;color:var(--muted);margin-top:3px}
+  .item-tamanho{font-size:11px;color:var(--green);margin-top:2px;font-weight:500}
   .qtd-wrap{display:flex;align-items:center;gap:8px;margin-top:10px}
-  .btn-qtd{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
+  .btn-qtd{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
   .btn-qtd:hover{background:var(--green-bg);border-color:var(--green)}
   .qtd-num{font-size:14px;font-weight:600;min-width:22px;text-align:center}
   .item-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
   .item-subtotal{font-size:16px;font-weight:600;color:var(--green)}
-  .btn-remover{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,color .15s,border-color .15s}
+  .btn-remover{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,color .15s}
   .btn-remover:hover{background:var(--red-bg);border-color:#e8b4b0;color:var(--red)}
 
-  .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:80px}
-  .resumo h2{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
+  /* RESUMO */
+  .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:sticky;top:80px}
+  .resumo h2{font-size:15px;font-weight:600;margin-bottom:18px;color:var(--text)}
+
+  /* CEP + FRETE */
+  .frete-wrap{margin-bottom:16px}
+  .frete-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
+  .cep-row{display:flex;gap:8px}
+  .cep-input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+  .cep-input:focus{border-color:var(--green);background:var(--surface)}
+  .btn-calcular{padding:10px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
+  .btn-calcular:hover{background:var(--text)}
+  .btn-calcular:disabled{opacity:0.6;cursor:not-allowed}
+  .cep-status{font-size:11px;margin-top:5px;color:var(--muted)}
+  .cep-status.ok{color:var(--green)}
+  .cep-status.erro{color:var(--red)}
+
+  .opcoes-frete{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .opcao-frete{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s,background .15s}
+  .opcao-frete:hover{border-color:var(--green-light);background:var(--green-bg)}
+  .opcao-frete.selecionado{border-color:var(--green);background:var(--green-bg)}
+  .opcao-frete input[type=radio]{accent-color:var(--green)}
+  .opcao-info{flex:1}
+  .opcao-nome{font-size:13px;font-weight:600;color:var(--text)}
+  .opcao-prazo{font-size:11px;color:var(--muted);margin-top:2px}
+  .opcao-preco{font-size:14px;font-weight:600;color:var(--green)}
+
+  .frete-loading{display:none;font-size:12px;color:var(--muted);padding:10px 0;text-align:center}
+  .frete-loading.show{display:block}
+  .frete-erro{display:none;font-size:12px;color:var(--red);padding:8px;background:#fdf2f0;border-radius:6px;margin-top:8px}
+  .frete-erro.show{display:block}
+
+  .sep{border:none;border-top:1px solid var(--border);margin:14px 0}
   .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:10px}
   .resumo-linha span:last-child{color:var(--text);font-weight:500}
-  .frete-info{color:var(--muted);font-style:italic}
-  .separador{border:none;border-top:1px solid var(--border);margin:14px 0}
+  .frete-pendente{font-style:italic;font-size:12px}
+  .frete-gratis{color:var(--green)!important;font-weight:600!important}
   .resumo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600}
   .resumo-total span:last-child{color:var(--green)}
   .btn-finalizar{display:block;width:100%;margin-top:16px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s}
   .btn-finalizar:hover{background:var(--text)}
-  .voltar{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:none;transition:color .15s}
+  .btn-finalizar:disabled{opacity:0.5;cursor:not-allowed}
+  .voltar{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:none}
   .voltar:hover{color:var(--text)}
 
   .carrinho-vazio{text-align:center;padding:80px 24px;color:var(--muted)}
   .carrinho-vazio p{font-size:15px;margin-bottom:16px}
   .carrinho-vazio a{display:inline-block;padding:10px 22px;background:var(--green);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:600}
 
-  @media(max-width:680px){.grid{grid-template-columns:1fr}.navbar{padding:0 20px}}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}.navbar{padding:0 20px}.resumo{position:static}}
 </style>
 </head>
 <body>
 
 <nav class="navbar">
-  <a href="/" class="nav-logo">Barrs Store</a>
+  <a href="/" class="nav-logo">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store">
+    Barrs Store
+  </a>
   <div class="nav-links">
     <a href="/">← Continuar comprando</a>
   </div>
@@ -91,11 +122,6 @@
   </div>
 
   {% if itens %}
-
-  <div class="frete-banner">
-    🚚 <strong>Frete grátis para SP acima de R$ 79</strong> · Resto do Brasil acima de R$ 119 · Norte acima de R$ 149
-  </div>
-
   <div class="grid">
     <div class="lista">
       {% for item in itens %}
@@ -108,6 +134,7 @@
         <div class="item-info">
           <div class="item-nome">{{ item.produto.nome }}</div>
           <div class="item-unit">R$ {{ item.produto.preco }} / un.</div>
+          {% if item.tamanho %}<div class="item-tamanho">Tamanho: {{ item.tamanho }}</div>{% endif %}
           <div class="qtd-wrap">
             <a href="{% url 'remover_item' item.id %}" class="btn-qtd" title="Diminuir">−</a>
             <span class="qtd-num">{{ item.quantidade }}</span>
@@ -116,7 +143,7 @@
         </div>
         <div class="item-right">
           <a href="{% url 'deletar_item' item.id %}" class="btn-remover" title="Remover"
-             onclick="return confirm('Remover {{ item.produto.nome }} do carrinho?')">✕</a>
+             onclick="return confirm('Remover {{ item.produto.nome }}?')">✕</a>
           <div class="item-subtotal">R$ {{ item.subtotal }}</div>
         </div>
       </div>
@@ -125,14 +152,37 @@
 
     <div class="resumo">
       <h2>Resumo do pedido</h2>
+
+      <!-- CALCULAR FRETE -->
+      <div class="frete-wrap">
+        <span class="frete-label">Calcular frete</span>
+        <div class="cep-row">
+          <input type="text" id="cep-frete" class="cep-input" placeholder="00000-000" maxlength="9" oninput="mascaraCepFrete(this)">
+          <button type="button" class="btn-calcular" id="btn-calcular" onclick="calcularFrete()">Calcular</button>
+        </div>
+        <div class="cep-status" id="cep-status-frete"></div>
+        <div class="frete-loading" id="frete-loading">⏳ Calculando opções de frete...</div>
+        <div class="frete-erro" id="frete-erro">Não foi possível calcular o frete. Verifique o CEP.</div>
+        <div class="opcoes-frete" id="opcoes-frete"></div>
+      </div>
+
+      <hr class="sep">
       <div class="resumo-linha"><span>Subtotal</span><span>R$ {{ total }}</span></div>
       <div class="resumo-linha">
         <span>Frete</span>
-        <span class="frete-info">calculado no checkout</span>
+        <span id="frete-display" class="frete-pendente">informe o CEP</span>
       </div>
-      <hr class="separador">
-      <div class="resumo-total"><span>Total</span><span>R$ {{ total }}</span></div>
-      <a href="{% url 'finalizar_compra' %}" class="btn-finalizar">Finalizar compra</a>
+      <hr class="sep">
+      <div class="resumo-total"><span>Total</span><span id="total-display">R$ {{ total }}</span></div>
+
+      <form method="GET" action="{% url 'finalizar_compra' %}" id="form-checkout">
+        <input type="hidden" name="cep" id="hidden-cep">
+        <input type="hidden" name="frete_valor" id="hidden-frete-valor">
+        <input type="hidden" name="frete_nome" id="hidden-frete-nome">
+        <button type="submit" class="btn-finalizar" id="btn-finalizar">
+          Finalizar compra
+        </button>
+      </form>
       <a href="/" class="voltar">← Continuar comprando</a>
     </div>
   </div>
@@ -145,5 +195,100 @@
   {% endif %}
 </div>
 
+<script>
+  const subtotal = parseFloat("{{ total }}".replace(',', '.'));
+  let freteValorSelecionado = null;
+
+  function mascaraCepFrete(input) {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
+    input.value = v;
+    if (v.replace('-','').length === 8) calcularFrete();
+  }
+
+  async function calcularFrete() {
+    const cepInput = document.getElementById('cep-frete');
+    const cep = cepInput.value.replace(/\D/g, '');
+    const status = document.getElementById('cep-status-frete');
+    const loading = document.getElementById('frete-loading');
+    const erro = document.getElementById('frete-erro');
+    const opcoes = document.getElementById('opcoes-frete');
+    const btn = document.getElementById('btn-calcular');
+
+    if (cep.length !== 8) {
+      status.textContent = 'Digite um CEP válido.';
+      status.className = 'cep-status erro';
+      return;
+    }
+
+    cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
+    status.textContent = '';
+    loading.classList.add('show');
+    erro.classList.remove('show');
+    opcoes.innerHTML = '';
+    btn.disabled = true;
+    freteValorSelecionado = null;
+    document.getElementById('frete-display').textContent = 'calculando...';
+    document.getElementById('frete-display').className = 'frete-pendente';
+    document.getElementById('btn-finalizar').disabled = true;
+
+    try {
+      const res = await fetch(`/frete/melhor-envio/?cep=${cep}`);
+      const data = await res.json();
+      loading.classList.remove('show');
+      btn.disabled = false;
+
+      if (data.erro || !data.opcoes || data.opcoes.length === 0) {
+        erro.classList.add('show');
+        document.getElementById('frete-display').textContent = 'informe o CEP';
+        return;
+      }
+
+      // Guardar CEP para checkout
+      document.getElementById('hidden-cep').value = cep;
+      status.textContent = '✓ Frete calculado!';
+      status.className = 'cep-status ok';
+
+      // Renderizar opções
+      data.opcoes.forEach((op, i) => {
+        const div = document.createElement('div');
+        div.className = 'opcao-frete' + (i === 0 ? ' selecionado' : '');
+        div.innerHTML = `
+          <input type="radio" name="frete-opcao" value="${op.id}" ${i === 0 ? 'checked' : ''}
+            onchange="selecionarFrete(${op.preco}, '${op.nome} ${op.empresa}', this.closest('.opcao-frete'))">
+          <div class="opcao-info">
+            <div class="opcao-nome">${op.nome}</div>
+            <div class="opcao-prazo">${op.empresa} · ${op.prazo} dias úteis</div>
+          </div>
+          <div class="opcao-preco">R$ ${op.preco.toFixed(2).replace('.', ',')}</div>
+        `;
+        opcoes.appendChild(div);
+
+        if (i === 0) {
+          selecionarFrete(op.preco, `${op.nome} ${op.empresa}`, div);
+        }
+      });
+
+    } catch(e) {
+      loading.classList.remove('show');
+      btn.disabled = false;
+      erro.classList.add('show');
+    }
+  }
+
+  function selecionarFrete(preco, nome, el) {
+    document.querySelectorAll('.opcao-frete').forEach(d => d.classList.remove('selecionado'));
+    el.classList.add('selecionado');
+    freteValorSelecionado = preco;
+
+    const total = subtotal + preco;
+    document.getElementById('frete-display').textContent = `R$ ${preco.toFixed(2).replace('.', ',')}`;
+    document.getElementById('frete-display').className = '';
+    document.getElementById('total-display').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    document.getElementById('hidden-frete-valor').value = preco.toFixed(2);
+    document.getElementById('hidden-frete-nome').value = nome;
+    document.getElementById('btn-finalizar').disabled = false;
+  }
+</script>
 </body>
 </html>

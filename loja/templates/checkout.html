@@ -106,6 +106,8 @@
 </div>
 
 <form method="POST" action="{% url 'finalizar_compra' %}">
+<input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ request.GET.frete_valor }}">
+<input type="hidden" name="frete_nome" id="frete_nome_hidden" value="{{ request.GET.frete_nome }}">
 {% csrf_token %}
 <input type="hidden" name="forma_pagamento" value="pix">
 <div class="page">
@@ -140,7 +142,7 @@
   <input type="text" name="cep" id="cep" placeholder="00000-000" maxlength="9" required
     oninput="mascaraCep(this)"
     style="width:100%;padding:10px 100px 10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none"
-    value="{% if perfil %}{{ perfil.cep }}{% endif %}">
+    value="{% if request.GET.cep %}{{ request.GET.cep|slice:":5" }}-{{ request.GET.cep|slice:"5:" }}{% elif perfil %}{{ perfil.cep }}{% endif %}">
   <button type="button" onclick="buscarCep()"
     style="position:absolute;right:4px;top:50%;transform:translateY(-50%);padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer">
     Buscar CEP
@@ -204,9 +206,20 @@
     <div class="resumo-linha"><span>Subtotal</span><span>R$ {{ total }}</span></div>
     <div class="resumo-linha">
       <span>Frete</span>
-      <span id="frete-display" class="frete-pendente">informe o CEP</span>
+      <span id="frete-display">
+        {% if request.GET.frete_nome %}
+          {{ request.GET.frete_nome }}
+        {% else %}
+          <em class="frete-pendente">a calcular</em>
+        {% endif %}
+      </span>
     </div>
-
+    <div class="resumo-linha">
+      <span></span>
+      <span id="frete-valor-display" style="color:var(--green);font-weight:600">
+        {% if request.GET.frete_valor %}R$ {{ request.GET.frete_valor }}{% endif %}
+      </span>
+    </div>
     <div id="frete-info" class="frete-calculado"></div>
 
     <div class="resumo-total">
@@ -220,6 +233,20 @@
 
 <script>
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
+  const freteGet = parseFloat("{{ request.GET.frete_valor|default:'0' }}".replace(',', '.')) || 0;
+  
+  window.addEventListener('load', () => {
+    if (freteGet > 0) {
+      const total = subtotal + freteGet;
+      document.getElementById('total-display').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+    }
+    // Preenche CEP se veio do carrinho
+    const cepGet = "{{ request.GET.cep|default:'' }}";
+    if (cepGet.length === 8 && !document.getElementById('cep').value) {
+      document.getElementById('cep').value = cepGet.slice(0,5) + '-' + cepGet.slice(5);
+      buscarCep();
+    }
+  });
 
 function mascaraCep(input) {
   let v = input.value.replace(/\D/g, '');

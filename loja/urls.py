@@ -15,6 +15,7 @@ urlpatterns = [
     path('politica/', views.politica, name='politica'),
     path('entrega/', views.entrega, name='entrega'),
     path('frete/calcular/', views.calcular_frete_ajax, name='calcular_frete'),
+    path('frete/melhor-envio/', views.calcular_frete_melhor_envio, name='calcular_frete_me'),
 
     # Mercado Pago
     path('pagamento/preferencia/<int:pedido_id>/', views.criar_preferencia, name='criar_preferencia'),

@@ -249,6 +249,64 @@ def calcular_frete_ajax(request):
     })
 
 
+# ── CALCULAR FRETE VIA MELHOR ENVIO ───────────────────────────────
+def calcular_frete_melhor_envio(request):
+    """Calcula frete real via API do Melhor Envio pelo CEP."""
+    import os
+    cep_destino = request.GET.get('cep', '').replace('-', '').replace(' ', '')
+    
+    if len(cep_destino) != 8:
+        return JsonResponse({'erro': 'CEP inválido'}, status=400)
+    
+    token = os.environ.get('MELHOR_ENVIO_TOKEN', '')
+    
+    try:
+        res = http_requests.post(
+            'https://melhorenvio.com.br/api/v2/me/shipment/calculate',
+            headers={
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'User-Agent': 'BarrsStore contato.barrsstore@gmail.com',
+            },
+            json={
+                'from': {'postal_code': '01310100'},  # CEP origem SP
+                'to': {'postal_code': cep_destino},
+                'package': {
+                    'height': 4,
+                    'width': 11,
+                    'length': 16,
+                    'weight': 0.3,
+                },
+                'options': {
+                    'receipt': False,
+                    'own_hand': False,
+                },
+                'services': '1,2',  # 1=PAC, 2=Sedex
+            },
+            timeout=10,
+        )
+        
+        data = res.json()
+        opcoes = []
+        
+        for servico in data:
+            if 'error' not in servico and servico.get('price'):
+                opcoes.append({
+                    'id': servico.get('id'),
+                    'nome': servico.get('name', ''),
+                    'empresa': servico.get('company', {}).get('name', ''),
+                    'preco': float(servico.get('price', 0)),
+                    'prazo': servico.get('delivery_time', ''),
+                })
+        
+        opcoes.sort(key=lambda x: x['preco'])
+        return JsonResponse({'opcoes': opcoes})
+        
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=500)
+
+
 # ── ADICIONAR AO CARRINHO ──────────────────────────────────────────
 def adicionar_carrinho(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
@@ -318,7 +376,14 @@ def checkout(request):
     if request.method == 'POST':
         estado_pedido = request.POST.get('estado', 'SP')
         subtotal = carrinho.total()
-        frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
+        # Usar frete selecionado no carrinho (Melhor Envio) ou fallback por região
+        from decimal import Decimal
+        frete_selecionado = request.POST.get('frete_valor', '')
+        frete_nome = request.POST.get('frete_nome', '')
+        if frete_selecionado:
+            frete = Decimal(str(frete_selecionado))
+        else:
+            frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
         total = subtotal + frete
 
         pedido = Pedido.objects.create(
