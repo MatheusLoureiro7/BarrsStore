@@ -104,6 +104,7 @@ def enviar_email_confirmacao(pedido):
         resposta = http_requests.post(
             'https://api.brevo.com/v3/smtp/email',
             headers={
+                'accept': 'application/json',
                 'api-key': brevo_api_key,
                 'Content-Type': 'application/json',
             },
@@ -122,6 +123,8 @@ def enviar_email_confirmacao(pedido):
                 resposta.status_code,
                 resposta.text[:500],
             )
+        else:
+            logger.info('Brevo aceitou o e-mail do pedido %s: %s', pedido.id, resposta.text[:500])
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
 
