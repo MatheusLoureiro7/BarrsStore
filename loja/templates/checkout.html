@@ -32,7 +32,7 @@
   .step.active .step-num{background:var(--green);color:#fff;border-color:var(--green)}
   .step-line{flex:1;height:1px;background:var(--border);margin:0 12px}
 
-  .page{max-width:960px;margin:28px auto 80px;padding:0 20px;display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+  .page{max-width:1180px;margin:28px auto 80px;padding:0 28px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
 
   .secao{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
   .secao-titulo{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
@@ -53,7 +53,7 @@
   .messages li.error{border-color:#e0a99d;background:#fff4f1;color:var(--red)}
 
   /* RESUMO */
-  .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:80px}
+  .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:sticky;top:84px;box-shadow:0 14px 40px rgba(107,94,83,.08)}
   .resumo h2{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text)}
   .resumo-item{display:flex;align-items:center;gap:10px;margin-bottom:12px}
   .resumo-item-img{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--bg);flex-shrink:0;border:1px solid var(--border)}
@@ -77,8 +77,8 @@
   .btn-finalizar{width:100%;margin-top:16px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
   .btn-finalizar:hover{background:var(--text)}
 
-  @media(max-width:700px){
-    .page{grid-template-columns:1fr}
+  @media(max-width:820px){
+    .page{grid-template-columns:1fr;padding:0 20px}
     .navbar{padding:0 20px}
     .resumo{position:static}
     .form-grid{grid-template-columns:1fr}
@@ -156,7 +156,6 @@
       </div>
       {% endif %}
 
-    </div>
     </div>
 
     <div class="secao">
