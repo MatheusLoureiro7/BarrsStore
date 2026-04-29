@@ -320,14 +320,21 @@ function mascaraCep(input) {
       const freteDisplay = document.getElementById('frete-display');
       const totalDisplay = document.getElementById('total-display');
       const freteInfo = document.getElementById('frete-info');
+      const freteValorHidden = document.getElementById('frete_valor_hidden');
+      const freteNomeHidden = document.getElementById('frete_nome_hidden');
+      const freteFormatado = data.frete.toFixed(2).replace('.', ',');
+
+      freteValorHidden.value = data.frete.toFixed(2);
 
       if (data.frete_gratis) {
         freteDisplay.textContent = 'Grátis 🎉';
         freteDisplay.className = 'frete-gratis-tag';
+        freteNomeHidden.value = 'Frete grátis';
         freteInfo.innerHTML = '🎉 <strong>Parabéns!</strong> Você ganhou frete grátis!';
       } else {
-        freteDisplay.textContent = `R$ ${data.frete.toFixed(2).replace('.', ',')}`;
+        freteDisplay.textContent = `R$ ${freteFormatado}`;
         freteDisplay.className = '';
+        freteNomeHidden.value = `Frete ${data.estado}`;
         const falta = data.falta_frete_gratis.toFixed(2).replace('.', ',');
         freteInfo.innerHTML = `Falta <strong>R$ ${falta}</strong> para frete grátis nessa região 🚚`;
       }

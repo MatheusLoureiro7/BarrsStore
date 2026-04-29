@@ -12,6 +12,9 @@ from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilC
 import mercadopago
 import json
 import requests as http_requests
+import os
+from decimal import Decimal, InvalidOperation
+
 
 
 # ── E-MAIL: CONFIRMAÇÃO DE PEDIDO VIA BREVO ───────────────────────
@@ -113,7 +116,7 @@ def enviar_whatsapp_pedido(pedido):
     """Envia notificação no WhatsApp quando chegar um novo pedido."""
     try:
         itens_texto = ', '.join(
-            f"{item.quantidade}x {item.nome_produto}"
+            f"{item.quantidade}x {item.nome_produto}{f' - Tam. {item.tamanho}' if item.tamanho else ''}"
             for item in pedido.itens.all()
         )
 
@@ -154,7 +157,7 @@ def get_carrinho_info(request):
             carrinho = Carrinho.objects.get(id=carrinho_id)
             qtd_carrinho = sum(item.quantidade for item in carrinho.itens.all())
         except Carrinho.DoesNotExist:
-            pass
+            request.session.pop('carrinho_id', None)
     return qtd_carrinho
 
 
@@ -217,7 +220,16 @@ def ver_carrinho(request):
             'qtd_carrinho': 0,
         })
 
-    carrinho = Carrinho.objects.get(id=carrinho_id)
+    try:
+        carrinho = Carrinho.objects.get(id=carrinho_id)
+    except Carrinho.DoesNotExist:
+        request.session.pop('carrinho_id', None)
+        return render(request, 'carrinho.html', {
+            'itens': [],
+            'total': 0,
+            'qtd_carrinho': 0,
+        })
+
     return render(request, 'carrinho.html', {
         'itens': carrinho.itens.all(),
         'total': carrinho.total(),
@@ -252,13 +264,14 @@ def calcular_frete_ajax(request):
 # ── CALCULAR FRETE VIA MELHOR ENVIO ───────────────────────────────
 def calcular_frete_melhor_envio(request):
     """Calcula frete real via API do Melhor Envio pelo CEP."""
-    import os
     cep_destino = request.GET.get('cep', '').replace('-', '').replace(' ', '')
     
     if len(cep_destino) != 8:
         return JsonResponse({'erro': 'CEP inválido'}, status=400)
     
-    token = os.environ.get('MELHOR_ENVIO_TOKEN', '')
+    token = os.environ.get('MELHOR_ENVIO_TOKEN', '').strip()
+    if not token:
+        return JsonResponse({'erro': 'Frete indisponível no momento.'}, status=503)
     
     try:
         res = http_requests.post(
@@ -288,6 +301,8 @@ def calcular_frete_melhor_envio(request):
         )
         
         data = res.json()
+        if res.status_code >= 400 or not isinstance(data, list):
+            return JsonResponse({'erro': 'Não foi possível calcular o frete agora.'}, status=502)
         opcoes = []
         
         for servico in data:
@@ -378,12 +393,15 @@ def checkout(request):
     if request.method == 'POST':
         estado_pedido = request.POST.get('estado', 'SP')
         subtotal = carrinho.total()
-        # Usar frete selecionado no carrinho (Melhor Envio) ou fallback por região
-        from decimal import Decimal
-        frete_selecionado = request.POST.get('frete_valor', '')
-        frete_nome = request.POST.get('frete_nome', '')
+        # Usa frete selecionado no carrinho (Melhor Envio) ou fallback por região.
+        frete_selecionado = request.POST.get('frete_valor', '').replace(',', '.').strip()
         if frete_selecionado:
-            frete = Decimal(str(frete_selecionado))
+            try:
+                frete = Decimal(frete_selecionado)
+                if frete < 0:
+                    raise InvalidOperation
+            except (InvalidOperation, ValueError):
+                frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
         else:
             frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
         total = subtotal + frete
@@ -413,6 +431,7 @@ def checkout(request):
                 nome_produto=item.produto.nome,
                 quantidade=item.quantidade,
                 preco_unitario=item.produto.preco,
+                tamanho=item.tamanho,
             )
 
         carrinho.delete()
