@@ -409,9 +409,70 @@ def checkout(request):
         return redirect('carrinho')
 
     if request.method == 'POST':
+        cliente = request.user if request.user.is_authenticated else None
+
+        if not request.user.is_authenticated:
+            email_pedido = request.POST.get('email', '').strip().lower()
+            senha = request.POST.get('senha', '').strip()
+
+            if not senha:
+                messages.error(request, 'Digite sua senha para entrar ou criar sua conta antes de finalizar.')
+                return render(request, 'checkout.html', {
+                    'itens': itens,
+                    'total': carrinho.total(),
+                    'qtd_carrinho': get_carrinho_info(request),
+                    'perfil': None,
+                })
+
+            if len(senha) < 6:
+                messages.error(request, 'A senha deve ter pelo menos 6 caracteres.')
+                return render(request, 'checkout.html', {
+                    'itens': itens,
+                    'total': carrinho.total(),
+                    'qtd_carrinho': get_carrinho_info(request),
+                    'perfil': None,
+                })
+
+            usuario_existente = User.objects.filter(email__iexact=email_pedido).first()
+            if usuario_existente:
+                user = authenticate(request, username=usuario_existente.username, password=senha)
+                if not user:
+                    messages.error(request, 'Este e-mail ja tem cadastro. Digite a senha correta para continuar.')
+                    return render(request, 'checkout.html', {
+                        'itens': itens,
+                        'total': carrinho.total(),
+                        'qtd_carrinho': get_carrinho_info(request),
+                        'perfil': None,
+                    })
+                login(request, user)
+                cliente = user
+            else:
+                nome_completo = request.POST.get('nome', '').strip()
+                partes = nome_completo.split()
+                user = User.objects.create_user(
+                    username=email_pedido,
+                    email=email_pedido,
+                    password=senha,
+                    first_name=partes[0] if partes else '',
+                    last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
+                )
+                login(request, user)
+                cliente = user
+
+            perfil, _ = PerfilCliente.objects.get_or_create(user=cliente)
+            perfil.telefone = request.POST.get('telefone', '').strip()
+            perfil.cep = request.POST.get('cep', '').strip()
+            perfil.rua = request.POST.get('rua', '').strip()
+            perfil.numero = request.POST.get('numero', '').strip()
+            perfil.complemento = request.POST.get('complemento', '').strip()
+            perfil.bairro = request.POST.get('bairro', '').strip()
+            perfil.cidade = request.POST.get('cidade', '').strip()
+            perfil.estado = request.POST.get('estado', '').strip()
+            perfil.save()
+
         estado_pedido = request.POST.get('estado', 'SP')
         subtotal = carrinho.total()
-        # Usa frete selecionado no carrinho (Melhor Envio) ou fallback por região.
+        # Usa frete selecionado no carrinho (Melhor Envio) ou fallback por regiao.
         frete_selecionado = request.POST.get('frete_valor', '').replace(',', '.').strip()
         if frete_selecionado:
             try:
@@ -425,7 +486,7 @@ def checkout(request):
         total = subtotal + frete
 
         pedido = Pedido.objects.create(
-            cliente=request.user if request.user.is_authenticated else None,
+            cliente=cliente,
             nome=request.POST['nome'],
             email=request.POST['email'],
             telefone=request.POST.get('telefone', ''),
@@ -455,34 +516,7 @@ def checkout(request):
         carrinho.delete()
         del request.session['carrinho_id']
 
-        # Criar conta se solicitado e não estiver logado
-        senha = request.POST.get('senha', '').strip()
-        if senha and not request.user.is_authenticated:
-            email_cadastro = request.POST['email']
-            if not User.objects.filter(email=email_cadastro).exists():
-                user = User.objects.create_user(
-                    username=email_cadastro,
-                    email=email_cadastro,
-                    password=senha,
-                    first_name=request.POST.get('nome', '').split()[0],
-                    last_name=' '.join(request.POST.get('nome', '').split()[1:]),
-                )
-                perfil, _ = PerfilCliente.objects.get_or_create(user=user)
-                perfil.telefone = request.POST.get('telefone', '')
-                perfil.cep = request.POST.get('cep', '')
-                perfil.rua = request.POST.get('rua', '')
-                perfil.numero = request.POST.get('numero', '')
-                perfil.complemento = request.POST.get('complemento', '')
-                perfil.bairro = request.POST.get('bairro', '')
-                perfil.cidade = request.POST.get('cidade', '')
-                perfil.estado = request.POST.get('estado', '')
-                perfil.save()
-                pedido.cliente = user
-                pedido.save()
-                from django.contrib.auth import login as auth_login
-                auth_login(request, user)
-
-        # Notificações
+        # Notificacoes
         enviar_whatsapp_pedido(pedido)
         enviar_email_confirmacao(pedido)
 

@@ -48,6 +48,9 @@
   .cep-status{font-size:11px;margin-top:5px;min-height:16px}
   .cep-ok{color:var(--green)}
   .cep-erro{color:var(--red)}
+  .messages{max-width:960px;margin:20px auto 0;padding:0 20px;list-style:none}
+  .messages li{padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text)}
+  .messages li.error{border-color:#e0a99d;background:#fff4f1;color:var(--red)}
 
   /* RESUMO */
   .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:80px}
@@ -105,6 +108,14 @@
   <div class="step"><div class="step-num">3</div>Confirmação</div>
 </div>
 
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 <form method="POST" action="{% url 'finalizar_compra' %}">
 <input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ request.GET.frete_valor }}">
 <input type="hidden" name="frete_nome" id="frete_nome_hidden" value="{{ request.GET.frete_nome }}">
@@ -118,29 +129,29 @@
         <div class="campo full">
           <label>Nome completo</label>
           <input type="text" name="nome" placeholder="Seu nome" required
-            value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}">
+            value="{% if request.POST.nome %}{{ request.POST.nome }}{% elif user.is_authenticated %}{{ user.get_full_name }}{% endif %}">
         </div>
         <div class="campo">
           <label>E-mail</label>
           <input type="email" name="email" placeholder="seu@email.com" required
-            value="{% if user.is_authenticated %}{{ user.email }}{% endif %}">
+            value="{% if request.POST.email %}{{ request.POST.email }}{% elif user.is_authenticated %}{{ user.email }}{% endif %}">
         </div>
         <div class="campo">
           <label>Telefone</label>
           <input type="tel" name="telefone" placeholder="(11) 99999-9999"
-            value="{% if perfil %}{{ perfil.telefone }}{% endif %}">
+            value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% endif %}">
         </div>
       </div>
 
       {% if not user.is_authenticated %}
       <div style="margin-top:16px;padding:16px;background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm)">
-        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:4px">💡 Crie sua conta (opcional)</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Salve seus dados e acompanhe seus pedidos</div>
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:4px">Entrar ou criar conta</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Se o e-mail ja tiver cadastro, use sua senha. Se for novo, criaremos sua conta automaticamente.</div>
         <div class="campo">
-          <label>Criar senha</label>
-          <input type="password" name="senha" placeholder="Mínimo 6 caracteres" minlength="6"
+          <label>Senha</label>
+          <input type="password" name="senha" placeholder="Minimo 6 caracteres" minlength="6" required
             style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none">
-          <div style="font-size:11px;color:var(--muted);margin-top:5px">Deixe em branco para continuar sem cadastro</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px">Obrigatoria para finalizar e acompanhar seu pedido.</div>
         </div>
       </div>
       {% endif %}
@@ -157,7 +168,7 @@
   <input type="text" name="cep" id="cep" placeholder="00000-000" maxlength="9" required
     oninput="mascaraCep(this)"
     style="width:100%;padding:10px 100px 10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none"
-    value="{% if request.GET.cep %}{{ request.GET.cep|slice:":5" }}-{{ request.GET.cep|slice:"5:" }}{% elif perfil %}{{ perfil.cep }}{% endif %}">
+    value="{% if request.POST.cep %}{{ request.POST.cep }}{% elif request.GET.cep %}{{ request.GET.cep|slice:":5" }}-{{ request.GET.cep|slice:"5:" }}{% elif perfil %}{{ perfil.cep }}{% endif %}">
   <button type="button" onclick="buscarCep()"
     style="position:absolute;right:4px;top:50%;transform:translateY(-50%);padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer">
     Buscar CEP
@@ -168,33 +179,33 @@
         <div class="campo full">
           <label>Rua / Logradouro</label>
           <input type="text" name="rua" id="rua" placeholder="Rua, Avenida..." required
-            value="{% if perfil %}{{ perfil.rua }}{% endif %}">
+            value="{% if request.POST.rua %}{{ request.POST.rua }}{% elif perfil %}{{ perfil.rua }}{% endif %}">
         </div>
         <div class="campo">
           <label>Número</label>
           <input type="text" name="numero" placeholder="123" required
-            value="{% if perfil %}{{ perfil.numero }}{% endif %}">
+            value="{% if request.POST.numero %}{{ request.POST.numero }}{% elif perfil %}{{ perfil.numero }}{% endif %}">
         </div>
         <div class="campo">
           <label>Complemento</label>
           <input type="text" name="complemento" placeholder="Apto, Bloco..."
-            value="{% if perfil %}{{ perfil.complemento }}{% endif %}">
+            value="{% if request.POST.complemento %}{{ request.POST.complemento }}{% elif perfil %}{{ perfil.complemento }}{% endif %}">
         </div>
         <div class="campo">
           <label>Bairro</label>
           <input type="text" name="bairro" id="bairro" placeholder="Bairro" required
-            value="{% if perfil %}{{ perfil.bairro }}{% endif %}">
+            value="{% if request.POST.bairro %}{{ request.POST.bairro }}{% elif perfil %}{{ perfil.bairro }}{% endif %}">
         </div>
         <div class="campo">
           <label>Cidade</label>
           <input type="text" name="cidade" id="cidade" placeholder="Cidade" required
-            value="{% if perfil %}{{ perfil.cidade }}{% endif %}">
+            value="{% if request.POST.cidade %}{{ request.POST.cidade }}{% elif perfil %}{{ perfil.cidade }}{% endif %}">
         </div>
         <div class="campo">
           <label>Estado (UF)</label>
           <input type="text" name="estado" id="estado" placeholder="SP" maxlength="2" required
             oninput="atualizarFrete()"
-            value="{% if perfil %}{{ perfil.estado }}{% endif %}">
+            value="{% if request.POST.estado %}{{ request.POST.estado }}{% elif perfil %}{{ perfil.estado }}{% endif %}">
         </div>
       </div>
     </div>
