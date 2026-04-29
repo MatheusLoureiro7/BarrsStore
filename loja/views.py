@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 
-# ── E-MAIL: CONFIRMAÇÃO DE PEDIDO VIA BREVO ───────────────────────
+# E-MAIL: CONFIRMACAO DE PEDIDO VIA RESEND
 def enviar_email_confirmacao(pedido):
-    """Envia e-mail de confirmação para o cliente via Brevo."""
+    """Envia e-mail de confirmacao para o cliente via Resend."""
     try:
         itens_html = ''.join([
             f"""<tr>
@@ -96,41 +96,40 @@ def enviar_email_confirmacao(pedido):
         </html>
         """
 
-        print(f'[BREVO] Iniciando envio do pedido {pedido.id} para {pedido.email}', flush=True)
-        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-        if not brevo_api_key:
-            print(f'[BREVO] BREVO_API_KEY nao configurada. Pedido {pedido.id} sem e-mail.', flush=True)
-            logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
+        print(f'[RESEND] Iniciando envio do pedido {pedido.id} para {pedido.email}', flush=True)
+        resend_api_key = os.environ.get('RESEND_API_KEY', '').strip()
+        if not resend_api_key:
+            print(f'[RESEND] RESEND_API_KEY nao configurada. Pedido {pedido.id} sem e-mail.', flush=True)
+            logger.warning('RESEND_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
             return
 
         resposta = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
+            'https://api.resend.com/emails',
             headers={
-                'accept': 'application/json',
-                'api-key': brevo_api_key,
+                'Authorization': f'Bearer {resend_api_key}',
                 'Content-Type': 'application/json',
             },
             json={
-                'sender': {'name': 'Barrs Store', 'email': 'contato.barrsstore@gmail.com'},
-                'to': [{'email': pedido.email, 'name': pedido.nome}],
+                'from': os.environ.get('RESEND_FROM_EMAIL', 'Barrs Store <onboarding@resend.dev>'),
+                'to': [pedido.email],
                 'subject': f'Pedido #{pedido.id} confirmado - Barrs Store',
-                'htmlContent': html,
+                'html': html,
             },
             timeout=10,
         )
-        print(f'[BREVO] Resposta pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:500]}', flush=True)
+        print(f'[RESEND] Resposta pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:500]}', flush=True)
         if resposta.status_code >= 400:
             logger.warning(
-                'Brevo recusou o e-mail do pedido %s. Status %s: %s',
+                'Resend recusou o e-mail do pedido %s. Status %s: %s',
                 pedido.id,
                 resposta.status_code,
                 resposta.text[:500],
             )
         else:
-            logger.info('Brevo aceitou o e-mail do pedido %s: %s', pedido.id, resposta.text[:500])
+            logger.info('Resend aceitou o e-mail do pedido %s: %s', pedido.id, resposta.text[:500])
     except Exception as exc:
-        print(f'[BREVO] Erro pedido {pedido.id}: {exc}', flush=True)
-        logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
+        print(f'[RESEND] Erro pedido {pedido.id}: {exc}', flush=True)
+        logger.exception('Erro ao enviar e-mail Resend do pedido %s: %s', pedido.id, exc)
 
 
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
