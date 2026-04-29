@@ -96,8 +96,10 @@ def enviar_email_confirmacao(pedido):
         </html>
         """
 
+        print(f'[BREVO] Iniciando envio do pedido {pedido.id} para {pedido.email}', flush=True)
         brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
         if not brevo_api_key:
+            print(f'[BREVO] BREVO_API_KEY nao configurada. Pedido {pedido.id} sem e-mail.', flush=True)
             logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
             return
 
@@ -116,6 +118,7 @@ def enviar_email_confirmacao(pedido):
             },
             timeout=10,
         )
+        print(f'[BREVO] Resposta pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:500]}', flush=True)
         if resposta.status_code >= 400:
             logger.warning(
                 'Brevo recusou o e-mail do pedido %s. Status %s: %s',
@@ -126,6 +129,7 @@ def enviar_email_confirmacao(pedido):
         else:
             logger.info('Brevo aceitou o e-mail do pedido %s: %s', pedido.id, resposta.text[:500])
     except Exception as exc:
+        print(f'[BREVO] Erro pedido {pedido.id}: {exc}', flush=True)
         logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
 
 
@@ -517,6 +521,7 @@ def checkout(request):
         del request.session['carrinho_id']
 
         # Notificacoes
+        print(f'[CHECKOUT] Pedido {pedido.id} criado. Disparando notificacoes.', flush=True)
         enviar_whatsapp_pedido(pedido)
         enviar_email_confirmacao(pedido)
 
