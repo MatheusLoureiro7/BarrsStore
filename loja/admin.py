@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.contrib import messages
 from .models import Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel
 import requests as http_requests
@@ -42,8 +43,8 @@ class ProdutoAdmin(admin.ModelAdmin):
 
     def disponivel_tag(self, obj):
         if obj.disponivel():
-            return format_html('<span style="color:green;font-weight:bold">✓ Sim</span>')
-        return format_html('<span style="color:red;font-weight:bold">✗ Não</span>')
+            return '<span style="color:green;font-weight:bold">✓ Sim</span>'
+        return '<span style="color:red;font-weight:bold">✗ Não</span>'
     disponivel_tag.short_description = 'Disponível'
 
 
