@@ -33,6 +33,7 @@ urlpatterns = [
     path('pagamento/sucesso/<int:pedido_id>/<uuid:token>/', views.pagamento_sucesso, name='pagamento_sucesso'),
     path('pagamento/falha/<int:pedido_id>/<uuid:token>/', views.pagamento_falha, name='pagamento_falha'),
     path('pagamento/pendente/<int:pedido_id>/<uuid:token>/', views.pagamento_pendente, name='pagamento_pendente'),
+    path('pagamento/status/<int:pedido_id>/<uuid:token>/', views.status_pagamento, name='status_pagamento'),
     path('pagamento/webhook/', views.webhook_mercadopago, name='webhook_mp'),
 
     # Autenticação e área do cliente

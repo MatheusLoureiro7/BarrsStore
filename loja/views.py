@@ -673,6 +673,7 @@ def criar_preferencia(request, pedido_id, token):
             "pending": site_url(reverse('pagamento_pendente', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})),
         },
         "auto_return": "approved",
+        "notification_url": site_url(reverse('webhook_mp')),
         "external_reference": str(pedido.id),
         "statement_descriptor": "BARRS STORE",
     }
@@ -708,6 +709,18 @@ def pagamento_pendente(request, pedido_id, token):
     context = {'pedido': pedido}
     context.update(noindex_context(request, 'Pagamento pendente - Barrs Store'))
     return render(request, 'pagamento_pendente.html', context)
+
+
+def status_pagamento(request, pedido_id, token):
+    pedido = get_pedido_por_token(pedido_id, token)
+    return JsonResponse({
+        'status': pedido.status,
+        'confirmado': pedido.status == 'confirmado',
+        'sucesso_url': reverse('pagamento_sucesso', kwargs={
+            'pedido_id': pedido.id,
+            'token': pedido.access_token,
+        }),
+    })
 
 
 # ── MERCADO PAGO: WEBHOOK ──────────────────────────────────────────

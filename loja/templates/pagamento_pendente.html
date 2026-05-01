@@ -69,6 +69,12 @@
     font-size: 13px; color: var(--yellow);
     line-height: 1.6; margin-bottom: 24px; text-align: left;
   }
+  .status-pix {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    font-size: 12px; color: var(--muted);
+    line-height: 1.5; margin-bottom: 22px;
+  }
   .btn {
     display: block; width: 100%; padding: 13px;
     background: #6B5E53; color: #fff; border: none;
@@ -97,6 +103,9 @@
     💡 Se pagou via <strong>Pix</strong>, a confirmação é automática em poucos minutos.<br>
     Se pagou via <strong>boleto</strong>, pode levar até 3 dias úteis.
   </div>
+  <div class="status-pix" id="status-pix">
+    Verificando automaticamente se o pagamento já foi aprovado...
+  </div>
   <div class="detalhes">
     <div class="detalhe-linha">
       <span class="detalhe-label">Pedido</span>
@@ -114,5 +123,29 @@
   <a href="/" class="btn">Voltar para a loja</a>
   <a href="/" class="link-continuar">Continuar comprando</a>
 </div>
+<script>
+  const statusBox = document.getElementById('status-pix');
+
+  function verificarPagamento() {
+    fetch('{% url "status_pagamento" pedido.id pedido.access_token %}', {
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(response => response.ok ? response.json() : Promise.reject())
+      .then(data => {
+        if (data.confirmado) {
+          statusBox.textContent = 'Pagamento aprovado! Redirecionando...';
+          window.location.href = data.sucesso_url;
+          return;
+        }
+        statusBox.textContent = 'Ainda aguardando a confirmação do pagamento. Esta tela atualiza sozinha.';
+      })
+      .catch(() => {
+        statusBox.textContent = 'Não foi possível verificar agora. Atualize a página em alguns instantes.';
+      });
+  }
+
+  verificarPagamento();
+  setInterval(verificarPagamento, 5000);
+</script>
 </body>
 </html>

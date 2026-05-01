@@ -94,7 +94,7 @@
     ⚠️ Verifique os dados do cartão ou tente outra forma de pagamento.<br>
     Seu pedido <strong>#{{ pedido.id }}</strong> continua reservado.
   </div>
-  <a href="/pedido/{{ pedido.id }}/" class="btn">Tentar pagar novamente</a>
+  <a href="{% url 'confirmacao' pedido.id pedido.access_token %}" class="btn">Tentar pagar novamente</a>
   <a href="/" class="btn-outline">Voltar para a loja</a>
   <a href="/" class="link-continuar">Continuar comprando</a>
 </div>
