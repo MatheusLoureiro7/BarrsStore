@@ -58,6 +58,10 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.RunPython(preencher_slugs_e_tokens, migrations.RunPython.noop),
+        migrations.RunSQL(
+            sql='DROP INDEX IF EXISTS loja_produto_slug_c2746fd3_like;',
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.AlterField(
             model_name='produto',
             name='slug',
