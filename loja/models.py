@@ -171,7 +171,7 @@ class Pedido(models.Model):
     email_rastreio_enviado = models.BooleanField(default=False, help_text='Email de rastreio já foi enviado')
 
     def __str__(self):
-        return f'Pedido #{self.id — {self.nome}'
+        return f'Pedido #{self.id} — {self.nome}'
 
 
 class ItemPedido(models.Model):
