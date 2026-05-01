@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 
-# E-MAIL: CONFIRMACAO DE PEDIDO VIA RESEND
+# ── E-MAIL: CONFIRMAÇÃO DE PEDIDO VIA BREVO ─────────────────────
 def enviar_email_confirmacao(pedido):
-    """Envia e-mail de confirmacao para o cliente via Resend."""
+    """Envia e-mail de confirmacao para o cliente via Brevo."""
     try:
         itens_html = ''.join([
             f"""<tr>
@@ -40,19 +40,16 @@ def enviar_email_confirmacao(pedido):
         <html>
         <body style="margin:0;padding:0;background:#F5F2EC;font-family:'Arial',sans-serif">
           <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(107,94,83,0.08)">
-
             <div style="background:#8A947C;padding:32px 40px;text-align:center">
               <h1 style="color:#fff;font-size:24px;margin:0;letter-spacing:-0.5px">Barrs Store</h1>
               <p style="color:#E8EDE3;font-size:13px;margin:8px 0 0">Acessórios modernos e exclusivos</p>
             </div>
-
             <div style="padding:40px">
               <div style="text-align:center;margin-bottom:28px">
                 <div style="width:64px;height:64px;background:#E8EDE3;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px">✓</div>
                 <h2 style="color:#3d2d20;font-size:22px;margin:0 0 8px">Pedido confirmado!</h2>
                 <p style="color:#9E9488;font-size:14px;margin:0">Obrigada pela sua compra, <strong style="color:#6B5E53">{pedido.nome}</strong>!</p>
               </div>
-
               <div style="background:#F5F2EC;border-radius:10px;padding:20px;margin-bottom:24px">
                 <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9E9488;margin:0 0 12px">PEDIDO #{pedido.id}</p>
                 <table style="width:100%;border-collapse:collapse">
@@ -72,7 +69,6 @@ def enviar_email_confirmacao(pedido):
                   </tr>
                 </table>
               </div>
-
               <div style="background:#F5F2EC;border-radius:10px;padding:20px;margin-bottom:24px">
                 <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9E9488;margin:0 0 12px">ENDEREÇO DE ENTREGA</p>
                 <p style="font-size:14px;color:#6B5E53;margin:0;line-height:1.7">
@@ -81,13 +77,11 @@ def enviar_email_confirmacao(pedido):
                   CEP {pedido.cep}
                 </p>
               </div>
-
               <div style="text-align:center;padding:20px 0;border-top:1px solid #D9D3C7">
                 <p style="font-size:13px;color:#9E9488;margin:0 0 16px">Dúvidas? Fale conosco pelo WhatsApp</p>
                 <a href="https://wa.me/5511913225256" style="display:inline-block;padding:12px 28px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">💬 WhatsApp</a>
               </div>
             </div>
-
             <div style="background:#F5F2EC;padding:20px 40px;text-align:center">
               <p style="font-size:12px;color:#9E9488;margin:0">© 2026 Barrs Store • barrsstore.com.br</p>
             </div>
@@ -96,40 +90,22 @@ def enviar_email_confirmacao(pedido):
         </html>
         """
 
-        print(f'[RESEND] Iniciando envio do pedido {pedido.id} para {pedido.email}', flush=True)
-        resend_api_key = os.environ.get('RESEND_API_KEY', '').strip()
-        if not resend_api_key:
-            print(f'[RESEND] RESEND_API_KEY nao configurada. Pedido {pedido.id} sem e-mail.', flush=True)
-            logger.warning('RESEND_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
-            return
-
-        resposta = http_requests.post(
-            'https://api.resend.com/emails',
+        http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
             headers={
-                'Authorization': f'Bearer {resend_api_key}',
+                'api-key': os.environ.get('BREVO_API_KEY', ''),
                 'Content-Type': 'application/json',
             },
             json={
-                'from': os.environ.get('RESEND_FROM_EMAIL', 'Barrs Store <onboarding@resend.dev>'),
-                'to': [pedido.email],
-                'subject': f'Pedido #{pedido.id} confirmado - Barrs Store',
-                'html': html,
+                'sender': {'name': 'Barrs Store', 'email': 'contato.barrsstore@gmail.com'},
+                'to': [{'email': pedido.email, 'name': pedido.nome}],
+                'subject': f'✓ Pedido #{pedido.id} confirmado — Barrs Store',
+                'htmlContent': html,
             },
             timeout=10,
         )
-        print(f'[RESEND] Resposta pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:500]}', flush=True)
-        if resposta.status_code >= 400:
-            logger.warning(
-                'Resend recusou o e-mail do pedido %s. Status %s: %s',
-                pedido.id,
-                resposta.status_code,
-                resposta.text[:500],
-            )
-        else:
-            logger.info('Resend aceitou o e-mail do pedido %s: %s', pedido.id, resposta.text[:500])
-    except Exception as exc:
-        print(f'[RESEND] Erro pedido {pedido.id}: {exc}', flush=True)
-        logger.exception('Erro ao enviar e-mail Resend do pedido %s: %s', pedido.id, exc)
+    except Exception:
+        pass  # Nunca quebra o pedido se o e-mail falhar
 
 
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
