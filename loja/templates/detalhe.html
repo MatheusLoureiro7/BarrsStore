@@ -122,9 +122,7 @@
 
     {% if produto.disponivel %}
       {% if produto.estoque <= 3 %}
-        <div class="estoque-ok" style="color:#b84c3a">⚠️ Apenas {{ produto.estoque }} em estoque!</div>
-      {% elif produto.estoque <= 10 %}
-        <div class="estoque-ok">Em estoque ({{ produto.estoque }} disponíveis)</div>
+        <div class="estoque-ok" style="color:#b84c3a">⚠️ Últimas unidades!</div>
       {% else %}
         <div class="estoque-ok">Em estoque</div>
       {% endif %}
@@ -133,9 +131,15 @@
     {% endif %}
 
     <div class="chips">
-      <span class="chip">Devolução em 30 dias</span>
-      <span class="chip">Garantia de qualidade</span>
-      <span class="chip">Entrega para todo o Brasil</span>
+      <span class="chip">✨ Semijoia</span>
+      <span class="chip">🥈 Banho de prata 1.000</span>
+      <span class="chip">🛡️ 1 ano de garantia</span>
+      <span class="chip">🌿 Antialérgica</span>
+    </div>
+
+    <div style="background:#E8EDE3;border:1px solid #B7C1A8;border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#6B5E53;line-height:1.7">
+      <strong style="color:#8A947C">✦ Semijoia com qualidade premium</strong><br>
+      Banho de prata 1.000 com verniz importado — maior brilho e durabilidade. Peça antialérgica, livre de níquel. <strong>Garantia de 1 ano</strong> contra oxidação e defeitos de fabricação.
     </div>
     <hr class="sep">
     <div class="produto-desc-label">Descrição</div>

@@ -63,6 +63,8 @@ class Produto(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True, related_name='produtos')
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='acessorio')
+    codigo_interno = models.CharField(max_length=50, blank=True, default='', help_text='Código interno (só visível no admin)')
+    estoque_proprio = models.BooleanField(default=True, help_text='Produto em estoque próprio? Se não, sob demanda.')
 
     def __str__(self):
         return self.nome
@@ -165,9 +167,11 @@ class Pedido(models.Model):
     frete = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     criado_em = models.DateTimeField(auto_now_add=True)
+    codigo_rastreio = models.CharField(max_length=100, blank=True, default='', help_text='Código de rastreio dos Correios')
+    email_rastreio_enviado = models.BooleanField(default=False, help_text='Email de rastreio já foi enviado')
 
     def __str__(self):
-        return f'Pedido #{self.id} — {self.nome}'
+        return f'Pedido #{self.id — {self.nome}'
 
 
 class ItemPedido(models.Model):
