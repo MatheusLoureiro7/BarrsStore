@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.urls import reverse
 from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, calcular_frete_por_estado
 import mercadopago
 import json
@@ -17,6 +18,49 @@ import logging
 from decimal import Decimal, InvalidOperation
 
 logger = logging.getLogger(__name__)
+
+
+def site_url(path=''):
+    base = getattr(settings, 'SITE_URL', 'https://www.barrsstore.com.br').rstrip('/')
+    if not path:
+        return base
+    return f"{base}{path if path.startswith('/') else '/' + path}"
+
+
+def seo_context(request, title, description, image_url='', robots='index, follow'):
+    canonical_path = request.path
+    absolute_image = image_url or site_url('/static/og-barrs-store.jpg')
+    return {
+        'seo_title': title,
+        'seo_description': description,
+        'seo_canonical': site_url(canonical_path),
+        'seo_robots': robots,
+        'seo_image': absolute_image,
+    }
+
+
+def noindex_context(request, title, description='Pagina operacional da Barrs Store.'):
+    return seo_context(request, title, description, robots='noindex, nofollow')
+
+
+def get_pedido_por_token(pedido_id, token):
+    return get_object_or_404(Pedido, id=pedido_id, access_token=token)
+
+
+def confirmar_pedido_pago(pedido):
+    atualizou = False
+    if pedido.status != 'confirmado':
+        pedido.status = 'confirmado'
+        atualizou = True
+
+    if not pedido.email_confirmacao_enviado:
+        enviado = enviar_email_confirmacao(pedido)
+        if enviado:
+            pedido.email_confirmacao_enviado = True
+            atualizou = True
+
+    if atualizou:
+        pedido.save(update_fields=['status', 'email_confirmacao_enviado'])
 
 
 
@@ -94,7 +138,7 @@ def enviar_email_confirmacao(pedido):
         if not brevo_api_key:
             print(f'[BREVO] BREVO_API_KEY nao configurada. Pedido {pedido.id} sem e-mail.', flush=True)
             logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
-            return
+            return False
 
         print(f'[BREVO] Iniciando envio do pedido {pedido.id} para {pedido.email}', flush=True)
         resposta = http_requests.post(
@@ -123,9 +167,12 @@ def enviar_email_confirmacao(pedido):
                 resposta.status_code,
                 resposta.text[:500],
             )
+            return False
+        return True
     except Exception as exc:
         print(f'[BREVO] Erro pedido {pedido.id}: {exc}', flush=True)
         logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
+        return False
 
 
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
@@ -152,12 +199,18 @@ def enviar_whatsapp_pedido(pedido):
             f"📍 Endereço: {pedido.rua}, {pedido.numero} - {pedido.cidade}/{pedido.estado}"
         )
 
+        whatsapp_phone = os.environ.get('WHATSAPP_ADMIN_PHONE', '5511913225256').strip()
+        callmebot_key = os.environ.get('CALLMEBOT_API_KEY', '').strip()
+        if not callmebot_key:
+            logger.warning('CALLMEBOT_API_KEY nao configurada. WhatsApp do pedido %s nao foi enviado.', pedido.id)
+            return
+
         http_requests.get(
             'https://api.callmebot.com/whatsapp.php',
             params={
-                'phone': '5511913225256',
+                'phone': whatsapp_phone,
                 'text': mensagem,
-                'apikey': '7650859',
+                'apikey': callmebot_key,
             },
             timeout=10,
         )
@@ -204,54 +257,85 @@ def home(request):
         produtos = produtos.order_by('-criado_em')
 
     categorias = Categoria.objects.all()
+    seo = seo_context(
+        request,
+        'Barrs Store - Acessorios modernos e exclusivos',
+        'Compre acessorios femininos modernos na Barrs Store: aneis, brincos, colares e pulseiras com envio para todo o Brasil.'
+    )
 
-    return render(request, 'home.html', {
+    context = {
         'produtos': produtos,
         'qtd_carrinho': get_carrinho_info(request),
         'busca': busca,
         'ordem': ordem,
-        'total_produtos': Produto.objects.count(),
+        'total_produtos': produtos.count(),
         'categorias': categorias,
         'categoria_ativa': categoria_slug,
-    })
+    }
+    context.update(seo)
+    return render(request, 'home.html', context)
 
 
 # ── DETALHE DO PRODUTO ─────────────────────────────────────────────
-def detalhe_produto(request, produto_id):
-    produto = get_object_or_404(Produto, id=produto_id)
-    relacionados = Produto.objects.exclude(id=produto_id)[:4]
-    return render(request, 'detalhe.html', {
+def detalhe_produto(request, slug):
+    produto = get_object_or_404(Produto, slug=slug)
+    relacionados = Produto.objects.filter(categoria=produto.categoria).exclude(id=produto.id)[:4]
+    if not relacionados:
+        relacionados = Produto.objects.exclude(id=produto.id)[:4]
+    image_url = produto.imagem.url if produto.imagem else ''
+    seo = seo_context(
+        request,
+        f'{produto.nome} - Barrs Store',
+        produto.seo_description(),
+        image_url=image_url,
+    )
+    context = {
         'produto': produto,
         'relacionados': relacionados,
         'qtd_carrinho': get_carrinho_info(request),
-    })
+        'preco_schema': str(produto.preco).replace(',', '.'),
+    }
+    context.update(seo)
+    return render(request, 'detalhe.html', context)
+
+
+def detalhe_produto_id(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+    return redirect(produto.get_absolute_url(), permanent=True)
 
 
 # ── CARRINHO ───────────────────────────────────────────────────────
 def ver_carrinho(request):
     carrinho_id = request.session.get('carrinho_id')
+    seo = noindex_context(request, 'Carrinho - Barrs Store')
     if not carrinho_id:
-        return render(request, 'carrinho.html', {
+        context = {
             'itens': [],
             'total': 0,
             'qtd_carrinho': 0,
-        })
+        }
+        context.update(seo)
+        return render(request, 'carrinho.html', context)
 
     try:
         carrinho = Carrinho.objects.get(id=carrinho_id)
     except Carrinho.DoesNotExist:
         request.session.pop('carrinho_id', None)
-        return render(request, 'carrinho.html', {
+        context = {
             'itens': [],
             'total': 0,
             'qtd_carrinho': 0,
-        })
+        }
+        context.update(seo)
+        return render(request, 'carrinho.html', context)
 
-    return render(request, 'carrinho.html', {
+    context = {
         'itens': carrinho.itens.all(),
         'total': carrinho.total(),
         'qtd_carrinho': get_carrinho_info(request),
-    })
+    }
+    context.update(seo)
+    return render(request, 'carrinho.html', context)
 
 
 # ── CALCULAR FRETE VIA CEP (AJAX) ─────────────────────────────────
@@ -340,6 +424,7 @@ def calcular_frete_melhor_envio(request):
 
 
 # ── ADICIONAR AO CARRINHO ──────────────────────────────────────────
+@require_POST
 def adicionar_carrinho(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
     carrinho_id = request.session.get('carrinho_id')
@@ -354,8 +439,11 @@ def adicionar_carrinho(request, produto_id):
         carrinho = Carrinho.objects.create()
         request.session['carrinho_id'] = carrinho.id
 
-    quantidade = int(request.POST.get('quantidade', request.GET.get('quantidade', 1)))
-    tamanho = request.POST.get('tamanho', request.GET.get('tamanho', ''))
+    try:
+        quantidade = max(1, int(request.POST.get('quantidade', 1)))
+    except (TypeError, ValueError):
+        quantidade = 1
+    tamanho = request.POST.get('tamanho', '').strip()
 
     item, criado = ItemCarrinho.objects.get_or_create(
         carrinho=carrinho,
@@ -369,15 +457,17 @@ def adicionar_carrinho(request, produto_id):
         item.quantidade += quantidade
     item.save()
 
-    next_url = request.POST.get('next', request.GET.get('next', 'carrinho'))
+    next_url = request.POST.get('next', 'carrinho')
     if next_url == 'detalhe':
-        from django.urls import reverse
-        url = reverse('detalhe_produto', args=[produto_id]) + '?added=1'
+        url = produto.get_absolute_url() + '?added=1'
         return redirect(url)
+    if next_url == 'home':
+        return redirect('home')
     return redirect('carrinho')
 
 
 # ── REMOVER 1 UNIDADE ──────────────────────────────────────────────
+@require_POST
 def remover_item(request, item_id):
     item = get_object_or_404(ItemCarrinho, id=item_id)
     if item.quantidade > 1:
@@ -389,6 +479,7 @@ def remover_item(request, item_id):
 
 
 # ── DELETAR ITEM INTEIRO ───────────────────────────────────────────
+@require_POST
 def deletar_item(request, item_id):
     item = get_object_or_404(ItemCarrinho, id=item_id)
     item.delete()
@@ -407,6 +498,16 @@ def checkout(request):
     if not itens:
         return redirect('carrinho')
 
+    def render_checkout(perfil=None):
+        context = {
+            'itens': itens,
+            'total': carrinho.total(),
+            'qtd_carrinho': get_carrinho_info(request),
+            'perfil': perfil,
+        }
+        context.update(noindex_context(request, 'Checkout - Barrs Store'))
+        return render(request, 'checkout.html', context)
+
     if request.method == 'POST':
         cliente = request.user if request.user.is_authenticated else None
 
@@ -416,33 +517,18 @@ def checkout(request):
 
             if not senha:
                 messages.error(request, 'Digite sua senha para entrar ou criar sua conta antes de finalizar.')
-                return render(request, 'checkout.html', {
-                    'itens': itens,
-                    'total': carrinho.total(),
-                    'qtd_carrinho': get_carrinho_info(request),
-                    'perfil': None,
-                })
+                return render_checkout()
 
             if len(senha) < 6:
                 messages.error(request, 'A senha deve ter pelo menos 6 caracteres.')
-                return render(request, 'checkout.html', {
-                    'itens': itens,
-                    'total': carrinho.total(),
-                    'qtd_carrinho': get_carrinho_info(request),
-                    'perfil': None,
-                })
+                return render_checkout()
 
             usuario_existente = User.objects.filter(email__iexact=email_pedido).first()
             if usuario_existente:
                 user = authenticate(request, username=usuario_existente.username, password=senha)
                 if not user:
                     messages.error(request, 'Este e-mail ja tem cadastro. Digite a senha correta para continuar.')
-                    return render(request, 'checkout.html', {
-                        'itens': itens,
-                        'total': carrinho.total(),
-                        'qtd_carrinho': get_carrinho_info(request),
-                        'perfil': None,
-                    })
+                    return render_checkout()
                 login(request, user)
                 cliente = user
             else:
@@ -515,37 +601,36 @@ def checkout(request):
         carrinho.delete()
         del request.session['carrinho_id']
 
-        # Notificacoes
-        print(f'[CHECKOUT] Pedido {pedido.id} criado. Disparando notificacoes.', flush=True)
+        # Notificacao interna de novo pedido pendente.
+        print(f'[CHECKOUT] Pedido {pedido.id} criado. Aguardando pagamento.', flush=True)
         enviar_whatsapp_pedido(pedido)
-        enviar_email_confirmacao(pedido)
 
-        return redirect('confirmacao', pedido_id=pedido.id)
+        return redirect('confirmacao', pedido_id=pedido.id, token=pedido.access_token)
 
     perfil = None
     if request.user.is_authenticated:
         perfil, _ = PerfilCliente.objects.get_or_create(user=request.user)
 
-    return render(request, 'checkout.html', {
-        'itens': itens,
-        'total': carrinho.total(),
-        'qtd_carrinho': get_carrinho_info(request),
-        'perfil': perfil,
-    })
+    return render_checkout(perfil)
 
 
 # ── CONFIRMAÇÃO ────────────────────────────────────────────────────
-def confirmacao(request, pedido_id):
-    pedido = get_object_or_404(Pedido, id=pedido_id)
-    return render(request, 'confirmacao.html', {
+def confirmacao(request, pedido_id, token):
+    pedido = get_pedido_por_token(pedido_id, token)
+    context = {
         'pedido': pedido,
         'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
-    })
+    }
+    context.update(noindex_context(request, f'Pedido #{pedido.id} - Barrs Store'))
+    return render(request, 'confirmacao.html', context)
 
 
 # ── MERCADO PAGO: CRIAR PREFERÊNCIA ───────────────────────────────
-def criar_preferencia(request, pedido_id):
-    pedido = get_object_or_404(Pedido, id=pedido_id)
+@require_POST
+def criar_preferencia(request, pedido_id, token):
+    pedido = get_pedido_por_token(pedido_id, token)
+    if not settings.MERCADOPAGO_ACCESS_TOKEN:
+        return JsonResponse({'erro': 'Mercado Pago nao configurado.'}, status=503)
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
 
     items = []
@@ -583,9 +668,9 @@ def criar_preferencia(request, pedido_id):
         "items": items,
         "payer": payer,
         "back_urls": {
-            "success": f"https://www.barrsstore.com.br/pagamento/sucesso/{pedido.id}/",
-            "failure": f"https://www.barrsstore.com.br/pagamento/falha/{pedido.id}/",
-            "pending": f"https://www.barrsstore.com.br/pagamento/pendente/{pedido.id}/",
+            "success": site_url(reverse('pagamento_sucesso', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})),
+            "failure": site_url(reverse('pagamento_falha', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})),
+            "pending": site_url(reverse('pagamento_pendente', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})),
         },
         "auto_return": "approved",
         "external_reference": str(pedido.id),
@@ -593,7 +678,9 @@ def criar_preferencia(request, pedido_id):
     }
 
     preference_response = sdk.preference().create(preference_data)
-    preference = preference_response["response"]
+    preference = preference_response.get("response", {})
+    if preference_response.get("status", 500) >= 400 or "id" not in preference:
+        return JsonResponse({'erro': 'Nao foi possivel iniciar o pagamento.'}, status=502)
 
     return JsonResponse({
         "preference_id": preference["id"],
@@ -602,23 +689,25 @@ def criar_preferencia(request, pedido_id):
 
 
 # ── MERCADO PAGO: RETORNOS ─────────────────────────────────────────
-def pagamento_sucesso(request, pedido_id):
-    pedido = get_object_or_404(Pedido, id=pedido_id)
-    pedido.status = 'confirmado'
-    pedido.save()
-    return render(request, 'pagamento_sucesso.html', {'pedido': pedido})
+def pagamento_sucesso(request, pedido_id, token):
+    pedido = get_pedido_por_token(pedido_id, token)
+    context = {'pedido': pedido}
+    context.update(noindex_context(request, 'Pagamento - Barrs Store'))
+    return render(request, 'pagamento_sucesso.html', context)
 
 
-def pagamento_falha(request, pedido_id):
-    pedido = get_object_or_404(Pedido, id=pedido_id)
-    return render(request, 'pagamento_falha.html', {'pedido': pedido})
+def pagamento_falha(request, pedido_id, token):
+    pedido = get_pedido_por_token(pedido_id, token)
+    context = {'pedido': pedido}
+    context.update(noindex_context(request, 'Pagamento nao aprovado - Barrs Store'))
+    return render(request, 'pagamento_falha.html', context)
 
 
-def pagamento_pendente(request, pedido_id):
-    pedido = get_object_or_404(Pedido, id=pedido_id)
-    pedido.status = 'pendente'
-    pedido.save()
-    return render(request, 'pagamento_pendente.html', {'pedido': pedido})
+def pagamento_pendente(request, pedido_id, token):
+    pedido = get_pedido_por_token(pedido_id, token)
+    context = {'pedido': pedido}
+    context.update(noindex_context(request, 'Pagamento pendente - Barrs Store'))
+    return render(request, 'pagamento_pendente.html', context)
 
 
 # ── MERCADO PAGO: WEBHOOK ──────────────────────────────────────────
@@ -643,12 +732,13 @@ def webhook_mercadopago(request):
         try:
             pedido = Pedido.objects.get(id=pedido_id)
             if status == "approved":
-                pedido.status = "confirmado"
+                confirmar_pedido_pago(pedido)
             elif status == "pending":
                 pedido.status = "pendente"
+                pedido.save(update_fields=['status'])
             elif status in ["cancelled", "rejected"]:
                 pedido.status = "cancelado"
-            pedido.save()
+                pedido.save(update_fields=['status'])
         except Pedido.DoesNotExist:
             pass
 
@@ -686,7 +776,9 @@ def cadastro(request):
             messages.success(request, 'Conta criada com sucesso!')
             return redirect('minha_conta')
 
-    return render(request, 'cadastro.html', {'qtd_carrinho': get_carrinho_info(request)})
+    context = {'qtd_carrinho': get_carrinho_info(request)}
+    context.update(noindex_context(request, 'Criar conta - Barrs Store'))
+    return render(request, 'cadastro.html', context)
 
 
 # ── LOGIN ──────────────────────────────────────────────────────────
@@ -705,7 +797,9 @@ def login_view(request):
         else:
             messages.error(request, 'E-mail ou senha incorretos.')
 
-    return render(request, 'login.html', {'qtd_carrinho': get_carrinho_info(request)})
+    context = {'qtd_carrinho': get_carrinho_info(request)}
+    context.update(noindex_context(request, 'Login - Barrs Store'))
+    return render(request, 'login.html', context)
 
 
 # ── LOGOUT ─────────────────────────────────────────────────────────
@@ -738,38 +832,76 @@ def minha_conta(request):
         messages.success(request, 'Dados atualizados com sucesso!')
         return redirect('minha_conta')
 
-    return render(request, 'minha_conta.html', {
+    context = {
         'perfil': perfil,
         'pedidos': pedidos,
         'qtd_carrinho': get_carrinho_info(request),
-    })
+    }
+    context.update(noindex_context(request, 'Minha conta - Barrs Store'))
+    return render(request, 'minha_conta.html', context)
 
 
 # ── DETALHE DO PEDIDO (cliente) ────────────────────────────────────
 @login_required(login_url='/login/')
 def detalhe_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
-    return render(request, 'detalhe_pedido.html', {
+    context = {
         'pedido': pedido,
         'qtd_carrinho': get_carrinho_info(request),
-    })
+    }
+    context.update(noindex_context(request, f'Pedido #{pedido.id} - Barrs Store'))
+    return render(request, 'detalhe_pedido.html', context)
 
 
 # ── PÁGINAS ESTÁTICAS ──────────────────────────────────────────────
+def robots_txt(request):
+    linhas = [
+        'User-agent: *',
+        'Allow: /',
+        f'Sitemap: {site_url("/sitemap.xml")}',
+    ]
+    return HttpResponse('\n'.join(linhas), content_type='text/plain')
+
+
 def pagina_404(request, exception):
     return render(request, '404.html', status=404)
 
+
 def entrega(request):
-    return render(request, 'entrega.html', {'qtd_carrinho': get_carrinho_info(request)})
+    context = {
+        'qtd_carrinho': get_carrinho_info(request),
+        **seo_context(request, 'Entrega e frete - Barrs Store', 'Veja prazos, frete e informacoes de entrega da Barrs Store para comprar com tranquilidade.'),
+    }
+    return render(request, 'entrega.html', context)
+
 
 def medidas(request):
-    return render(request, 'medidas.html', {'qtd_carrinho': get_carrinho_info(request)})
+    context = {
+        'qtd_carrinho': get_carrinho_info(request),
+        **seo_context(request, 'Guia de medidas - Barrs Store', 'Consulte o guia de medidas da Barrs Store para escolher aneis e acessorios com mais seguranca.'),
+    }
+    return render(request, 'medidas.html', context)
+
 
 def sobre(request):
-    return render(request, 'sobre.html', {'qtd_carrinho': get_carrinho_info(request)})
+    context = {
+        'qtd_carrinho': get_carrinho_info(request),
+        **seo_context(request, 'Sobre a Barrs Store', 'Conheca a Barrs Store, uma loja de acessorios modernos com atendimento humanizado e rapido.'),
+    }
+    return render(request, 'sobre.html', context)
+
 
 def contato(request):
-    return render(request, 'contato.html', {'qtd_carrinho': get_carrinho_info(request)})
+    context = {
+        'qtd_carrinho': get_carrinho_info(request),
+        **seo_context(request, 'Contato - Barrs Store', 'Fale com a Barrs Store pelo WhatsApp para tirar duvidas sobre produtos, pedidos e entregas.'),
+    }
+    return render(request, 'contato.html', context)
+
 
 def politica(request):
-    return render(request, 'politica.html')
+    context = {
+        'qtd_carrinho': get_carrinho_info(request),
+        **seo_context(request, 'Politica de privacidade - Barrs Store', 'Leia a politica de privacidade da Barrs Store e entenda como seus dados sao protegidos.'),
+    }
+    return render(request, 'politica.html', context)

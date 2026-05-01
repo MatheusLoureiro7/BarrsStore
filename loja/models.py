@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
+from django.utils.text import slugify
 from decimal import Decimal
+import uuid
 
 
 # ── CONFIGURAÇÃO DE FRETE POR REGIÃO ──────────────────────────────
@@ -55,7 +58,10 @@ class Produto(models.Model):
     ]
 
     nome = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=140, unique=True, blank=True)
     descricao = models.TextField(blank=True, default='')
+    meta_description = models.CharField(max_length=160, blank=True, default='', help_text='Resumo para Google, ate 160 caracteres')
+    imagem_alt = models.CharField(max_length=120, blank=True, default='', help_text='Texto alternativo da imagem para SEO e acessibilidade')
     preco = models.DecimalField(max_digits=10, decimal_places=2)
     imagem = models.ImageField(upload_to='produtos/', null=True, blank=True)
     estoque = models.IntegerField(default=10)
@@ -68,6 +74,27 @@ class Produto(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.nome) or 'produto'
+            slug = base_slug
+            contador = 2
+            while Produto.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base_slug}-{contador}'
+                contador += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('detalhe_produto', kwargs={'slug': self.slug})
+
+    def seo_description(self):
+        texto = self.meta_description or self.descricao or f'{self.nome} na Barrs Store.'
+        return texto[:157] + '...' if len(texto) > 160 else texto
+
+    def alt_text(self):
+        return self.imagem_alt or self.nome
 
     def disponivel(self):
         return self.estoque > 0
@@ -169,6 +196,8 @@ class Pedido(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
     codigo_rastreio = models.CharField(max_length=100, blank=True, default='', help_text='Código de rastreio dos Correios')
     email_rastreio_enviado = models.BooleanField(default=False, help_text='Email de rastreio já foi enviado')
+    access_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    email_confirmacao_enviado = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'

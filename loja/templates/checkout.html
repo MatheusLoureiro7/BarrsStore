@@ -5,7 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finalizar Compra — Barrs Store</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+{% include "partials/seo_head.html" %}
+<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,6 +16,7 @@
     --red:#b84c3a;--radius:14px;--radius-sm:8px;
   }
   body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
   .navbar{background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
   .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
@@ -87,6 +89,7 @@
 </style>
 </head>
 <body>
+<h1 class="sr-only">Finalizar compra</h1>
 
 <nav class="navbar">
   <a href="/" class="nav-logo">Barrs Store</a>
@@ -216,7 +219,7 @@
     {% for item in itens %}
     <div class="resumo-item">
       {% if item.produto.imagem %}
-        <img class="resumo-item-img" src="{{ item.produto.imagem.url }}" alt="{{ item.produto.nome }}">
+        <img class="resumo-item-img" src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" loading="lazy" decoding="async">
       {% else %}
         <div class="resumo-item-img-placeholder">🛍️</div>
       {% endif %}
@@ -370,3 +373,5 @@ function mascaraCep(input) {
 </script>
 </body>
 </html>
+
+

@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pedido Confirmado — Barrs Store</title>
+{% include "partials/seo_head.html" %}
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <script src="https://sdk.mercadopago.com/js/v2"></script>
 <style>
@@ -277,7 +278,13 @@
 <script>
   const mp = new MercadoPago('{{ mp_public_key }}', { locale: 'pt-BR' });
 
-  fetch('/pagamento/preferencia/{{ pedido.id }}/')
+  fetch('{% url "criar_preferencia" pedido.id pedido.access_token %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      }
+    })
     .then(r => {
       if (!r.ok) throw new Error('Erro na resposta');
       return r.json();

@@ -23,7 +23,19 @@ class ProdutoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'categoria', 'tipo', 'preco', 'estoque', 'destaque')
     list_editable = ('preco', 'estoque', 'destaque')
     list_filter = ('destaque', 'categoria', 'tipo')
-    search_fields = ('nome', 'descricao')
+    search_fields = ('nome', 'descricao', 'slug')
+    prepopulated_fields = {'slug': ('nome',)}
+    fieldsets = (
+        ('Produto', {
+            'fields': ('nome', 'slug', 'descricao', 'preco', 'imagem', 'estoque', 'destaque', 'categoria', 'tipo')
+        }),
+        ('SEO', {
+            'fields': ('meta_description', 'imagem_alt')
+        }),
+        ('Controle interno', {
+            'fields': ('codigo_interno', 'estoque_proprio')
+        }),
+    )
     inlines = [TamanhoInline]
 
 
@@ -33,7 +45,7 @@ class PedidoAdmin(admin.ModelAdmin):
     list_editable = ('status',)
     list_filter = ('status', 'forma_pagamento', 'estado')
     search_fields = ('nome', 'email', 'cidade')
-    readonly_fields = ('criado_em',)
+    readonly_fields = ('criado_em', 'access_token')
 
 
 @admin.register(ItemCarrinho)

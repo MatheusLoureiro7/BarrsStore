@@ -1,0 +1,34 @@
+{% with title=seo_title|default:"Barrs Store - Acessorios modernos e exclusivos" description=seo_description|default:"Acessorios modernos e exclusivos na Barrs Store, com envio para todo o Brasil e atendimento humanizado pelo WhatsApp." canonical=seo_canonical|default:request.build_absolute_uri robots=seo_robots|default:"index, follow" image=seo_image|default:"https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" %}
+<meta name="description" content="{{ description }}">
+<meta name="robots" content="{{ robots }}">
+<link rel="canonical" href="{{ canonical }}">
+<meta property="og:site_name" content="Barrs Store">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:type" content="{% if produto %}product{% else %}website{% endif %}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:image" content="{{ image }}">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ description }}">
+<meta name="twitter:image" content="{{ image }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "OnlineStore",
+  "name": "Barrs Store",
+  "url": "https://www.barrsstore.com.br",
+  "logo": "https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+55-11-91322-5256",
+    "contactType": "customer service",
+    "availableLanguage": "Portuguese"
+  },
+  "sameAs": [
+    "https://www.barrsstore.com.br"
+  ]
+}
+</script>
+{% endwith %}

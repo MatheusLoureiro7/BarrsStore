@@ -1,15 +1,25 @@
 from django.urls import path
+from django.contrib.sitemaps.views import sitemap
 from . import views
+from .sitemaps import ProdutoSitemap, StaticViewSitemap
+
+sitemaps = {
+    'produtos': ProdutoSitemap,
+    'paginas': StaticViewSitemap,
+}
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('produto/<int:produto_id>/', views.detalhe_produto, name='detalhe_produto'),
+    path('robots.txt', views.robots_txt, name='robots_txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
+    path('produto/<int:produto_id>/', views.detalhe_produto_id, name='detalhe_produto_id'),
+    path('produto/<slug:slug>/', views.detalhe_produto, name='detalhe_produto'),
     path('add/<int:produto_id>/', views.adicionar_carrinho, name='add_carrinho'),
     path('carrinho/', views.ver_carrinho, name='carrinho'),
     path('remover/<int:item_id>/', views.remover_item, name='remover_item'),
     path('deletar/<int:item_id>/', views.deletar_item, name='deletar_item'),
     path('finalizar/', views.checkout, name='finalizar_compra'),
-    path('pedido/<int:pedido_id>/', views.confirmacao, name='confirmacao'),
+    path('pedido/<int:pedido_id>/<uuid:token>/', views.confirmacao, name='confirmacao'),
     path('sobre/', views.sobre, name='sobre'),
     path('contato/', views.contato, name='contato'),
     path('politica/', views.politica, name='politica'),
@@ -19,10 +29,10 @@ urlpatterns = [
     path('frete/melhor-envio/', views.calcular_frete_melhor_envio, name='calcular_frete_me'),
 
     # Mercado Pago
-    path('pagamento/preferencia/<int:pedido_id>/', views.criar_preferencia, name='criar_preferencia'),
-    path('pagamento/sucesso/<int:pedido_id>/', views.pagamento_sucesso, name='pagamento_sucesso'),
-    path('pagamento/falha/<int:pedido_id>/', views.pagamento_falha, name='pagamento_falha'),
-    path('pagamento/pendente/<int:pedido_id>/', views.pagamento_pendente, name='pagamento_pendente'),
+    path('pagamento/preferencia/<int:pedido_id>/<uuid:token>/', views.criar_preferencia, name='criar_preferencia'),
+    path('pagamento/sucesso/<int:pedido_id>/<uuid:token>/', views.pagamento_sucesso, name='pagamento_sucesso'),
+    path('pagamento/falha/<int:pedido_id>/<uuid:token>/', views.pagamento_falha, name='pagamento_falha'),
+    path('pagamento/pendente/<int:pedido_id>/<uuid:token>/', views.pagamento_pendente, name='pagamento_pendente'),
     path('pagamento/webhook/', views.webhook_mercadopago, name='webhook_mp'),
 
     # Autenticação e área do cliente

@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pagamento Aprovado — Barrs Store</title>
+{% include "partials/seo_head.html" %}
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -84,11 +85,19 @@
 <div class="card">
   <div class="icone">✓</div>
   <div class="badge">PAGAMENTO APROVADO</div>
-  <h1 class="titulo">Tudo certo!</h1>
-  <p class="subtitulo">
-    Seu pagamento foi confirmado, <strong>{{ pedido.nome }}</strong>!<br>
-    Seu pedido já está sendo preparado com carinho. 🎀
-  </p>
+  {% if pedido.status == 'confirmado' %}
+    <h1 class="titulo">Tudo certo!</h1>
+    <p class="subtitulo">
+      Seu pagamento foi confirmado, <strong>{{ pedido.nome }}</strong>!<br>
+      Seu pedido já está sendo preparado com carinho.
+    </p>
+  {% else %}
+    <h1 class="titulo">Pagamento recebido</h1>
+    <p class="subtitulo">
+      Recebemos o retorno do pagamento, <strong>{{ pedido.nome }}</strong>.<br>
+      A confirmação automática pode levar alguns instantes.
+    </p>
+  {% endif %}
   <div class="detalhes">
     <div class="detalhe-linha">
       <span class="detalhe-label">Pedido</span>

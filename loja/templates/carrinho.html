@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Carrinho — Barrs Store</title>
+{% include "partials/seo_head.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -94,13 +95,15 @@
   .carrinho-vazio a{display:inline-block;padding:10px 22px;background:var(--green);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:600}
 
   @media(max-width:680px){.grid{grid-template-columns:1fr}.navbar{padding:0 20px}.resumo{position:static}}
+  form.qtd-form, form.remover-form{margin:0}
+  button.btn-qtd, button.btn-remover{font-family:inherit;cursor:pointer}
 </style>
 </head>
 <body>
 
 <nav class="navbar">
   <a href="/" class="nav-logo">
-    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
     Barrs Store
   </a>
   <div class="nav-links">
@@ -127,7 +130,7 @@
       {% for item in itens %}
       <div class="item-card">
         {% if item.produto.imagem %}
-          <img class="item-img" src="{{ item.produto.imagem.url }}" alt="{{ item.produto.nome }}">
+          <img class="item-img" src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" loading="lazy" decoding="async">
         {% else %}
           <div class="item-img" style="display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px;">🛍️</div>
         {% endif %}
@@ -136,14 +139,24 @@
           <div class="item-unit">R$ {{ item.produto.preco }} / un.</div>
           {% if item.tamanho %}<div class="item-tamanho">Tamanho: {{ item.tamanho }}</div>{% endif %}
           <div class="qtd-wrap">
-            <a href="{% url 'remover_item' item.id %}" class="btn-qtd" title="Diminuir">−</a>
+            <form method="POST" action="{% url 'remover_item' item.id %}" class="qtd-form">
+              {% csrf_token %}
+              <button type="submit" class="btn-qtd" title="Diminuir">−</button>
+            </form>
             <span class="qtd-num">{{ item.quantidade }}</span>
-            <a href="{% url 'add_carrinho' item.produto.id %}" class="btn-qtd" title="Aumentar">+</a>
+            <form method="POST" action="{% url 'add_carrinho' item.produto.id %}" class="qtd-form">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="carrinho">
+              <input type="hidden" name="tamanho" value="{{ item.tamanho }}">
+              <button type="submit" class="btn-qtd" title="Aumentar">+</button>
+            </form>
           </div>
         </div>
         <div class="item-right">
-          <a href="{% url 'deletar_item' item.id %}" class="btn-remover" title="Remover"
-             onclick="return confirm('Remover {{ item.produto.nome }}?')">✕</a>
+          <form method="POST" action="{% url 'deletar_item' item.id %}" class="remover-form" onsubmit="return confirm('Remover {{ item.produto.nome }}?')">
+            {% csrf_token %}
+            <button type="submit" class="btn-remover" title="Remover">✕</button>
+          </form>
           <div class="item-subtotal">R$ {{ item.subtotal }}</div>
         </div>
       </div>
@@ -292,3 +305,4 @@
 </script>
 </body>
 </html>
+
