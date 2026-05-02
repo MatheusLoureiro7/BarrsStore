@@ -143,12 +143,10 @@
       <strong style="color:#8A947C">✦ Semijoia com qualidade premium</strong><br>
       Banho de prata 1.000 com verniz importado — maior brilho e durabilidade. Peça antialérgica, livre de níquel. <strong>Garantia de 1 ano</strong> contra oxidação e defeitos de fabricação.
     </div>
-    <hr class="sep">
-    <div class="produto-desc-label">Descrição</div>
     {% if produto.descricao %}
+      <hr class="sep">
+      <div class="produto-desc-label">Descrição</div>
       <p class="produto-desc">{{ produto.descricao }}</p>
-    {% else %}
-      <p style="font-size:14px;color:#bbb;font-style:italic">Sem descrição cadastrada.</p>
     {% endif %}
     {% if produto.disponivel %}
     <form method="POST" action="{% url 'add_carrinho' produto.id %}" style="margin-top:24px">
@@ -174,9 +172,11 @@
       </div>
       {% endif %}
 
-      <a href="{% url 'medidas' %}" class="size-help-card" target="_blank" rel="noopener">
-        <span class="size-help-copy"><span class="size-help-icon">cm</span><span><span class="size-help-title">Guia de medidas</span><span class="size-help-text">Veja o guia antes de escolher seu tamanho.</span></span></span><span class="size-help-arrow">&rsaquo;</span>
-      </a>
+      {% if produto.tipo == 'anel' or produto.categoria.slug == 'anel' %}
+        <a href="{% url 'medidas' %}" class="size-help-card" target="_blank" rel="noopener">
+          <span class="size-help-copy"><span class="size-help-icon">cm</span><span><span class="size-help-title">Guia de medidas</span><span class="size-help-text">Veja o guia antes de escolher seu tamanho.</span></span></span><span class="size-help-arrow">&rsaquo;</span>
+        </a>
+      {% endif %}
 
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
         <label style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Quantidade</label>
