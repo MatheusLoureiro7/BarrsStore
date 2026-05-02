@@ -192,6 +192,7 @@
         <input type="hidden" name="cep" id="hidden-cep">
         <input type="hidden" name="frete_valor" id="hidden-frete-valor">
         <input type="hidden" name="frete_nome" id="hidden-frete-nome">
+        <input type="hidden" name="frete_service_id" id="hidden-frete-service-id">
         <button type="submit" class="btn-finalizar" id="btn-finalizar">
           Finalizar compra
         </button>
@@ -268,7 +269,7 @@
         div.className = 'opcao-frete' + (i === 0 ? ' selecionado' : '');
         div.innerHTML = `
           <input type="radio" name="frete-opcao" value="${op.id}" ${i === 0 ? 'checked' : ''}
-            onchange="selecionarFrete(${op.preco}, '${op.nome} ${op.empresa}', this.closest('.opcao-frete'))">
+            onchange="selecionarFrete(${op.preco}, '${op.nome} ${op.empresa}', ${op.id}, this.closest('.opcao-frete'))">
           <div class="opcao-info">
             <div class="opcao-nome">${op.nome}</div>
             <div class="opcao-prazo">${op.empresa} · ${op.prazo} dias úteis</div>
@@ -278,7 +279,7 @@
         opcoes.appendChild(div);
 
         if (i === 0) {
-          selecionarFrete(op.preco, `${op.nome} ${op.empresa}`, div);
+          selecionarFrete(op.preco, `${op.nome} ${op.empresa}`, op.id, div);
         }
       });
 
@@ -289,7 +290,7 @@
     }
   }
 
-  function selecionarFrete(preco, nome, el) {
+  function selecionarFrete(preco, nome, serviceId, el) {
     document.querySelectorAll('.opcao-frete').forEach(d => d.classList.remove('selecionado'));
     el.classList.add('selecionado');
     freteValorSelecionado = preco;
@@ -300,6 +301,7 @@
     document.getElementById('total-display').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
     document.getElementById('hidden-frete-valor').value = preco.toFixed(2);
     document.getElementById('hidden-frete-nome').value = nome;
+    document.getElementById('hidden-frete-service-id').value = serviceId;
     document.getElementById('btn-finalizar').disabled = false;
   }
 </script>

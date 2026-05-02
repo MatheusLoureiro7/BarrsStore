@@ -64,6 +64,8 @@ def confirmar_pedido_pago(pedido):
     if atualizou:
         pedido.save(update_fields=['status', 'email_confirmacao_enviado'])
 
+    criar_envio_melhor_envio(pedido)
+
 
 def confirmar_pagamento_mercadopago(payment_id):
     if not payment_id or not settings.MERCADOPAGO_ACCESS_TOKEN:
@@ -100,6 +102,136 @@ def confirmar_pagamento_mercadopago(payment_id):
 
     logger.info('Pagamento Mercado Pago %s recebido com status %s.', payment_id, status)
     return False
+
+
+def apenas_digitos(valor):
+    return ''.join(filter(str.isdigit, valor or ''))
+
+
+def melhor_envio_headers():
+    token = os.environ.get('MELHOR_ENVIO_TOKEN', '').strip()
+    if not token:
+        return None
+    return {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'BarrsStore contato.barrsstore@gmail.com',
+    }
+
+
+def melhor_envio_base_url():
+    return os.environ.get('MELHOR_ENVIO_BASE_URL', 'https://melhorenvio.com.br').rstrip('/')
+
+
+def inferir_servico_melhor_envio(pedido):
+    if pedido.melhor_envio_service_id:
+        return pedido.melhor_envio_service_id
+    nome = (pedido.melhor_envio_status or '').upper()
+    if 'SEDEX' in nome:
+        return 2
+    return 1
+
+
+def criar_envio_melhor_envio(pedido):
+    """Insere o envio no carrinho do Melhor Envio para conferencia manual."""
+    if pedido.melhor_envio_order_id:
+        return True
+
+    headers = melhor_envio_headers()
+    if not headers:
+        pedido.melhor_envio_erro = 'MELHOR_ENVIO_TOKEN nao configurado.'
+        pedido.save(update_fields=['melhor_envio_erro'])
+        return False
+
+    service_id = inferir_servico_melhor_envio(pedido)
+    subtotal_declarado = max(pedido.subtotal - pedido.desconto, Decimal('1.00'))
+    peso_total = max(Decimal('0.3'), Decimal('0.3') * sum(item.quantidade for item in pedido.itens.all()))
+
+    payload = {
+        'service': int(service_id),
+        'from': {
+            'name': os.environ.get('ME_REMETENTE_NOME', 'Sabrina Almeida'),
+            'phone': apenas_digitos(os.environ.get('ME_REMETENTE_TELEFONE', '11913225256')),
+            'email': os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com'),
+            'address': os.environ.get('ME_REMETENTE_RUA', 'Rua Equestre'),
+            'number': os.environ.get('ME_REMETENTE_NUMERO', '170'),
+            'district': os.environ.get('ME_REMETENTE_BAIRRO', 'Fazenda Aricanduva'),
+            'city': os.environ.get('ME_REMETENTE_CIDADE', 'Sao Paulo'),
+            'country_id': 'BR',
+            'postal_code': apenas_digitos(os.environ.get('ME_REMETENTE_CEP', '08275700')),
+            'state_abbr': os.environ.get('ME_REMETENTE_ESTADO', 'SP'),
+        },
+        'to': {
+            'name': pedido.nome,
+            'phone': apenas_digitos(pedido.telefone) or apenas_digitos(os.environ.get('ME_REMETENTE_TELEFONE', '11913225256')),
+            'email': pedido.email,
+            'address': pedido.rua,
+            'complement': pedido.complemento,
+            'number': pedido.numero,
+            'district': pedido.bairro,
+            'city': pedido.cidade,
+            'country_id': 'BR',
+            'postal_code': apenas_digitos(pedido.cep),
+            'state_abbr': pedido.estado.upper(),
+        },
+        'products': [
+            {
+                'name': item.nome_produto[:80],
+                'quantity': str(item.quantidade),
+                'unitary_value': str(item.preco_unitario),
+            }
+            for item in pedido.itens.all()
+        ],
+        'volumes': [{
+            'height': 4,
+            'width': 11,
+            'length': 16,
+            'weight': float(peso_total),
+        }],
+        'options': {
+            'insurance_value': float(subtotal_declarado),
+            'receipt': False,
+            'own_hand': False,
+            'reverse': False,
+            'non_commercial': True,
+        },
+    }
+
+    try:
+        resposta = http_requests.post(
+            f'{melhor_envio_base_url()}/api/v2/me/cart',
+            headers=headers,
+            json=payload,
+            timeout=15,
+        )
+        texto = resposta.text[:1000]
+        print(f'[ME] Criar envio pedido {pedido.id}: status={resposta.status_code} body={texto}', flush=True)
+
+        if resposta.status_code >= 400:
+            pedido.melhor_envio_status = 'erro'
+            pedido.melhor_envio_erro = texto
+            pedido.save(update_fields=['melhor_envio_status', 'melhor_envio_erro'])
+            return False
+
+        data = resposta.json()
+        pedido.melhor_envio_order_id = str(data.get('id') or data.get('order_id') or data.get('protocol') or '')
+        pedido.melhor_envio_service_id = service_id
+        pedido.melhor_envio_status = 'no_carrinho'
+        pedido.melhor_envio_erro = ''
+        pedido.save(update_fields=[
+            'melhor_envio_order_id',
+            'melhor_envio_service_id',
+            'melhor_envio_status',
+            'melhor_envio_erro',
+        ])
+        return True
+    except Exception as exc:
+        pedido.melhor_envio_status = 'erro'
+        pedido.melhor_envio_erro = str(exc)
+        pedido.save(update_fields=['melhor_envio_status', 'melhor_envio_erro'])
+        logger.exception('Erro ao criar envio Melhor Envio do pedido %s: %s', pedido.id, exc)
+        return False
 
 
 
@@ -713,6 +845,10 @@ def checkout(request):
             desconto = cupom.calcular_desconto(subtotal)
 
         total = subtotal - desconto + frete
+        try:
+            frete_service_id = int(request.POST.get('frete_service_id') or 0) or None
+        except (TypeError, ValueError):
+            frete_service_id = None
 
         pedido = Pedido.objects.create(
             cliente=cliente,
@@ -732,6 +868,7 @@ def checkout(request):
             cupom_codigo=cupom.codigo.upper() if cupom else '',
             frete=frete,
             total=total,
+            melhor_envio_service_id=frete_service_id,
         )
 
         for item in itens:

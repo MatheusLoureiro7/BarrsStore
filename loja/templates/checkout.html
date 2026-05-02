@@ -128,6 +128,7 @@
 <form method="POST" action="{% url 'finalizar_compra' %}">
 <input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ request.GET.frete_valor }}">
 <input type="hidden" name="frete_nome" id="frete_nome_hidden" value="{{ request.GET.frete_nome }}">
+<input type="hidden" name="frete_service_id" id="frete_service_id_hidden" value="{{ request.GET.frete_service_id }}">
 {% csrf_token %}
 <input type="hidden" name="forma_pagamento" value="pix">
 <div class="page">
