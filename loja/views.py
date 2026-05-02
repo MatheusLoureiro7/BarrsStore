@@ -63,6 +63,43 @@ def confirmar_pedido_pago(pedido):
         pedido.save(update_fields=['status', 'email_confirmacao_enviado'])
 
 
+def confirmar_pagamento_mercadopago(payment_id):
+    if not payment_id or not settings.MERCADOPAGO_ACCESS_TOKEN:
+        return False
+
+    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    payment_info = sdk.payment().get(payment_id)
+    payment = payment_info.get("response", {})
+
+    pedido_id = payment.get("external_reference")
+    status = payment.get("status")
+
+    if not pedido_id:
+        logger.warning('Mercado Pago sem external_reference no pagamento %s.', payment_id)
+        return False
+
+    try:
+        pedido = Pedido.objects.get(id=pedido_id)
+    except Pedido.DoesNotExist:
+        logger.warning('Pedido %s informado pelo Mercado Pago nao existe.', pedido_id)
+        return False
+
+    if status == "approved":
+        confirmar_pedido_pago(pedido)
+        return True
+    if status == "pending":
+        pedido.status = "pendente"
+        pedido.save(update_fields=['status'])
+        return True
+    if status in ["cancelled", "rejected"]:
+        pedido.status = "cancelado"
+        pedido.save(update_fields=['status'])
+        return True
+
+    logger.info('Pagamento Mercado Pago %s recebido com status %s.', payment_id, status)
+    return False
+
+
 
 # ── E-MAIL: CONFIRMAÇÃO DE PEDIDO VIA BREVO ─────────────────────
 def enviar_email_confirmacao(pedido):
@@ -141,6 +178,20 @@ def enviar_email_confirmacao(pedido):
             return False
 
         print(f'[BREVO] Iniciando envio do pedido {pedido.id} para {pedido.email}', flush=True)
+        brevo_from_email = os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip()
+        brevo_admin_email = os.environ.get('BREVO_ADMIN_EMAIL', brevo_from_email).strip()
+        payload = {
+            'sender': {
+                'name': 'Barrs Store',
+                'email': brevo_from_email,
+            },
+            'to': [{'email': pedido.email, 'name': pedido.nome}],
+            'subject': f'✓ Pedido #{pedido.id} confirmado — Barrs Store',
+            'htmlContent': html,
+        }
+        if brevo_admin_email and brevo_admin_email.lower() != pedido.email.lower():
+            payload['bcc'] = [{'email': brevo_admin_email, 'name': 'Barrs Store'}]
+
         resposta = http_requests.post(
             'https://api.brevo.com/v3/smtp/email',
             headers={
@@ -148,15 +199,7 @@ def enviar_email_confirmacao(pedido):
                 'api-key': brevo_api_key,
                 'Content-Type': 'application/json',
             },
-            json={
-                'sender': {
-                    'name': 'Barrs Store',
-                    'email': os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com'),
-                },
-                'to': [{'email': pedido.email, 'name': pedido.nome}],
-                'subject': f'✓ Pedido #{pedido.id} confirmado — Barrs Store',
-                'htmlContent': html,
-            },
+            json=payload,
             timeout=10,
         )
         print(f'[BREVO] Resposta pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:500]}', flush=True)
@@ -696,6 +739,10 @@ def criar_preferencia(request, pedido_id, token):
 # ── MERCADO PAGO: RETORNOS ─────────────────────────────────────────
 def pagamento_sucesso(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
+    payment_id = request.GET.get('payment_id') or request.GET.get('collection_id')
+    if payment_id and pedido.status != 'confirmado':
+        confirmar_pagamento_mercadopago(payment_id)
+        pedido.refresh_from_db()
     context = {'pedido': pedido}
     context.update(noindex_context(request, 'Pagamento - Barrs Store'))
     return render(request, 'pagamento_sucesso.html', context)
@@ -710,6 +757,10 @@ def pagamento_falha(request, pedido_id, token):
 
 def pagamento_pendente(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
+    payment_id = request.GET.get('payment_id') or request.GET.get('collection_id')
+    if payment_id:
+        confirmar_pagamento_mercadopago(payment_id)
+        pedido.refresh_from_db()
     context = {'pedido': pedido}
     context.update(noindex_context(request, 'Pagamento pendente - Barrs Store'))
     return render(request, 'pagamento_pendente.html', context)
@@ -729,35 +780,26 @@ def status_pagamento(request, pedido_id, token):
 
 # ── MERCADO PAGO: WEBHOOK ──────────────────────────────────────────
 @csrf_exempt
-@require_POST
 def webhook_mercadopago(request):
-    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
-
+    data = {}
     try:
-        data = json.loads(request.body)
+        if request.body:
+            data = json.loads(request.body)
     except json.JSONDecodeError:
-        return JsonResponse({"status": "erro"}, status=400)
+        data = {}
 
-    if data.get("type") == "payment":
-        payment_id = data["data"]["id"]
-        payment_info = sdk.payment().get(payment_id)
-        payment = payment_info["response"]
+    notification_type = data.get("type") or data.get("topic") or request.GET.get("type") or request.GET.get("topic")
+    payment_id = (
+        data.get("data", {}).get("id")
+        or data.get("id")
+        or request.GET.get("data.id")
+        or request.GET.get("id")
+    )
 
-        pedido_id = payment.get("external_reference")
-        status = payment.get("status")
+    print(f'[MP] Webhook recebido: type={notification_type} payment_id={payment_id}', flush=True)
 
-        try:
-            pedido = Pedido.objects.get(id=pedido_id)
-            if status == "approved":
-                confirmar_pedido_pago(pedido)
-            elif status == "pending":
-                pedido.status = "pendente"
-                pedido.save(update_fields=['status'])
-            elif status in ["cancelled", "rejected"]:
-                pedido.status = "cancelado"
-                pedido.save(update_fields=['status'])
-        except Pedido.DoesNotExist:
-            pass
+    if notification_type == "payment" and payment_id:
+        confirmar_pagamento_mercadopago(payment_id)
 
     return JsonResponse({"status": "ok"})
 
