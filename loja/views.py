@@ -498,7 +498,7 @@ def home(request):
     ordem = request.GET.get('ordem', '')
     categoria_slug = request.GET.get('categoria', '')
 
-    produtos = Produto.objects.all()
+    produtos = Produto.objects.exclude(nome__icontains='teste')
 
     if busca:
         produtos = produtos.filter(
