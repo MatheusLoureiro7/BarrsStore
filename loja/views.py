@@ -348,9 +348,11 @@ def calcular_frete_ajax(request):
     except Exception:
         total = Decimal('0')
 
-    frete, minimo = calcular_frete_por_estado(estado, total)
-    frete_gratis = frete == Decimal('0')
-    falta = max(minimo - total, Decimal('0'))
+    # TEMPORARIO: frete zerado para teste real de pagamento Pix.
+    frete = Decimal('0')
+    minimo = Decimal('0')
+    frete_gratis = True
+    falta = Decimal('0')
 
     return JsonResponse({
         'frete': float(frete),
@@ -370,6 +372,17 @@ def calcular_frete_melhor_envio(request):
     if len(cep_destino) != 8:
         return JsonResponse({'erro': 'CEP inválido'}, status=400)
     
+    # TEMPORARIO: frete zerado para teste real de pagamento Pix.
+    return JsonResponse({
+        'opcoes': [{
+            'id': 'teste-frete-gratis',
+            'nome': 'Frete grátis',
+            'empresa': 'Barrs Store',
+            'preco': 0,
+            'prazo': 'teste',
+        }]
+    })
+
     token = os.environ.get('MELHOR_ENVIO_TOKEN', '').strip()
     if not token:
         return JsonResponse({'erro': 'Frete indisponível no momento.'}, status=503)
@@ -557,17 +570,8 @@ def checkout(request):
 
         estado_pedido = request.POST.get('estado', 'SP')
         subtotal = carrinho.total()
-        # Usa frete selecionado no carrinho (Melhor Envio) ou fallback por regiao.
-        frete_selecionado = request.POST.get('frete_valor', '').replace(',', '.').strip()
-        if frete_selecionado:
-            try:
-                frete = Decimal(frete_selecionado)
-                if frete < 0:
-                    raise InvalidOperation
-            except (InvalidOperation, ValueError):
-                frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
-        else:
-            frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
+        # TEMPORARIO: frete zerado para teste real de pagamento Pix.
+        frete = Decimal('0')
         total = subtotal + frete
 
         pedido = Pedido.objects.create(
