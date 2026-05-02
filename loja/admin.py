@@ -86,4 +86,6 @@ class ItemCarrinhoAdmin(admin.ModelAdmin):
 
 @admin.register(Carrinho)
 class CarrinhoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'criado_em')
+    list_display = ('id', 'telefone_cliente', 'aceita_whatsapp', 'whatsapp_abandono_enviado', 'criado_em', 'atualizado_em')
+    list_filter = ('aceita_whatsapp', 'whatsapp_abandono_enviado')
+    search_fields = ('telefone_cliente',)

@@ -124,6 +124,11 @@ class TamanhoAnel(models.Model):
 # ── CARRINHO ──────────────────────────────────────────────────────
 class Carrinho(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
+    telefone_cliente = models.CharField(max_length=20, blank=True, default='')
+    aceita_whatsapp = models.BooleanField(default=False)
+    whatsapp_abandono_enviado = models.BooleanField(default=False)
+    whatsapp_abandono_enviado_em = models.DateTimeField(null=True, blank=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
 
     def total(self):
         return sum(item.subtotal() for item in self.itens.all())
@@ -149,6 +154,12 @@ class Carrinho(models.Model):
     def minimo_frete_gratis(self, estado='SP'):
         _, minimo = calcular_frete_por_estado(estado, self.total())
         return minimo
+
+    def link_checkout(self):
+        from django.conf import settings
+
+        base = getattr(settings, 'SITE_URL', 'https://www.barrsstore.com.br').rstrip('/')
+        return f"{base}{reverse('finalizar_compra')}"
 
 
 class ItemCarrinho(models.Model):

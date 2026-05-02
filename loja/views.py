@@ -717,6 +717,7 @@ def adicionar_carrinho(request, produto_id):
     else:
         item.quantidade += quantidade
     item.save()
+    carrinho.save(update_fields=['atualizado_em'])
 
     next_url = request.POST.get('next', 'carrinho')
     if next_url == 'detalhe':
@@ -731,11 +732,13 @@ def adicionar_carrinho(request, produto_id):
 @require_POST
 def remover_item(request, item_id):
     item = get_object_or_404(ItemCarrinho, id=item_id)
+    carrinho = item.carrinho
     if item.quantidade > 1:
         item.quantidade -= 1
         item.save()
     else:
         item.delete()
+    carrinho.save(update_fields=['atualizado_em'])
     return redirect('carrinho')
 
 
@@ -743,8 +746,29 @@ def remover_item(request, item_id):
 @require_POST
 def deletar_item(request, item_id):
     item = get_object_or_404(ItemCarrinho, id=item_id)
+    carrinho = item.carrinho
     item.delete()
+    carrinho.save(update_fields=['atualizado_em'])
     return redirect('carrinho')
+
+
+@require_POST
+def salvar_contato_carrinho(request):
+    carrinho_id = request.session.get('carrinho_id')
+    if not carrinho_id:
+        return JsonResponse({'ok': False, 'erro': 'Carrinho nao encontrado.'}, status=404)
+
+    carrinho = get_object_or_404(Carrinho, id=carrinho_id)
+    carrinho.telefone_cliente = request.POST.get('telefone', '').strip()
+    carrinho.aceita_whatsapp = request.POST.get('aceita_whatsapp') == 'true'
+    carrinho.save(update_fields=['telefone_cliente', 'aceita_whatsapp', 'atualizado_em'])
+
+    logger.info(
+        '[CARRINHO] Contato salvo no carrinho %s. Aceita WhatsApp=%s',
+        carrinho.id,
+        carrinho.aceita_whatsapp,
+    )
+    return JsonResponse({'ok': True})
 
 
 # ── CHECKOUT ───────────────────────────────────────────────────────
@@ -765,6 +789,7 @@ def checkout(request):
             'total': carrinho.total(),
             'qtd_carrinho': get_carrinho_info(request),
             'perfil': perfil,
+            'carrinho': carrinho,
         }
         context.update(noindex_context(request, 'Checkout - Barrs Store'))
         return render(request, 'checkout.html', context)

@@ -45,6 +45,9 @@
   .campo input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s,background .15s}
   .campo input:focus{border-color:var(--green);background:var(--surface)}
   .campo input::placeholder{color:#bbb}
+  .whatsapp-optin{grid-column:1/-1;display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:12px;color:var(--muted);line-height:1.5}
+  .whatsapp-optin input{width:auto;margin-top:2px;accent-color:var(--green)}
+  .whatsapp-optin strong{display:block;color:var(--text);font-size:12px;margin-bottom:2px}
 
 
   .cep-status{font-size:11px;margin-top:5px;min-height:16px}
@@ -148,9 +151,16 @@
         </div>
         <div class="campo">
           <label>Telefone</label>
-          <input type="tel" name="telefone" placeholder="(11) 99999-9999"
-            value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% endif %}">
+          <input type="tel" name="telefone" id="telefone" placeholder="(11) 99999-9999"
+            value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% elif carrinho.telefone_cliente %}{{ carrinho.telefone_cliente }}{% endif %}">
         </div>
+        <label class="whatsapp-optin">
+          <input type="checkbox" name="aceita_whatsapp" id="aceita_whatsapp" value="1" {% if carrinho.aceita_whatsapp %}checked{% endif %}>
+          <span>
+            <strong>Receber ajuda pelo WhatsApp</strong>
+            Podemos te chamar para ajudar a finalizar o pedido se o carrinho ficar parado. Sem spam.
+          </span>
+        </label>
       </div>
 
       {% if not user.is_authenticated %}
@@ -277,6 +287,38 @@
 </form>
 
 <script>
+  function getCsrfToken() {
+    const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    return input ? input.value : '';
+  }
+
+  let salvarContatoTimer = null;
+  function salvarContatoCarrinho() {
+    const telefone = document.getElementById('telefone');
+    const aceita = document.getElementById('aceita_whatsapp');
+    if (!telefone || !aceita) return;
+
+    clearTimeout(salvarContatoTimer);
+    salvarContatoTimer = setTimeout(() => {
+      const body = new URLSearchParams();
+      body.append('telefone', telefone.value);
+      body.append('aceita_whatsapp', aceita.checked ? 'true' : 'false');
+
+      fetch("{% url 'salvar_contato_carrinho' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+        credentials: 'same-origin',
+      }).catch(() => {});
+    }, 700);
+  }
+
+  document.getElementById('telefone')?.addEventListener('input', salvarContatoCarrinho);
+  document.getElementById('aceita_whatsapp')?.addEventListener('change', salvarContatoCarrinho);
+
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
   const freteGet = parseFloat("{{ request.GET.frete_valor|default:'0' }}".replace(',', '.')) || 0;
   

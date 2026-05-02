@@ -28,6 +28,9 @@ ALLOWED_HOSTS = [
 SITE_URL = os.environ.get('SITE_URL', 'https://www.barrsstore.com.br').rstrip('/')
 GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '').strip()
 GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '').strip()
+WHATSAPP_API_URL = os.environ.get('WHATSAPP_API_URL', '').strip().rstrip('/')
+WHATSAPP_API_KEY = os.environ.get('WHATSAPP_API_KEY', '').strip()
+WHATSAPP_INSTANCE = os.environ.get('WHATSAPP_INSTANCE', 'loja').strip() or 'loja'
 
 CSRF_TRUSTED_ORIGINS = [
     'https://web-production-c4971.up.railway.app',
