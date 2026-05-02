@@ -760,7 +760,7 @@ def salvar_contato_carrinho(request):
 
     carrinho = get_object_or_404(Carrinho, id=carrinho_id)
     carrinho.telefone_cliente = request.POST.get('telefone', '').strip()
-    carrinho.aceita_whatsapp = request.POST.get('aceita_whatsapp') == 'true'
+    carrinho.aceita_whatsapp = bool(carrinho.telefone_cliente)
     carrinho.save(update_fields=['telefone_cliente', 'aceita_whatsapp', 'atualizado_em'])
 
     logger.info(
