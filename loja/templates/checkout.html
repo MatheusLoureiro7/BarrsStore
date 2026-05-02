@@ -283,12 +283,12 @@
   }
 
   let salvarContatoTimer = null;
-  function salvarContatoCarrinho() {
+  function salvarContatoCarrinho(imediato = false) {
     const telefone = document.getElementById('telefone');
     if (!telefone) return;
 
     clearTimeout(salvarContatoTimer);
-    salvarContatoTimer = setTimeout(() => {
+    const salvar = () => {
       const body = new URLSearchParams();
       body.append('telefone', telefone.value);
       body.append('aceita_whatsapp', telefone.value.trim() ? 'true' : 'false');
@@ -302,10 +302,19 @@
         body: body.toString(),
         credentials: 'same-origin',
       }).catch(() => {});
-    }, 700);
+    };
+
+    if (imediato) {
+      salvar();
+      return;
+    }
+
+    salvarContatoTimer = setTimeout(salvar, 700);
   }
 
   document.getElementById('telefone')?.addEventListener('input', salvarContatoCarrinho);
+  document.getElementById('telefone')?.addEventListener('blur', () => salvarContatoCarrinho(true));
+  window.addEventListener('beforeunload', () => salvarContatoCarrinho(true));
 
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
   const freteGet = parseFloat("{{ request.GET.frete_valor|default:'0' }}".replace(',', '.')) || 0;

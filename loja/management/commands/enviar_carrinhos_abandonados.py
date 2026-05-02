@@ -28,7 +28,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        minutos = max(options['minutos'], 1)
+        minutos = max(options['minutos'], 0)
         limite = timezone.now() - timedelta(minutes=minutos)
 
         carrinhos = (
