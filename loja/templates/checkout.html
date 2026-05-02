@@ -75,6 +75,12 @@
   .frete-calculado{background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text);margin-top:8px;display:none}
   .frete-calculado.show{display:block}
   .frete-calculado strong{color:var(--green)}
+  .cupom-box{margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)}
+  .cupom-box label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .cupom-box input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface);text-transform:uppercase}
+  .trust-list{display:grid;gap:8px;margin-top:14px;font-size:12px;color:var(--muted)}
+  .trust-item{display:flex;align-items:center;gap:8px}
+  .trust-dot{width:22px;height:22px;border-radius:50%;background:var(--green-bg);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
 
   .btn-finalizar{width:100%;margin-top:16px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
   .btn-finalizar:hover{background:var(--text)}
@@ -250,9 +256,19 @@
     </div>
     <div id="frete-info" class="frete-calculado"></div>
 
+    <div class="cupom-box">
+      <label>Cupom de desconto</label>
+      <input type="text" name="cupom_codigo" placeholder="Digite seu cupom" value="{{ request.POST.cupom_codigo }}">
+    </div>
+
     <div class="resumo-total">
       <span>Total</span>
       <span id="total-display">R$ {{ total }}</span>
+    </div>
+    <div class="trust-list">
+      <div class="trust-item"><span class="trust-dot">✓</span><span>Pagamento protegido pelo Mercado Pago</span></div>
+      <div class="trust-item"><span class="trust-dot">✓</span><span>Compra confirmada automaticamente após o Pix</span></div>
+      <div class="trust-item"><span class="trust-dot">✓</span><span>Atendimento humanizado e rápido pelo WhatsApp</span></div>
     </div>
     <button type="submit" class="btn-finalizar">Confirmar pedido</button>
   </div>

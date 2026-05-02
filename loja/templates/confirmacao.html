@@ -175,6 +175,17 @@
     padding: 12px;
     display: none;
   }
+  .pix-aviso {
+    background: var(--green-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 13px 14px;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    text-align: left;
+  }
 
   /* Divisor */
   .divisor {
@@ -251,6 +262,10 @@
       <span class="detalhe-label">Total</span>
       <span class="detalhe-valor total-valor">R$ {{ pedido.total }}</span>
     </div>
+  </div>
+
+  <div class="pix-aviso">
+    Se pagar por Pix e o Mercado Pago não voltar sozinho para a loja, não se preocupe: o pedido será confirmado automaticamente assim que recebermos a aprovação. Você também receberá a confirmação por e-mail.
   </div>
 
   <!-- BOTÃO MERCADO PAGO -->

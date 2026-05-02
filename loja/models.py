@@ -191,6 +191,8 @@ class Pedido(models.Model):
     forma_pagamento = models.CharField(max_length=20, choices=PAGAMENTO_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cupom_codigo = models.CharField(max_length=30, blank=True, default='')
     frete = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     criado_em = models.DateTimeField(auto_now_add=True)
@@ -198,9 +200,55 @@ class Pedido(models.Model):
     email_rastreio_enviado = models.BooleanField(default=False, help_text='Email de rastreio já foi enviado')
     access_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email_confirmacao_enviado = models.BooleanField(default=False)
+    email_pagamento_pendente_enviado = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'
+
+    def rastreio_url(self):
+        if not self.codigo_rastreio:
+            return ''
+        return f'https://rastreamento.correios.com.br/app/index.php?objeto={self.codigo_rastreio}'
+
+
+class Cupom(models.Model):
+    TIPO_CHOICES = [
+        ('percentual', 'Percentual'),
+        ('valor', 'Valor fixo'),
+    ]
+
+    codigo = models.CharField(max_length=30, unique=True)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='percentual')
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    ativo = models.BooleanField(default=True)
+    uso_maximo = models.PositiveIntegerField(default=0, help_text='0 = sem limite')
+    usado = models.PositiveIntegerField(default=0)
+    valor_minimo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Cupom'
+        verbose_name_plural = 'Cupons'
+
+    def __str__(self):
+        return self.codigo.upper()
+
+    def valido_para(self, subtotal):
+        if not self.ativo:
+            return False, 'Cupom inativo.'
+        if self.uso_maximo and self.usado >= self.uso_maximo:
+            return False, 'Cupom esgotado.'
+        if subtotal < self.valor_minimo:
+            return False, f'Cupom valido para compras a partir de R$ {self.valor_minimo}.'
+        return True, ''
+
+    def calcular_desconto(self, subtotal):
+        if self.tipo == 'percentual':
+            desconto = subtotal * (self.valor / Decimal('100'))
+        else:
+            desconto = self.valor
+        return min(desconto.quantize(Decimal('0.01')), subtotal)
 
 
 class ItemPedido(models.Model):

@@ -132,12 +132,37 @@
     </div>
     {% endfor %}
     <div style="padding-top:12px;border-top:2px solid var(--border);margin-top:4px">
+      <div class="info-linha">
+        <span class="info-label">Subtotal</span>
+        <span class="info-valor">R$ {{ pedido.subtotal }}</span>
+      </div>
+      {% if pedido.desconto > 0 %}
+      <div class="info-linha">
+        <span class="info-label">Desconto{% if pedido.cupom_codigo %} ({{ pedido.cupom_codigo }}){% endif %}</span>
+        <span class="info-valor">- R$ {{ pedido.desconto }}</span>
+      </div>
+      {% endif %}
+      <div class="info-linha">
+        <span class="info-label">Frete</span>
+        <span class="info-valor">{% if pedido.frete > 0 %}R$ {{ pedido.frete }}{% else %}Grátis{% endif %}</span>
+      </div>
       <div class="total-linha">
         <span>Total</span>
         <span>R$ {{ pedido.total }}</span>
       </div>
     </div>
   </div>
+
+  {% if pedido.codigo_rastreio %}
+  <div class="bloco">
+    <div class="bloco-titulo">Rastreio</div>
+    <div class="info-linha">
+      <span class="info-label">Código</span>
+      <span class="info-valor">{{ pedido.codigo_rastreio }}</span>
+    </div>
+    <a href="{{ pedido.rastreio_url }}" target="_blank" rel="noopener" class="btn-voltar">Acompanhar entrega</a>
+  </div>
+  {% endif %}
 
   <!-- ENTREGA -->
   <div class="bloco">

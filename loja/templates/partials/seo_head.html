@@ -13,6 +13,18 @@
 <meta name="twitter:title" content="{{ title }}">
 <meta name="twitter:description" content="{{ description }}">
 <meta name="twitter:image" content="{{ image }}">
+{% if google_site_verification %}
+<meta name="google-site-verification" content="{{ google_site_verification }}">
+{% endif %}
+{% if google_analytics_id %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{ google_analytics_id }}');
+</script>
+{% endif %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

@@ -25,6 +25,8 @@ ALLOWED_HOSTS = [
 ]
 
 SITE_URL = os.environ.get('SITE_URL', 'https://www.barrsstore.com.br').rstrip('/')
+GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '').strip()
+GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '').strip()
 
 CSRF_TRUSTED_ORIGINS = [
     'https://web-production-c4971.up.railway.app',
@@ -69,6 +71,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'loja.context_processors.marketing_tags',
             ],
         },
     },

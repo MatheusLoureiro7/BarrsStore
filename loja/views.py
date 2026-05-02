@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, calcular_frete_por_estado
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom, calcular_frete_por_estado
 import mercadopago
 import json
 import requests as http_requests
@@ -52,6 +52,8 @@ def confirmar_pedido_pago(pedido):
     if pedido.status != 'confirmado':
         pedido.status = 'confirmado'
         atualizou = True
+        if pedido.cupom_codigo:
+            Cupom.objects.filter(codigo__iexact=pedido.cupom_codigo).update(usado=F('usado') + 1)
 
     if not pedido.email_confirmacao_enviado:
         enviado = enviar_email_confirmacao(pedido)
@@ -115,6 +117,13 @@ def enviar_email_confirmacao(pedido):
         ])
 
         frete_texto = f"R$ {pedido.frete}" if pedido.frete > 0 else "Grátis 🎉"
+        desconto_html = ''
+        if pedido.desconto > 0:
+            desconto_html = f"""
+                  <tr>
+                    <td colspan="2" style="padding-top:8px;font-size:13px;color:#9E9488">Desconto {pedido.cupom_codigo}</td>
+                    <td style="padding-top:8px;font-size:13px;color:#8A947C;text-align:right;font-weight:600">- R$ {pedido.desconto}</td>
+                  </tr>"""
 
         html = f"""
         <!DOCTYPE html>
@@ -144,6 +153,7 @@ def enviar_email_confirmacao(pedido):
                     <td colspan="2" style="padding-top:12px;font-size:13px;color:#9E9488">Frete</td>
                     <td style="padding-top:12px;font-size:13px;color:#8A947C;text-align:right;font-weight:600">{frete_texto}</td>
                   </tr>
+                  {desconto_html}
                   <tr>
                     <td colspan="2" style="padding-top:8px;font-size:15px;font-weight:700;color:#3d2d20">Total</td>
                     <td style="padding-top:8px;font-size:15px;font-weight:700;color:#8A947C;text-align:right">R$ {pedido.total}</td>
@@ -215,6 +225,82 @@ def enviar_email_confirmacao(pedido):
     except Exception as exc:
         print(f'[BREVO] Erro pedido {pedido.id}: {exc}', flush=True)
         logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
+        return False
+
+
+def enviar_email_pagamento_pendente(pedido):
+    """Envia um lembrete simples com link para finalizar o pagamento."""
+    if pedido.email_pagamento_pendente_enviado:
+        return True
+    try:
+        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
+        if not brevo_api_key:
+            return False
+        link_pagamento = site_url(reverse('confirmacao', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token}))
+        resposta = http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
+            json={
+                'sender': {'name': 'Barrs Store', 'email': os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com')},
+                'to': [{'email': pedido.email, 'name': pedido.nome}],
+                'subject': f'Finalize o pagamento do pedido #{pedido.id} - Barrs Store',
+                'htmlContent': f"""
+                <div style="font-family:Arial,sans-serif;background:#F5F2EC;padding:28px">
+                  <div style="max-width:560px;margin:auto;background:#fff;border-radius:14px;padding:28px;color:#6B5E53">
+                    <h2 style="color:#3d2d20;margin-top:0">Seu pedido foi reservado</h2>
+                    <p>Oi, {pedido.nome}! Recebemos seu pedido #{pedido.id} e estamos aguardando o pagamento.</p>
+                    <p><strong>Total:</strong> R$ {pedido.total}</p>
+                    <a href="{link_pagamento}" style="display:inline-block;background:#8A947C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Finalizar pagamento</a>
+                    <p style="font-size:13px;color:#9E9488;margin-top:22px">Se voce ja pagou, pode ignorar este e-mail. A confirmacao e automatica.</p>
+                  </div>
+                </div>
+                """,
+            },
+            timeout=10,
+        )
+        print(f'[BREVO] Pagamento pendente pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:300]}', flush=True)
+        if resposta.status_code < 400:
+            pedido.email_pagamento_pendente_enviado = True
+            pedido.save(update_fields=['email_pagamento_pendente_enviado'])
+            return True
+    except Exception as exc:
+        logger.exception('Erro ao enviar e-mail de pagamento pendente do pedido %s: %s', pedido.id, exc)
+    return False
+
+
+def enviar_email_rastreio(pedido):
+    """Envia o codigo de rastreio ao cliente quando o pedido for enviado."""
+    if not pedido.codigo_rastreio:
+        return False
+    try:
+        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
+        if not brevo_api_key:
+            return False
+        rastreio_url = pedido.rastreio_url()
+        resposta = http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
+            json={
+                'sender': {'name': 'Barrs Store', 'email': os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com')},
+                'to': [{'email': pedido.email, 'name': pedido.nome}],
+                'subject': f'Seu pedido #{pedido.id} foi enviado - Barrs Store',
+                'htmlContent': f"""
+                <div style="font-family:Arial,sans-serif;background:#F5F2EC;padding:28px">
+                  <div style="max-width:560px;margin:auto;background:#fff;border-radius:14px;padding:28px;color:#6B5E53">
+                    <h2 style="color:#3d2d20;margin-top:0">Seu pedido esta a caminho</h2>
+                    <p>Oi, {pedido.nome}! O pedido #{pedido.id} ja foi enviado.</p>
+                    <p><strong>Codigo de rastreio:</strong> {pedido.codigo_rastreio}</p>
+                    <a href="{rastreio_url}" style="display:inline-block;background:#8A947C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Acompanhar entrega</a>
+                  </div>
+                </div>
+                """,
+            },
+            timeout=10,
+        )
+        print(f'[BREVO] Rastreio pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:300]}', flush=True)
+        return resposta.status_code < 400
+    except Exception as exc:
+        logger.exception('Erro ao enviar e-mail de rastreio do pedido %s: %s', pedido.id, exc)
         return False
 
 
@@ -391,11 +477,9 @@ def calcular_frete_ajax(request):
     except Exception:
         total = Decimal('0')
 
-    # TEMPORARIO: frete zerado para teste real de pagamento Pix.
-    frete = Decimal('0')
-    minimo = Decimal('0')
-    frete_gratis = True
-    falta = Decimal('0')
+    frete, minimo = calcular_frete_por_estado(estado, total)
+    frete_gratis = frete == Decimal('0')
+    falta = max(minimo - total, Decimal('0'))
 
     return JsonResponse({
         'frete': float(frete),
@@ -415,17 +499,6 @@ def calcular_frete_melhor_envio(request):
     if len(cep_destino) != 8:
         return JsonResponse({'erro': 'CEP inválido'}, status=400)
     
-    # TEMPORARIO: frete zerado para teste real de pagamento Pix.
-    return JsonResponse({
-        'opcoes': [{
-            'id': 'teste-frete-gratis',
-            'nome': 'Frete grátis',
-            'empresa': 'Barrs Store',
-            'preco': 0,
-            'prazo': 'teste',
-        }]
-    })
-
     token = os.environ.get('MELHOR_ENVIO_TOKEN', '').strip()
     if not token:
         return JsonResponse({'erro': 'Frete indisponível no momento.'}, status=503)
@@ -613,9 +686,33 @@ def checkout(request):
 
         estado_pedido = request.POST.get('estado', 'SP')
         subtotal = carrinho.total()
-        # TEMPORARIO: frete zerado para teste real de pagamento Pix.
-        frete = Decimal('0')
-        total = subtotal + frete
+        # Usa frete selecionado no carrinho (Melhor Envio) ou fallback por regiao.
+        frete_selecionado = request.POST.get('frete_valor', '').replace(',', '.').strip()
+        if frete_selecionado:
+            try:
+                frete = Decimal(frete_selecionado)
+                if frete < 0:
+                    raise InvalidOperation
+            except (InvalidOperation, ValueError):
+                frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
+        else:
+            frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
+
+        desconto = Decimal('0')
+        cupom_codigo = request.POST.get('cupom_codigo', '').strip().upper()
+        cupom = None
+        if cupom_codigo:
+            cupom = Cupom.objects.filter(codigo__iexact=cupom_codigo).first()
+            if not cupom:
+                messages.error(request, 'Cupom nao encontrado.')
+                return render_checkout()
+            valido, motivo = cupom.valido_para(subtotal)
+            if not valido:
+                messages.error(request, motivo)
+                return render_checkout()
+            desconto = cupom.calcular_desconto(subtotal)
+
+        total = subtotal - desconto + frete
 
         pedido = Pedido.objects.create(
             cliente=cliente,
@@ -631,6 +728,8 @@ def checkout(request):
             estado=estado_pedido,
             forma_pagamento='pix',
             subtotal=subtotal,
+            desconto=desconto,
+            cupom_codigo=cupom.codigo.upper() if cupom else '',
             frete=frete,
             total=total,
         )
@@ -651,6 +750,7 @@ def checkout(request):
         # Notificacao interna de novo pedido pendente.
         print(f'[CHECKOUT] Pedido {pedido.id} criado. Aguardando pagamento.', flush=True)
         enviar_whatsapp_pedido(pedido)
+        enviar_email_pagamento_pendente(pedido)
 
         return redirect('confirmacao', pedido_id=pedido.id, token=pedido.access_token)
 
@@ -681,22 +781,30 @@ def criar_preferencia(request, pedido_id, token):
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
 
     items = []
-    for item in pedido.itens.all():
+    if pedido.desconto > 0:
         items.append({
-            "title": item.nome_produto,
-            "quantity": int(item.quantidade),
-            "unit_price": float(item.preco_unitario),
-            "currency_id": "BRL",
-        })
-
-    # Adiciona frete como item separado se houver
-    if pedido.frete > 0:
-        items.append({
-            "title": "Frete",
+            "title": f"Pedido #{pedido.id} - Barrs Store",
             "quantity": 1,
-            "unit_price": float(pedido.frete),
+            "unit_price": float(pedido.total),
             "currency_id": "BRL",
         })
+    else:
+        for item in pedido.itens.all():
+            items.append({
+                "title": item.nome_produto,
+                "quantity": int(item.quantidade),
+                "unit_price": float(item.preco_unitario),
+                "currency_id": "BRL",
+            })
+
+        # Adiciona frete como item separado se houver
+        if pedido.frete > 0:
+            items.append({
+                "title": "Frete",
+                "quantity": 1,
+                "unit_price": float(pedido.frete),
+                "currency_id": "BRL",
+            })
 
     # Limpa telefone — MP só aceita números
     telefone_limpo = "".join(filter(str.isdigit, pedido.telefone or ""))
@@ -940,6 +1048,26 @@ def medidas(request):
         **seo_context(request, 'Guia de medidas - Barrs Store', 'Consulte o guia de medidas da Barrs Store para escolher aneis e acessorios com mais seguranca.'),
     }
     return render(request, 'medidas.html', context)
+
+
+def rastrear_pedido(request):
+    pedido = None
+    erro = ''
+    if request.GET.get('pedido') or request.GET.get('email'):
+        pedido_id = request.GET.get('pedido', '').strip().replace('#', '')
+        email = request.GET.get('email', '').strip()
+        try:
+            pedido = Pedido.objects.get(id=pedido_id, email__iexact=email)
+        except (Pedido.DoesNotExist, ValueError):
+            erro = 'Nao encontramos um pedido com esses dados.'
+
+    context = {
+        'pedido': pedido,
+        'erro': erro,
+        'qtd_carrinho': get_carrinho_info(request),
+        **seo_context(request, 'Rastrear pedido - Barrs Store', 'Acompanhe o status e o codigo de rastreio do seu pedido na Barrs Store.'),
+    }
+    return render(request, 'rastrear_pedido.html', context)
 
 
 def sobre(request):
