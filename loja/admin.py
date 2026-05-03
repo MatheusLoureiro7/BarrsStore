@@ -1,9 +1,8 @@
 from django.contrib import admin
-from django.utils.html import format_html
+from django import forms
+from django.utils.html import format_html, format_html_join
 from django.contrib import messages
 from .models import Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel, Cupom
-import requests as http_requests
-import os
 
 
 @admin.register(Categoria)
@@ -39,24 +38,139 @@ class ProdutoAdmin(admin.ModelAdmin):
     inlines = [TamanhoInline]
 
 
+class PedidoAdminForm(forms.ModelForm):
+    enviar_email_rastreio_agora = forms.BooleanField(
+        required=False,
+        label='Enviar e-mail de rastreio agora',
+        help_text='Marque esta opção ao preencher ou alterar o código de rastreio.'
+    )
+
+    class Meta:
+        model = Pedido
+        fields = '__all__'
+
+
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
+    form = PedidoAdminForm
     list_display = ('id', 'nome', 'email', 'cpf', 'cidade', 'status', 'total', 'melhor_envio_order_id', 'codigo_rastreio', 'criado_em')
     list_editable = ('status',)
     list_filter = ('status', 'forma_pagamento', 'estado')
     search_fields = ('nome', 'email', 'cpf', 'cidade', 'codigo_rastreio', 'melhor_envio_order_id')
-    readonly_fields = ('criado_em', 'access_token', 'melhor_envio_order_id', 'melhor_envio_status', 'melhor_envio_erro')
+    readonly_fields = (
+        'resumo_itens_admin',
+        'criado_em',
+        'access_token',
+        'email_rastreio_enviado',
+        'melhor_envio_order_id',
+        'melhor_envio_status',
+        'melhor_envio_erro',
+    )
+    fieldsets = (
+        ('Resumo do pedido', {
+            'fields': ('resumo_itens_admin',)
+        }),
+        ('Cliente', {
+            'fields': ('cliente', 'nome', 'email', 'telefone', 'cpf')
+        }),
+        ('Endereço de entrega', {
+            'fields': ('cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado')
+        }),
+        ('Pagamento', {
+            'fields': ('forma_pagamento', 'status', 'subtotal', 'desconto', 'cupom_codigo', 'frete', 'total')
+        }),
+        ('Rastreio e Melhor Envio', {
+            'fields': (
+                'codigo_rastreio',
+                'enviar_email_rastreio_agora',
+                'email_rastreio_enviado',
+                'melhor_envio_service_id',
+                'melhor_envio_order_id',
+                'melhor_envio_status',
+                'melhor_envio_erro',
+            )
+        }),
+        ('Controle interno', {
+            'fields': ('access_token', 'criado_em')
+        }),
+    )
+
+    @admin.display(description='Itens comprados')
+    def resumo_itens_admin(self, obj):
+        if not obj.pk:
+            return 'Salve o pedido para ver os itens.'
+
+        itens = obj.itens.select_related('produto').all()
+        if not itens:
+            return 'Nenhum item encontrado para este pedido.'
+
+        linhas = format_html_join(
+            '',
+            '<tr>'
+            '<td style="padding:8px;border-bottom:1px solid #ddd">{}</td>'
+            '<td style="padding:8px;border-bottom:1px solid #ddd">{}</td>'
+            '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:center">{}</td>'
+            '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right">R$ {}</td>'
+            '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right">R$ {}</td>'
+            '</tr>',
+            (
+                (
+                    item.nome_produto,
+                    item.produto.codigo_interno if item.produto and item.produto.codigo_interno else 'Sem código',
+                    item.quantidade,
+                    item.preco_unitario,
+                    item.subtotal(),
+                )
+                for item in itens
+            )
+        )
+
+        return format_html(
+            '<table style="width:100%;border-collapse:collapse;background:#fff">'
+            '<thead>'
+            '<tr style="background:#f5f5f5">'
+            '<th style="padding:8px;text-align:left;border-bottom:1px solid #ddd">Produto</th>'
+            '<th style="padding:8px;text-align:left;border-bottom:1px solid #ddd">Código</th>'
+            '<th style="padding:8px;text-align:center;border-bottom:1px solid #ddd">Qtd</th>'
+            '<th style="padding:8px;text-align:right;border-bottom:1px solid #ddd">Preço unitário</th>'
+            '<th style="padding:8px;text-align:right;border-bottom:1px solid #ddd">Subtotal</th>'
+            '</tr>'
+            '</thead>'
+            '<tbody>{}</tbody>'
+            '<tfoot>'
+            '<tr>'
+            '<td colspan="4" style="padding:10px;text-align:right;font-weight:700">Total do pedido</td>'
+            '<td style="padding:10px;text-align:right;font-weight:700">R$ {}</td>'
+            '</tr>'
+            '</tfoot>'
+            '</table>',
+            linhas,
+            obj.total,
+        )
 
     def save_model(self, request, obj, form, change):
-        status_anterior = None
         codigo_anterior = ''
         if change and obj.pk:
             antigo = Pedido.objects.filter(pk=obj.pk).first()
             if antigo:
-                status_anterior = antigo.status
                 codigo_anterior = antigo.codigo_rastreio
+
+        enviar_rastreio = form.cleaned_data.get('enviar_email_rastreio_agora')
         super().save_model(request, obj, form, change)
-        if obj.codigo_rastreio and not obj.email_rastreio_enviado:
+
+        if not enviar_rastreio:
+            return
+
+        if not obj.codigo_rastreio:
+            self.message_user(request, 'Preencha o código de rastreio antes de enviar o e-mail.', messages.WARNING)
+            return
+
+        codigo_alterado = codigo_anterior and codigo_anterior != obj.codigo_rastreio
+        if obj.email_rastreio_enviado and not codigo_alterado:
+            self.message_user(request, 'Este e-mail de rastreio já foi enviado para este código.', messages.WARNING)
+            return
+
+        try:
             from .views import enviar_email_rastreio
             if enviar_email_rastreio(obj):
                 obj.email_rastreio_enviado = True
@@ -64,11 +178,10 @@ class PedidoAdmin(admin.ModelAdmin):
                     obj.status = 'enviado'
                 obj.save(update_fields=['email_rastreio_enviado', 'status'])
                 self.message_user(request, 'E-mail de rastreio enviado ao cliente.', messages.SUCCESS)
-        elif change and status_anterior != obj.status and obj.status == 'enviado' and obj.codigo_rastreio and codigo_anterior == obj.codigo_rastreio:
-            from .views import enviar_email_rastreio
-            if enviar_email_rastreio(obj):
-                obj.email_rastreio_enviado = True
-                obj.save(update_fields=['email_rastreio_enviado'])
+            else:
+                self.message_user(request, 'Não foi possível enviar o e-mail de rastreio. Veja os logs.', messages.ERROR)
+        except Exception as exc:
+            self.message_user(request, f'Erro ao enviar e-mail de rastreio: {exc}', messages.ERROR)
 
 
 @admin.register(Cupom)

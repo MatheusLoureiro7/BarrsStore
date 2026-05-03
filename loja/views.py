@@ -408,6 +408,7 @@ def enviar_email_rastreio(pedido):
     try:
         brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
         if not brevo_api_key:
+            logger.warning('BREVO_API_KEY nao configurada. E-mail de rastreio do pedido %s nao foi enviado.', pedido.id)
             return False
         rastreio_url = pedido.rastreio_url()
         resposta = http_requests.post(
@@ -420,9 +421,10 @@ def enviar_email_rastreio(pedido):
                 'htmlContent': f"""
                 <div style="font-family:Arial,sans-serif;background:#F5F2EC;padding:28px">
                   <div style="max-width:560px;margin:auto;background:#fff;border-radius:14px;padding:28px;color:#6B5E53">
-                    <h2 style="color:#3d2d20;margin-top:0">Seu pedido esta a caminho</h2>
-                    <p>Oi, {pedido.nome}! O pedido #{pedido.id} ja foi enviado.</p>
-                    <p><strong>Codigo de rastreio:</strong> {pedido.codigo_rastreio}</p>
+                    <h2 style="color:#3d2d20;margin-top:0">Seu pedido foi enviado</h2>
+                    <p>Oi, {pedido.nome}! O pedido #{pedido.id} já foi enviado.</p>
+                    <p><strong>Código de rastreio:</strong> {pedido.codigo_rastreio}</p>
+                    <p>Você pode acompanhar a entrega pelo botão abaixo.</p>
                     <a href="{rastreio_url}" style="display:inline-block;background:#8A947C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Acompanhar entrega</a>
                   </div>
                 </div>
@@ -431,7 +433,15 @@ def enviar_email_rastreio(pedido):
             timeout=10,
         )
         print(f'[BREVO] Rastreio pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:300]}', flush=True)
-        return resposta.status_code < 400
+        if resposta.status_code >= 400:
+            logger.warning(
+                'Brevo recusou o e-mail de rastreio do pedido %s. Status %s: %s',
+                pedido.id,
+                resposta.status_code,
+                resposta.text[:500],
+            )
+            return False
+        return True
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail de rastreio do pedido %s: %s', pedido.id, exc)
         return False
