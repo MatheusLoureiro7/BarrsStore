@@ -192,6 +192,7 @@ class Pedido(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     telefone = models.CharField(max_length=20, blank=True, default='')
+    cpf = models.CharField(max_length=14, blank=True, default='')
     cep = models.CharField(max_length=9)
     rua = models.CharField(max_length=200)
     numero = models.CharField(max_length=20)

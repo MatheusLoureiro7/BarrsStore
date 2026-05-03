@@ -41,10 +41,10 @@ class ProdutoAdmin(admin.ModelAdmin):
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nome', 'email', 'cidade', 'status', 'total', 'melhor_envio_order_id', 'codigo_rastreio', 'criado_em')
+    list_display = ('id', 'nome', 'email', 'cpf', 'cidade', 'status', 'total', 'melhor_envio_order_id', 'codigo_rastreio', 'criado_em')
     list_editable = ('status',)
     list_filter = ('status', 'forma_pagamento', 'estado')
-    search_fields = ('nome', 'email', 'cidade', 'codigo_rastreio', 'melhor_envio_order_id')
+    search_fields = ('nome', 'email', 'cpf', 'cidade', 'codigo_rastreio', 'melhor_envio_order_id')
     readonly_fields = ('criado_em', 'access_token', 'melhor_envio_order_id', 'melhor_envio_status', 'melhor_envio_erro')
 
     def save_model(self, request, obj, form, change):

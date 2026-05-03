@@ -153,6 +153,12 @@
             value="{% if request.POST.email %}{{ request.POST.email }}{% elif user.is_authenticated %}{{ user.email }}{% endif %}">
         </div>
         <div class="campo">
+          <label>CPF</label>
+          <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" maxlength="14" required
+            oninput="mascaraCpf(this)"
+            value="{{ request.POST.cpf }}">
+        </div>
+        <div class="campo">
           <label>Telefone</label>
           <input type="tel" name="telefone" id="telefone" placeholder="(11) 99999-9999" required
             value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% elif carrinho.telefone_cliente %}{{ carrinho.telefone_cliente }}{% endif %}">
@@ -357,6 +363,14 @@ function mascaraCep(input) {
   if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
   input.value = v;
   if (v.replace('-','').length === 8) buscarCep();
+}
+
+function mascaraCpf(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 11);
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  input.value = v;
 }
 
   async function buscarCep() {

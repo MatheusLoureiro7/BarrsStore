@@ -165,6 +165,7 @@ def criar_envio_melhor_envio(pedido):
         'to': {
             'name': pedido.nome,
             'phone': apenas_digitos(pedido.telefone) or apenas_digitos(os.environ.get('ME_REMETENTE_TELEFONE', '11913225256')),
+            'document': apenas_digitos(pedido.cpf),
             'email': pedido.email,
             'address': pedido.rua,
             'complement': pedido.complemento,
@@ -814,6 +815,7 @@ def checkout(request):
             'nome': 'Nome completo',
             'email': 'E-mail',
             'telefone': 'Celular',
+            'cpf': 'CPF',
             'cep': 'CEP',
             'rua': 'Rua',
             'numero': 'Numero',
@@ -822,6 +824,11 @@ def checkout(request):
             if not request.POST.get(campo, '').strip():
                 messages.error(request, f'Preencha o campo {rotulo}.')
                 return render_checkout()
+
+        cpf_pedido = apenas_digitos(request.POST.get('cpf', ''))
+        if len(cpf_pedido) != 11:
+            messages.error(request, 'Informe um CPF valido com 11 numeros.')
+            return render_checkout()
 
         if not request.user.is_authenticated:
             email_pedido = request.POST.get('email', '').strip().lower()
@@ -907,6 +914,7 @@ def checkout(request):
             nome=request.POST['nome'],
             email=request.POST['email'],
             telefone=request.POST.get('telefone', ''),
+            cpf=cpf_pedido,
             cep=request.POST['cep'],
             rua=request.POST['rua'],
             numero=request.POST['numero'],
