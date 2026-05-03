@@ -78,6 +78,12 @@
   .cupom-box{margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)}
   .cupom-box label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
   .cupom-box input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface);text-transform:uppercase}
+  .cupom-row{display:flex;gap:8px}
+  .cupom-row input{flex:1}
+  .btn-cupom{padding:10px 12px;border:none;border-radius:var(--radius-sm);background:var(--green);color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+  .cupom-status{font-size:11px;margin-top:7px;min-height:15px;color:var(--muted)}
+  .cupom-status.ok{color:var(--green)}
+  .cupom-status.erro{color:#b84c3a}
   .trust-list{display:grid;gap:8px;margin-top:14px;font-size:12px;color:var(--muted)}
   .trust-item{display:flex;align-items:center;gap:8px}
   .trust-dot{width:22px;height:22px;border-radius:50%;background:var(--green-bg);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
@@ -148,7 +154,7 @@
         </div>
         <div class="campo">
           <label>Telefone</label>
-          <input type="tel" name="telefone" id="telefone" placeholder="(11) 99999-9999"
+          <input type="tel" name="telefone" id="telefone" placeholder="(11) 99999-9999" required
             value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% elif carrinho.telefone_cliente %}{{ carrinho.telefone_cliente }}{% endif %}">
         </div>
       </div>
@@ -254,11 +260,19 @@
         {% if request.GET.frete_valor %}R$ {{ request.GET.frete_valor }}{% endif %}
       </span>
     </div>
+    <div class="resumo-linha" id="desconto-row" style="display:none">
+      <span id="desconto-label">Desconto</span>
+      <span id="desconto-display" style="color:var(--green);font-weight:600"></span>
+    </div>
     <div id="frete-info" class="frete-calculado"></div>
 
     <div class="cupom-box">
       <label>Cupom de desconto</label>
-      <input type="text" name="cupom_codigo" placeholder="Digite seu cupom" value="{{ request.POST.cupom_codigo }}">
+      <div class="cupom-row">
+        <input type="text" name="cupom_codigo" id="cupom_codigo" placeholder="Digite seu cupom" value="{{ request.POST.cupom_codigo }}">
+        <button type="button" class="btn-cupom" id="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
+      </div>
+      <div class="cupom-status" id="cupom-status"></div>
     </div>
 
     <div class="resumo-total">
@@ -317,12 +331,19 @@
 
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
   const freteGet = parseFloat("{{ request.GET.frete_valor|default:'0' }}".replace(',', '.')) || 0;
+  let descontoCupom = 0;
+
+  function formatarMoeda(valor) {
+    return 'R$ ' + valor.toFixed(2).replace('.', ',');
+  }
+
+  function atualizarTotalCheckout() {
+    const total = Math.max(0, subtotal + freteGet - descontoCupom);
+    document.getElementById('total-display').textContent = formatarMoeda(total);
+  }
   
   window.addEventListener('load', () => {
-    if (freteGet > 0) {
-      const total = subtotal + freteGet;
-      document.getElementById('total-display').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
-    }
+    atualizarTotalCheckout();
     // Preenche CEP se veio do carrinho
     const cepGet = "{{ request.GET.cep|default:'' }}";
     if (cepGet.length === 8 && !document.getElementById('cep').value) {
@@ -384,6 +405,63 @@ function mascaraCep(input) {
       cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
     }
   });
+
+  async function aplicarCupom() {
+    const input = document.getElementById('cupom_codigo');
+    const status = document.getElementById('cupom-status');
+    const botao = document.getElementById('btn-cupom');
+    const codigo = input.value.trim().toUpperCase();
+
+    status.textContent = '';
+    status.className = 'cupom-status';
+    descontoCupom = 0;
+    document.getElementById('desconto-row').style.display = 'none';
+    atualizarTotalCheckout();
+
+    if (!codigo) {
+      status.textContent = 'Digite um cupom.';
+      status.className = 'cupom-status erro';
+      return;
+    }
+
+    const body = new URLSearchParams();
+    body.append('cupom_codigo', codigo);
+    botao.disabled = true;
+    botao.textContent = 'Aplicando...';
+
+    try {
+      const res = await fetch("{% url 'aplicar_cupom_ajax' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+        credentials: 'same-origin',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        status.textContent = data.erro || 'Não foi possível aplicar o cupom.';
+        status.className = 'cupom-status erro';
+        return;
+      }
+
+      descontoCupom = parseFloat(data.desconto || 0);
+      input.value = data.codigo;
+      document.getElementById('desconto-label').textContent = `Desconto ${data.codigo}`;
+      document.getElementById('desconto-display').textContent = '- ' + formatarMoeda(descontoCupom);
+      document.getElementById('desconto-row').style.display = 'flex';
+      status.textContent = 'Cupom aplicado com sucesso!';
+      status.className = 'cupom-status ok';
+      atualizarTotalCheckout();
+    } catch(e) {
+      status.textContent = 'Erro ao aplicar cupom. Tente novamente.';
+      status.className = 'cupom-status erro';
+    } finally {
+      botao.disabled = false;
+      botao.textContent = 'Aplicar';
+    }
+  }
 </script>
 </body>
 </html>

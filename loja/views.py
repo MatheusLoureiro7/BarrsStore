@@ -755,6 +755,36 @@ def salvar_contato_carrinho(request):
     return JsonResponse({'ok': True})
 
 
+@require_POST
+def aplicar_cupom_ajax(request):
+    carrinho_id = request.session.get('carrinho_id')
+    if not carrinho_id:
+        return JsonResponse({'ok': False, 'erro': 'Carrinho nao encontrado.'}, status=404)
+
+    carrinho = get_object_or_404(Carrinho, id=carrinho_id)
+    subtotal = carrinho.total()
+    codigo = request.POST.get('cupom_codigo', '').strip().upper()
+
+    if not codigo:
+        return JsonResponse({'ok': False, 'erro': 'Digite um cupom.'}, status=400)
+
+    cupom = Cupom.objects.filter(codigo__iexact=codigo).first()
+    if not cupom:
+        return JsonResponse({'ok': False, 'erro': 'Cupom nao encontrado.'}, status=404)
+
+    valido, motivo = cupom.valido_para(subtotal)
+    if not valido:
+        return JsonResponse({'ok': False, 'erro': motivo}, status=400)
+
+    desconto = cupom.calcular_desconto(subtotal)
+    return JsonResponse({
+        'ok': True,
+        'codigo': cupom.codigo.upper(),
+        'desconto': float(desconto),
+        'subtotal': float(subtotal),
+    })
+
+
 # ── CHECKOUT ───────────────────────────────────────────────────────
 def checkout(request):
     carrinho_id = request.session.get('carrinho_id')
@@ -780,6 +810,18 @@ def checkout(request):
 
     if request.method == 'POST':
         cliente = request.user if request.user.is_authenticated else None
+        campos_obrigatorios = {
+            'nome': 'Nome completo',
+            'email': 'E-mail',
+            'telefone': 'Celular',
+            'cep': 'CEP',
+            'rua': 'Rua',
+            'numero': 'Numero',
+        }
+        for campo, rotulo in campos_obrigatorios.items():
+            if not request.POST.get(campo, '').strip():
+                messages.error(request, f'Preencha o campo {rotulo}.')
+                return render_checkout()
 
         if not request.user.is_authenticated:
             email_pedido = request.POST.get('email', '').strip().lower()
