@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from loja.models import Carrinho
-from loja.whatsapp import enviar_whatsapp
+from loja.whatsapp import enviar_whatsapp, formatar_numero_brasil
 
 
 logger = logging.getLogger(__name__)
@@ -26,20 +26,28 @@ class Command(BaseCommand):
             action='store_true',
             help='Mostra o que seria enviado sem chamar a API.',
         )
+        parser.add_argument(
+            '--reenviar',
+            action='store_true',
+            help='Inclui carrinhos que ja foram marcados como enviados. Use apenas para teste.',
+        )
 
     def handle(self, *args, **options):
         minutos = max(options['minutos'], 0)
         limite = timezone.now() - timedelta(minutes=minutos)
 
+        filtros = {
+            'telefone_cliente__gt': '',
+            'aceita_whatsapp': True,
+            'atualizado_em__lte': limite,
+            'itens__isnull': False,
+        }
+        if not options['reenviar']:
+            filtros['whatsapp_abandono_enviado'] = False
+
         carrinhos = (
             Carrinho.objects
-            .filter(
-                telefone_cliente__gt='',
-                aceita_whatsapp=True,
-                whatsapp_abandono_enviado=False,
-                atualizado_em__lte=limite,
-                itens__isnull=False,
-            )
+            .filter(**filtros)
             .prefetch_related('itens__produto')
             .distinct()
         )
@@ -57,13 +65,19 @@ class Command(BaseCommand):
             )
 
             if options['dry_run']:
+                numero_formatado = formatar_numero_brasil(carrinho.telefone_cliente)
                 self.stdout.write(
-                    f'[DRY-RUN] Carrinho {carrinho.id}: enviaria para {carrinho.telefone_cliente}'
+                    f'[DRY-RUN] Carrinho {carrinho.id}: enviaria para {carrinho.telefone_cliente} -> {numero_formatado}'
                 )
                 continue
 
-            enviado = enviar_whatsapp(carrinho.telefone_cliente, mensagem)
-            if enviado:
+            resultado = enviar_whatsapp(carrinho.telefone_cliente, mensagem)
+            self.stdout.write(
+                f"[WHATSAPP] Carrinho {carrinho.id}: numero={resultado['numero']} "
+                f"status={resultado['status_code']} resposta={resultado['body']}"
+            )
+
+            if resultado['ok']:
                 carrinho.whatsapp_abandono_enviado = True
                 carrinho.whatsapp_abandono_enviado_em = timezone.now()
                 carrinho.save(update_fields=[
