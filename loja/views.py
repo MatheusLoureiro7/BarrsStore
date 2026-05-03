@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom, calcular_frete_por_estado
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom
 import mercadopago
 import json
 import requests as http_requests
@@ -601,26 +601,10 @@ def ver_carrinho(request):
 
 # ── CALCULAR FRETE VIA CEP (AJAX) ─────────────────────────────────
 def calcular_frete_ajax(request):
-    """Endpoint chamado pelo JS do checkout quando o cliente digita o CEP."""
-    from decimal import Decimal
-    estado = request.GET.get('estado', '').upper().strip()
-    try:
-        total = Decimal(request.GET.get('total', '0'))
-    except Exception:
-        total = Decimal('0')
-
-    frete, minimo = calcular_frete_por_estado(estado, total)
-    frete_gratis = frete == Decimal('0')
-    falta = max(minimo - total, Decimal('0'))
-
+    """Frete fixo/regional desativado. Use sempre o Melhor Envio."""
     return JsonResponse({
-        'frete': float(frete),
-        'total_com_frete': float(total + frete),
-        'frete_gratis': frete_gratis,
-        'falta_frete_gratis': float(falta),
-        'minimo_gratis': float(minimo),
-        'estado': estado,
-    })
+        'erro': 'Frete fixo desativado. Calcule o frete no carrinho pelo Melhor Envio.'
+    }, status=410)
 
 
 # ── CALCULAR FRETE VIA MELHOR ENVIO ───────────────────────────────
@@ -843,17 +827,18 @@ def checkout(request):
 
         estado_pedido = request.POST.get('estado', 'SP')
         subtotal = carrinho.total()
-        # Usa frete selecionado no carrinho (Melhor Envio) ou fallback por regiao.
+        # Frete deve vir da opção escolhida pelo comprador no Melhor Envio.
         frete_selecionado = request.POST.get('frete_valor', '').replace(',', '.').strip()
-        if frete_selecionado:
-            try:
-                frete = Decimal(frete_selecionado)
-                if frete < 0:
-                    raise InvalidOperation
-            except (InvalidOperation, ValueError):
-                frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
-        else:
-            frete, _ = calcular_frete_por_estado(estado_pedido, subtotal)
+        if not frete_selecionado:
+            messages.error(request, 'Calcule e selecione uma opção de frete no carrinho antes de finalizar.')
+            return render_checkout()
+        try:
+            frete = Decimal(frete_selecionado)
+            if frete < 0:
+                raise InvalidOperation
+        except (InvalidOperation, ValueError):
+            messages.error(request, 'Não foi possível validar o frete selecionado. Calcule o frete novamente no carrinho.')
+            return render_checkout()
 
         desconto = Decimal('0')
         cupom_codigo = request.POST.get('cupom_codigo', '').strip().upper()
@@ -1199,7 +1184,7 @@ def pagina_404(request, exception):
 def entrega(request):
     context = {
         'qtd_carrinho': get_carrinho_info(request),
-        **seo_context(request, 'Entrega e frete - Barrs Store', 'Veja prazos, frete e informacoes de entrega da Barrs Store para comprar com tranquilidade.'),
+        **seo_context(request, 'Entrega e trocas - Barrs Store', 'Veja prazos de envio e informacoes de trocas e devolucoes da Barrs Store para comprar com tranquilidade.'),
     }
     return render(request, 'entrega.html', context)
 

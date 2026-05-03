@@ -38,12 +38,6 @@
   .sep{border:none;border-top:1px solid var(--border);margin:32px 0}
   h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:16px}
 
-  .frete-tabela{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px}
-  .frete-linha{display:grid;grid-template-columns:1fr 1fr 1fr;padding:14px 20px;border-bottom:1px solid var(--border);font-size:13px}
-  .frete-linha:last-child{border-bottom:none}
-  .frete-linha.header{background:var(--green-bg);font-weight:600;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
-  .frete-gratis{color:var(--green);font-weight:600}
-
   .passos{display:flex;flex-direction:column;gap:16px;margin-bottom:32px}
   .passo{display:flex;gap:16px;align-items:flex-start}
   .passo-num{width:32px;height:32px;border-radius:50%;background:var(--green-bg);border:1px solid var(--green-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--green);flex-shrink:0}
@@ -56,7 +50,7 @@
   .btn-wa{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25d366;color:#fff;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;transition:opacity .2s}
   .btn-wa:hover{opacity:0.85}
 
-  @media(max-width:600px){.cards{grid-template-columns:1fr}.navbar{padding:0 20px}.nav-links{display:none}.frete-linha{grid-template-columns:1fr 1fr;gap:4px}}
+  @media(max-width:600px){.cards{grid-template-columns:1fr}.navbar{padding:0 20px}.nav-links{display:none}}
 </style>
 </head>
 <body>
@@ -80,13 +74,13 @@
 <div class="page">
   <div class="tag">Informações de entrega</div>
   <h1>Entrega, Trocas e Devoluções</h1>
-  <p class="lead">Aqui você encontra tudo sobre prazos, fretes e como funciona nossa política de trocas.</p>
+  <p class="lead">Aqui você encontra tudo sobre prazos de envio e como funciona nossa política de trocas.</p>
 
   <div class="cards">
     <div class="info-card">
       <div class="info-card-icon">🚚</div>
-      <div class="info-card-titulo">Prazo de envio</div>
-      <div class="info-card-desc">Enviamos em até <strong>2 dias úteis</strong> após a confirmação do pagamento.</div>
+      <div class="info-card-titulo">Envio</div>
+      <div class="info-card-desc">Enviamos em até <strong>2 dias úteis</strong> após a confirmação do pagamento. O frete é calculado no carrinho conforme o CEP e a opção escolhida.</div>
       <div class="info-card-dest">Enviamos de São Paulo/SP</div>
     </div>
     <div class="info-card">
@@ -104,32 +98,6 @@
       <div class="info-card-icon">💰</div>
       <div class="info-card-titulo">Reembolso</div>
       <div class="info-card-desc">Devoluções aceitas em até <strong>7 dias</strong>. Reembolso em até 5 dias úteis após recebimento.</div>
-    </div>
-  </div>
-
-  <hr class="sep">
-
-  <h2>Tabela de fretes</h2>
-  <div class="frete-tabela">
-    <div class="frete-linha header">
-      <span>Região</span>
-      <span>Valor do frete</span>
-      <span>Frete grátis</span>
-    </div>
-    <div class="frete-linha">
-      <span>• São Paulo</span>
-      <span>R$ 9,90</span>
-      <span class="frete-gratis">Acima de R$ 79</span>
-    </div>
-    <div class="frete-linha">
-      <span>• Demais regiões do Brasil</span>
-      <span>R$ 16,90</span>
-      <span class="frete-gratis">Acima de R$ 119</span>
-    </div>
-    <div class="frete-linha">
-      <span>• Região Norte</span>
-      <span>R$ 21,90</span>
-      <span class="frete-gratis">Acima de R$ 149</span>
     </div>
   </div>
 

@@ -213,7 +213,6 @@
         <div class="campo">
           <label>Estado (UF)</label>
           <input type="text" name="estado" id="estado" placeholder="SP" maxlength="2" required
-            oninput="atualizarFrete()"
             value="{% if request.POST.estado %}{{ request.POST.estado }}{% elif perfil %}{{ perfil.estado }}{% endif %}">
         </div>
       </div>
@@ -245,7 +244,7 @@
         {% if request.GET.frete_nome %}
           {{ request.GET.frete_nome }}
         {% else %}
-          <em class="frete-pendente">a calcular</em>
+          <em class="frete-pendente">selecione no carrinho</em>
         {% endif %}
       </span>
     </div>
@@ -371,60 +370,19 @@ function mascaraCep(input) {
       status.textContent = '✓ Endereço encontrado!';
       status.className = 'cep-status cep-ok';
       document.querySelector('input[name="numero"]').focus();
-      atualizarFrete();
     } catch(e) {
       status.textContent = 'Erro ao buscar CEP. Tente novamente.';
       status.className = 'cep-status cep-erro';
     }
   }
 
-  async function atualizarFrete() {
-    const estado = document.getElementById('estado').value.trim().toUpperCase();
-    if (estado.length !== 2) return;
-
-    try {
-      const res = await fetch(`/frete/calcular/?estado=${estado}&total=${subtotal}`);
-      const data = await res.json();
-
-      const freteDisplay = document.getElementById('frete-display');
-      const totalDisplay = document.getElementById('total-display');
-      const freteInfo = document.getElementById('frete-info');
-      const freteValorHidden = document.getElementById('frete_valor_hidden');
-      const freteNomeHidden = document.getElementById('frete_nome_hidden');
-      const freteFormatado = data.frete.toFixed(2).replace('.', ',');
-
-      freteValorHidden.value = data.frete.toFixed(2);
-
-      if (data.frete_gratis) {
-        freteDisplay.textContent = 'Grátis 🎉';
-        freteDisplay.className = 'frete-gratis-tag';
-        freteNomeHidden.value = 'Frete grátis';
-        freteInfo.innerHTML = '🎉 <strong>Parabéns!</strong> Você ganhou frete grátis!';
-      } else {
-        freteDisplay.textContent = `R$ ${freteFormatado}`;
-        freteDisplay.className = '';
-        freteNomeHidden.value = `Frete ${data.estado}`;
-        const falta = data.falta_frete_gratis.toFixed(2).replace('.', ',');
-        freteInfo.innerHTML = `Falta <strong>R$ ${falta}</strong> para frete grátis nessa região 🚚`;
-      }
-
-      freteInfo.classList.add('show');
-      totalDisplay.textContent = `R$ ${data.total_com_frete.toFixed(2).replace('.', ',')}`;
-
-    } catch(e) {
-      console.error('Erro ao calcular frete', e);
-    }
-  }
-
-  // Ao carregar: aplica máscara no CEP preenchido e calcula frete
+  // Ao carregar: aplica máscara no CEP preenchido.
   window.addEventListener('load', () => {
     const cepInput = document.getElementById('cep');
     const cep = cepInput.value.replace(/\D/g, '');
     if (cep.length === 8) {
       cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
     }
-    const estado = document.getElementById('estado').value.trim();
-    if (estado.length === 2) atualizarFrete();
   });
 </script>
 </body>
