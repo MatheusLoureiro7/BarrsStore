@@ -404,13 +404,15 @@ def enviar_email_pagamento_pendente(pedido):
     try:
         brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
         if not brevo_api_key:
+            logger.warning('BREVO_API_KEY nao configurada. E-mail de pagamento pendente do pedido %s nao foi enviado.', pedido.id)
             return False
         link_pagamento = site_url(reverse('confirmacao', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token}))
+        brevo_from_email = os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip()
         resposta = http_requests.post(
             'https://api.brevo.com/v3/smtp/email',
             headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
             json={
-                'sender': {'name': 'Barrs Store', 'email': os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com')},
+                'sender': {'name': 'Barrs Store', 'email': brevo_from_email},
                 'to': [{'email': pedido.email, 'name': pedido.nome}],
                 'subject': f'Finalize o pagamento do pedido #{pedido.id} - Barrs Store',
                 'htmlContent': f"""
@@ -432,6 +434,12 @@ def enviar_email_pagamento_pendente(pedido):
             pedido.email_pagamento_pendente_enviado = True
             pedido.save(update_fields=['email_pagamento_pendente_enviado'])
             return True
+        logger.warning(
+            'Brevo recusou o e-mail de pagamento pendente do pedido %s. Status %s: %s',
+            pedido.id,
+            resposta.status_code,
+            resposta.text[:500],
+        )
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail de pagamento pendente do pedido %s: %s', pedido.id, exc)
     return False

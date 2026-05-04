@@ -39,10 +39,11 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 48px 40px;
-    max-width: 480px;
+    padding: 42px 40px;
+    max-width: 540px;
     width: 100%;
     text-align: center;
+    box-shadow: 0 18px 50px rgba(107, 94, 83, 0.10);
   }
 
   .icone-sucesso {
@@ -74,7 +75,7 @@
     font-size: 14px;
     color: var(--muted);
     line-height: 1.6;
-    margin-bottom: 32px;
+    margin-bottom: 26px;
   }
 
   .detalhes {
@@ -127,7 +128,12 @@
 
   /* SEÇÃO DE PAGAMENTO */
   .secao-pagamento {
-    margin-bottom: 24px;
+    margin: 22px 0 24px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #fff 0%, #fbfaf7 100%);
+    text-align: center;
   }
 
   .pagamento-label {
@@ -136,7 +142,48 @@
     color: var(--muted);
     letter-spacing: 1px;
     text-transform: uppercase;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+  }
+
+  .pagamento-titulo {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .pagamento-texto {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 0 auto 16px;
+    max-width: 390px;
+  }
+
+  .pagamento-destaque {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 999px;
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .pagamento-destaque::before {
+    content: '1';
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
   }
 
   /* Loading do botão MP */
@@ -185,6 +232,16 @@
     line-height: 1.6;
     margin-bottom: 20px;
     text-align: left;
+  }
+
+  #wallet_container {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  #wallet_container iframe,
+  #wallet_container button {
+    border-radius: var(--radius-sm) !important;
   }
 
   /* Divisor */
@@ -245,8 +302,8 @@
 
   <h1 class="titulo">Pedido recebido!</h1>
   <p class="subtitulo">
-    Obrigada pela sua compra, <strong>{{ pedido.nome }}</strong>!<br>
-    Finalize o pagamento abaixo para confirmarmos seu pedido.
+    Obrigada pela sua compra, <strong>{{ pedido.nome }}</strong>.<br>
+    Seu pedido foi criado e agora falta apenas concluir o pagamento.
   </p>
 
   <div class="detalhes">
@@ -265,12 +322,17 @@
   </div>
 
   <div class="pix-aviso">
-    Se pagar por Pix e o Mercado Pago não voltar sozinho para a loja, não se preocupe: o pedido será confirmado automaticamente assim que recebermos a aprovação. Você também receberá a confirmação por e-mail.
+    Após pagar, a aprovação é confirmada automaticamente pelo Mercado Pago. Se a tela não voltar sozinha para a loja, pode ficar tranquila: seu pedido será atualizado assim que recebermos a confirmação.
   </div>
 
   <!-- BOTÃO MERCADO PAGO -->
   <div class="secao-pagamento">
-    <p class="pagamento-label">Finalizar pagamento</p>
+    <p class="pagamento-label">Próximo passo</p>
+    <div class="pagamento-titulo">Clique no botão abaixo para pagar</div>
+    <p class="pagamento-texto">
+      Você será direcionada ao ambiente seguro do Mercado Pago para escolher Pix, cartão ou outra opção disponível.
+    </p>
+    <div class="pagamento-destaque">Pagamento seguro via Mercado Pago</div>
     <div id="mp-loading" class="mp-loading">
       <div class="mp-loading-dot"></div>
       <div class="mp-loading-dot"></div>
