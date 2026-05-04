@@ -10,6 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom
+from .mercadopago_security import validar_assinatura_mercadopago
+from .validators import cpf_valido
 import mercadopago
 import json
 import requests as http_requests
@@ -18,6 +20,15 @@ import logging
 from decimal import Decimal, InvalidOperation
 
 logger = logging.getLogger(__name__)
+
+try:
+    from django_ratelimit.decorators import ratelimit
+except ImportError:
+    # Mantem o projeto funcionando localmente antes da dependencia ser instalada.
+    def ratelimit(*args, **kwargs):
+        def decorator(view_func):
+            return view_func
+        return decorator
 
 
 def site_url(path=''):
@@ -207,7 +218,7 @@ def criar_envio_melhor_envio(pedido):
             timeout=15,
         )
         texto = resposta.text[:1000]
-        print(f'[ME] Criar envio pedido {pedido.id}: status={resposta.status_code} body={texto}', flush=True)
+        logger.info('[ME] Criar envio pedido %s: status=%s body=%s', pedido.id, resposta.status_code, texto)
 
         if resposta.status_code >= 400:
             pedido.melhor_envio_status = 'erro'
@@ -316,11 +327,10 @@ def enviar_email_confirmacao(pedido):
 
         brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
         if not brevo_api_key:
-            print(f'[BREVO] BREVO_API_KEY nao configurada. Pedido {pedido.id} sem e-mail.', flush=True)
             logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
             return False
 
-        print(f'[BREVO] Iniciando envio do pedido {pedido.id} para {pedido.email}', flush=True)
+        logger.info('[BREVO] Iniciando envio do pedido %s para %s', pedido.id, pedido.email)
         brevo_from_email = os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip()
         brevo_admin_email = os.environ.get('BREVO_ADMIN_EMAIL', brevo_from_email).strip()
         payload = {
@@ -345,7 +355,7 @@ def enviar_email_confirmacao(pedido):
             json=payload,
             timeout=10,
         )
-        print(f'[BREVO] Resposta pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:500]}', flush=True)
+        logger.info('[BREVO] Resposta pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:500])
         if resposta.status_code >= 400:
             logger.warning(
                 'Brevo recusou o e-mail do pedido %s. Status %s: %s',
@@ -356,7 +366,6 @@ def enviar_email_confirmacao(pedido):
             return False
         return True
     except Exception as exc:
-        print(f'[BREVO] Erro pedido {pedido.id}: {exc}', flush=True)
         logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
         return False
 
@@ -391,7 +400,7 @@ def enviar_email_pagamento_pendente(pedido):
             },
             timeout=10,
         )
-        print(f'[BREVO] Pagamento pendente pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:300]}', flush=True)
+        logger.info('[BREVO] Pagamento pendente pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:300])
         if resposta.status_code < 400:
             pedido.email_pagamento_pendente_enviado = True
             pedido.save(update_fields=['email_pagamento_pendente_enviado'])
@@ -432,7 +441,7 @@ def enviar_email_rastreio(pedido):
             },
             timeout=10,
         )
-        print(f'[BREVO] Rastreio pedido {pedido.id}: status={resposta.status_code} body={resposta.text[:300]}', flush=True)
+        logger.info('[BREVO] Rastreio pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:300])
         if resposta.status_code >= 400:
             logger.warning(
                 'Brevo recusou o e-mail de rastreio do pedido %s. Status %s: %s',
@@ -611,6 +620,7 @@ def ver_carrinho(request):
 
 
 # ── CALCULAR FRETE VIA CEP (AJAX) ─────────────────────────────────
+@ratelimit(key='ip', rate='30/m', method='GET', block=True)
 def calcular_frete_ajax(request):
     """Frete fixo/regional desativado. Use sempre o Melhor Envio."""
     return JsonResponse({
@@ -619,6 +629,7 @@ def calcular_frete_ajax(request):
 
 
 # ── CALCULAR FRETE VIA MELHOR ENVIO ───────────────────────────────
+@ratelimit(key='ip', rate='30/m', method='GET', block=True)
 def calcular_frete_melhor_envio(request):
     """Calcula frete real via API do Melhor Envio pelo CEP."""
     cep_destino = request.GET.get('cep', '').replace('-', '').replace(' ', '')
@@ -767,6 +778,7 @@ def salvar_contato_carrinho(request):
 
 
 @require_POST
+@ratelimit(key='ip', rate='20/m', method='POST', block=True)
 def aplicar_cupom_ajax(request):
     carrinho_id = request.session.get('carrinho_id')
     if not carrinho_id:
@@ -839,6 +851,9 @@ def checkout(request):
         if len(cpf_pedido) != 11:
             messages.error(request, 'Informe um CPF valido com 11 numeros.')
             return render_checkout()
+        if not cpf_valido(cpf_pedido):
+            messages.error(request, 'Informe um CPF valido.')
+            return render_checkout()
 
         if not request.user.is_authenticated:
             email_pedido = request.POST.get('email', '').strip().lower()
@@ -848,8 +863,8 @@ def checkout(request):
                 messages.error(request, 'Digite sua senha para entrar ou criar sua conta antes de finalizar.')
                 return render_checkout()
 
-            if len(senha) < 6:
-                messages.error(request, 'A senha deve ter pelo menos 6 caracteres.')
+            if len(senha) < 8:
+                messages.error(request, 'A senha deve ter pelo menos 8 caracteres.')
                 return render_checkout()
 
             usuario_existente = User.objects.filter(email__iexact=email_pedido).first()
@@ -955,7 +970,7 @@ def checkout(request):
         del request.session['carrinho_id']
 
         # Notificacao interna de novo pedido pendente.
-        print(f'[CHECKOUT] Pedido {pedido.id} criado. Aguardando pagamento.', flush=True)
+        logger.info('[CHECKOUT] Pedido %s criado. Aguardando pagamento.', pedido.id)
         enviar_whatsapp_pedido(pedido)
         enviar_email_pagamento_pendente(pedido)
 
@@ -1095,6 +1110,7 @@ def status_pagamento(request, pedido_id, token):
 
 # ── MERCADO PAGO: WEBHOOK ──────────────────────────────────────────
 @csrf_exempt
+@require_POST
 def webhook_mercadopago(request):
     data = {}
     try:
@@ -1102,6 +1118,11 @@ def webhook_mercadopago(request):
             data = json.loads(request.body)
     except json.JSONDecodeError:
         data = {}
+
+    assinatura_ok, motivo_assinatura = validar_assinatura_mercadopago(request, data)
+    if not assinatura_ok:
+        logger.warning('[MP] Webhook rejeitado: %s', motivo_assinatura)
+        return JsonResponse({"status": "forbidden"}, status=403)
 
     notification_type = data.get("type") or data.get("topic") or request.GET.get("type") or request.GET.get("topic")
     payment_id = (
@@ -1111,7 +1132,7 @@ def webhook_mercadopago(request):
         or request.GET.get("id")
     )
 
-    print(f'[MP] Webhook recebido: type={notification_type} payment_id={payment_id}', flush=True)
+    logger.info('[MP] Webhook recebido: type=%s payment_id=%s', notification_type, payment_id)
 
     if notification_type == "payment" and payment_id:
         confirmar_pagamento_mercadopago(payment_id)
@@ -1134,8 +1155,8 @@ def cadastro(request):
             messages.error(request, 'As senhas não coincidem.')
         elif User.objects.filter(email=email).exists():
             messages.error(request, 'Este e-mail já está cadastrado.')
-        elif len(senha) < 6:
-            messages.error(request, 'A senha deve ter pelo menos 6 caracteres.')
+        elif len(senha) < 8:
+            messages.error(request, 'A senha deve ter pelo menos 8 caracteres.')
         else:
             partes = nome.split()
             user = User.objects.create_user(
@@ -1156,6 +1177,7 @@ def cadastro(request):
 
 
 # ── LOGIN ──────────────────────────────────────────────────────────
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('minha_conta')

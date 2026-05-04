@@ -4,5 +4,7 @@ __pycache__/
 *.pyc
 *.py[cod]
 .env
+.env.*
+!.env.example
 venv/
 staticfiles/
