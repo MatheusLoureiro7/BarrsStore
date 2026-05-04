@@ -11,6 +11,7 @@ sitemaps = {
 urlpatterns = [
     path('', views.home, name='home'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
+    path('google86e9062d166d5e41.html', views.google_site_verification, name='google_site_verification'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('produto/<int:produto_id>/', views.detalhe_produto_id, name='detalhe_produto_id'),
     path('produto/<slug:slug>/', views.detalhe_produto, name='detalhe_produto'),

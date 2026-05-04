@@ -1237,6 +1237,13 @@ def robots_txt(request):
     return HttpResponse('\n'.join(linhas), content_type='text/plain')
 
 
+def google_site_verification(request):
+    return HttpResponse(
+        'google-site-verification: google86e9062d166d5e41.html',
+        content_type='text/html',
+    )
+
+
 def pagina_404(request, exception):
     return render(request, '404.html', status=404)
 
