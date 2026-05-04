@@ -518,7 +518,7 @@ def home(request):
     ordem = request.GET.get('ordem', '')
     categoria_slug = request.GET.get('categoria', '')
 
-    produtos = Produto.objects.exclude(nome__icontains='teste')
+    produtos = Produto.objects.filter(visivel=True)
 
     if busca:
         produtos = produtos.filter(
@@ -560,9 +560,9 @@ def home(request):
 # ── DETALHE DO PRODUTO ─────────────────────────────────────────────
 def detalhe_produto(request, slug):
     produto = get_object_or_404(Produto, slug=slug)
-    relacionados = Produto.objects.filter(categoria=produto.categoria).exclude(id=produto.id)[:4]
+    relacionados = Produto.objects.filter(visivel=True, categoria=produto.categoria).exclude(id=produto.id)[:4]
     if not relacionados:
-        relacionados = Produto.objects.exclude(id=produto.id)[:4]
+        relacionados = Produto.objects.filter(visivel=True).exclude(id=produto.id)[:4]
     image_url = produto.imagem.url if produto.imagem else ''
     seo = seo_context(
         request,
@@ -821,12 +821,19 @@ def checkout(request):
         return redirect('carrinho')
 
     def render_checkout(perfil=None):
+        frete_valor = request.POST.get('frete_valor') or request.GET.get('frete_valor', '')
+        frete_nome = request.POST.get('frete_nome') or request.GET.get('frete_nome', '')
+        frete_service_id = request.POST.get('frete_service_id') or request.GET.get('frete_service_id', '')
         context = {
             'itens': itens,
             'total': carrinho.total(),
             'qtd_carrinho': get_carrinho_info(request),
             'perfil': perfil,
             'carrinho': carrinho,
+            # Mantem o frete selecionado quando o checkout volta com erro de validacao.
+            'frete_valor_selecionado': frete_valor,
+            'frete_nome_selecionado': frete_nome,
+            'frete_service_id_selecionado': frete_service_id,
         }
         context.update(noindex_context(request, 'Checkout - Barrs Store'))
         return render(request, 'checkout.html', context)

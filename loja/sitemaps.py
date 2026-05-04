@@ -9,7 +9,7 @@ class ProdutoSitemap(Sitemap):
     priority = 0.9
 
     def items(self):
-        return Produto.objects.filter(estoque__gt=0).order_by('-criado_em')
+        return Produto.objects.filter(visivel=True, estoque__gt=0).order_by('-criado_em')
 
     def lastmod(self, obj):
         return obj.criado_em

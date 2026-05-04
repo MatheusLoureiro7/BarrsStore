@@ -10,12 +10,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--green-bg:#edf7f2;--red:#c0392b;--red-bg:#fdf0ef;--radius:14px;--radius-sm:8px}
+  :root{--bg:#F5F2EC;--surface:#fff;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--green-bg:#E8EDE3;--gold:#C8A96A;--red:#c0392b;--red-bg:#fdf0ef;--radius:14px;--radius-sm:8px}
   body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 
-  .nav{background:rgba(247,246,243,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
-  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
-  .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%}
+  .nav{position:sticky;top:0;z-index:100;background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+  .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0}
+  .nav-cart{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 14px;transition:border-color .2s,background .2s}
+  .nav-cart:hover{border-color:var(--green);background:var(--green-bg)}
+  .cart-badge{background:var(--gold);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
 
   .main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
 
@@ -50,7 +53,7 @@
 
 <nav class="nav">
   <a href="/" class="nav-logo">Barrs Store</a>
-  <a href="{% url 'carrinho' %}" style="font-size:13px;color:var(--muted);text-decoration:none">🛒 Carrinho{% if qtd_carrinho > 0 %} ({{ qtd_carrinho }}){% endif %}</a>
+  <a href="{% url 'carrinho' %}" class="nav-cart">Carrinho{% if qtd_carrinho > 0 %}<span class="cart-badge">{{ qtd_carrinho }}</span>{% endif %}</a>
 </nav>
 
 <main class="main">

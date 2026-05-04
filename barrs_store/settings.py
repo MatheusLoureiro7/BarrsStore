@@ -186,6 +186,12 @@ SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+if not DEBUG:
+    # Compartilha os cookies entre barrsstore.com.br e www.barrsstore.com.br.
+    # Isso evita falha de CSRF quando o cliente navega entre as duas versões do domínio.
+    SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', '.barrsstore.com.br')
+    CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', '.barrsstore.com.br')
+
 # Limitar tentativas de login (proteção brute force)
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 

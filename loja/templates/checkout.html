@@ -132,10 +132,10 @@
 {% endif %}
 
 <form method="POST" action="{% url 'finalizar_compra' %}">
-<input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ request.GET.frete_valor }}">
-<input type="hidden" name="frete_nome" id="frete_nome_hidden" value="{{ request.GET.frete_nome }}">
-<input type="hidden" name="frete_service_id" id="frete_service_id_hidden" value="{{ request.GET.frete_service_id }}">
 {% csrf_token %}
+<input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ frete_valor_selecionado }}">
+<input type="hidden" name="frete_nome" id="frete_nome_hidden" value="{{ frete_nome_selecionado }}">
+<input type="hidden" name="frete_service_id" id="frete_service_id_hidden" value="{{ frete_service_id_selecionado }}">
 <input type="hidden" name="forma_pagamento" value="pix">
 <div class="page">
   <div>
@@ -253,8 +253,8 @@
     <div class="resumo-linha">
       <span>Frete</span>
       <span id="frete-display">
-        {% if request.GET.frete_nome %}
-          {{ request.GET.frete_nome }}
+        {% if frete_nome_selecionado %}
+          {{ frete_nome_selecionado }}
         {% else %}
           <em class="frete-pendente">selecione no carrinho</em>
         {% endif %}
@@ -263,7 +263,7 @@
     <div class="resumo-linha">
       <span></span>
       <span id="frete-valor-display" style="color:var(--green);font-weight:600">
-        {% if request.GET.frete_valor %}R$ {{ request.GET.frete_valor }}{% endif %}
+        {% if frete_valor_selecionado %}R$ {{ frete_valor_selecionado }}{% endif %}
       </span>
     </div>
     <div class="resumo-linha" id="desconto-row" style="display:none">
@@ -336,7 +336,7 @@
   window.addEventListener('beforeunload', () => salvarContatoCarrinho(true));
 
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
-  const freteGet = parseFloat("{{ request.GET.frete_valor|default:'0' }}".replace(',', '.')) || 0;
+  const freteGet = parseFloat("{{ frete_valor_selecionado|default:'0' }}".replace(',', '.')) || 0;
   let descontoCupom = 0;
 
   function formatarMoeda(valor) {

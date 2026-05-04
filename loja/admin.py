@@ -19,14 +19,14 @@ class TamanhoInline(admin.TabularInline):
 
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'categoria', 'tipo', 'preco', 'estoque', 'destaque')
-    list_editable = ('preco', 'estoque', 'destaque')
-    list_filter = ('destaque', 'categoria', 'tipo')
+    list_display = ('nome', 'categoria', 'tipo', 'preco', 'estoque', 'visivel', 'destaque')
+    list_editable = ('preco', 'estoque', 'visivel', 'destaque')
+    list_filter = ('visivel', 'destaque', 'categoria', 'tipo')
     search_fields = ('nome', 'descricao', 'slug')
     prepopulated_fields = {'slug': ('nome',)}
     fieldsets = (
         ('Produto', {
-            'fields': ('nome', 'slug', 'descricao', 'preco', 'imagem', 'estoque', 'destaque', 'categoria', 'tipo')
+            'fields': ('nome', 'slug', 'descricao', 'preco', 'imagem', 'estoque', 'visivel', 'destaque', 'categoria', 'tipo')
         }),
         ('SEO', {
             'fields': ('meta_description', 'imagem_alt')
