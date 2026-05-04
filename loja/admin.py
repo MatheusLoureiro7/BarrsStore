@@ -150,13 +150,25 @@ class PedidoAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         codigo_anterior = ''
+        status_anterior = ''
         if change and obj.pk:
             antigo = Pedido.objects.filter(pk=obj.pk).first()
             if antigo:
                 codigo_anterior = antigo.codigo_rastreio
+                status_anterior = antigo.status
 
         enviar_rastreio = form.cleaned_data.get('enviar_email_rastreio_agora')
         super().save_model(request, obj, form, change)
+
+        if obj.status == 'confirmado' and status_anterior != 'confirmado':
+            try:
+                from .views import criar_envio_melhor_envio
+                if criar_envio_melhor_envio(obj):
+                    self.message_user(request, 'Envio criado no Melhor Envio.', messages.SUCCESS)
+                else:
+                    self.message_user(request, 'Pedido confirmado, mas o Melhor Envio não gerou etiqueta. Veja o campo de erro.', messages.WARNING)
+            except Exception as exc:
+                self.message_user(request, f'Erro ao criar envio no Melhor Envio: {exc}', messages.ERROR)
 
         if not enviar_rastreio:
             return

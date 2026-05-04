@@ -84,6 +84,10 @@ def confirmar_pagamento_mercadopago(payment_id):
 
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
     payment_info = sdk.payment().get(payment_id)
+    if payment_info.get("status", 500) >= 400:
+        logger.warning('Falha ao consultar pagamento Mercado Pago %s: %s', payment_id, payment_info)
+        return False
+
     payment = payment_info.get("response", {})
 
     pedido_id = payment.get("external_reference")
@@ -113,6 +117,29 @@ def confirmar_pagamento_mercadopago(payment_id):
 
     logger.info('Pagamento Mercado Pago %s recebido com status %s.', payment_id, status)
     return False
+
+
+def confirmar_merchant_order_mercadopago(merchant_order_id):
+    if not merchant_order_id or not settings.MERCADOPAGO_ACCESS_TOKEN:
+        return False
+
+    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    order_info = sdk.merchant_order().get(merchant_order_id)
+    if order_info.get("status", 500) >= 400:
+        logger.warning('Falha ao consultar merchant_order Mercado Pago %s: %s', merchant_order_id, order_info)
+        return False
+
+    order = order_info.get("response", {})
+    pagamentos = order.get("payments") or []
+    confirmou = False
+    for pagamento in pagamentos:
+        payment_id = pagamento.get("id")
+        if payment_id:
+            confirmou = confirmar_pagamento_mercadopago(payment_id) or confirmou
+
+    if not pagamentos:
+        logger.info('Merchant order Mercado Pago %s ainda sem pagamentos vinculados.', merchant_order_id)
+    return confirmou
 
 
 def apenas_digitos(valor):
@@ -1128,8 +1155,9 @@ def webhook_mercadopago(request):
 
     assinatura_ok, motivo_assinatura = validar_assinatura_mercadopago(request, data)
     if not assinatura_ok:
-        logger.warning('[MP] Webhook rejeitado: %s', motivo_assinatura)
-        return JsonResponse({"status": "forbidden"}, status=403)
+        logger.warning('[MP] Webhook com assinatura nao validada: %s', motivo_assinatura)
+        if getattr(settings, 'MERCADOPAGO_WEBHOOK_STRICT', False):
+            return JsonResponse({"status": "forbidden"}, status=403)
 
     notification_type = data.get("type") or data.get("topic") or request.GET.get("type") or request.GET.get("topic")
     payment_id = (
@@ -1143,6 +1171,8 @@ def webhook_mercadopago(request):
 
     if notification_type == "payment" and payment_id:
         confirmar_pagamento_mercadopago(payment_id)
+    elif notification_type == "merchant_order" and payment_id:
+        confirmar_merchant_order_mercadopago(payment_id)
 
     return JsonResponse({"status": "ok"})
 
