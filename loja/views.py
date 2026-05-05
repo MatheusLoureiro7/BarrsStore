@@ -677,29 +677,36 @@ def calcular_frete_melhor_envio(request):
         return JsonResponse({'erro': 'Frete indisponível no momento.'}, status=503)
     
     try:
+        payload = {
+            'from': {'postal_code': apenas_digitos(os.environ.get('ME_REMETENTE_CEP', '08275700'))},
+            'to': {'postal_code': cep_destino},
+            'package': {
+                'height': 4,
+                'width': 11,
+                'length': 16,
+                'weight': 0.3,
+            },
+            'options': {
+                'receipt': False,
+                'own_hand': False,
+            },
+        }
+
+        # Se quiser limitar manualmente no Railway, use MELHOR_ENVIO_SERVICES.
+        # Sem essa variavel, o Melhor Envio retorna Correios, Loggi e outras opcoes disponiveis para o CEP.
+        servicos_configurados = os.environ.get('MELHOR_ENVIO_SERVICES', '').strip()
+        if servicos_configurados:
+            payload['services'] = servicos_configurados
+
         res = http_requests.post(
-            'https://melhorenvio.com.br/api/v2/me/shipment/calculate',
+            f'{melhor_envio_base_url()}/api/v2/me/shipment/calculate',
             headers={
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'User-Agent': 'BarrsStore contato.barrsstore@gmail.com',
             },
-            json={
-                'from': {'postal_code': '01310100'},  # CEP origem SP
-                'to': {'postal_code': cep_destino},
-                'package': {
-                    'height': 4,
-                    'width': 11,
-                    'length': 16,
-                    'weight': 0.3,
-                },
-                'options': {
-                    'receipt': False,
-                    'own_hand': False,
-                },
-                'services': '1,2',  # 1=PAC, 2=Sedex
-            },
+            json=payload,
             timeout=10,
         )
         
