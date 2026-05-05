@@ -715,12 +715,24 @@ def calcular_frete_melhor_envio(request):
             return JsonResponse({'erro': 'Não foi possível calcular o frete agora.'}, status=502)
         opcoes = []
         
+        opcoes_permitidas = {
+            ('CORREIOS', 'PAC'),
+            ('CORREIOS', 'SEDEX'),
+            ('LOGGI', 'EXPRESS'),
+        }
+
         for servico in data:
+            empresa = servico.get('company', {}).get('name', '')
+            nome = servico.get('name', '')
+            chave = (empresa.upper(), nome.upper())
+            if chave not in opcoes_permitidas:
+                continue
+
             if 'error' not in servico and servico.get('price'):
                 opcoes.append({
                     'id': servico.get('id'),
-                    'nome': servico.get('name', ''),
-                    'empresa': servico.get('company', {}).get('name', ''),
+                    'nome': nome,
+                    'empresa': empresa,
                     'preco': float(servico.get('price', 0)),
                     'prazo': servico.get('delivery_time', ''),
                 })
