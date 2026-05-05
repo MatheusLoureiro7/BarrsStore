@@ -59,6 +59,7 @@ def get_pedido_por_token(pedido_id, token):
 
 
 def confirmar_pedido_pago(pedido):
+    logger.info('[PAGAMENTO] Confirmando pedido %s. status_atual=%s', pedido.id, pedido.status)
     atualizou = False
     if pedido.status != 'confirmado':
         pedido.status = 'confirmado'
@@ -68,14 +69,17 @@ def confirmar_pedido_pago(pedido):
 
     if not pedido.email_confirmacao_enviado:
         enviado = enviar_email_confirmacao(pedido)
+        logger.info('[PAGAMENTO] E-mail de confirmacao do pedido %s enviado=%s', pedido.id, enviado)
         if enviado:
             pedido.email_confirmacao_enviado = True
             atualizou = True
 
     if atualizou:
         pedido.save(update_fields=['status', 'email_confirmacao_enviado'])
+        logger.info('[PAGAMENTO] Pedido %s salvo como confirmado.', pedido.id)
 
-    criar_envio_melhor_envio(pedido)
+    envio_criado = criar_envio_melhor_envio(pedido)
+    logger.info('[PAGAMENTO] Melhor Envio pedido %s criado=%s', pedido.id, envio_criado)
 
 
 def buscar_referencia_pedido_por_merchant_order(sdk, merchant_order_id):
@@ -93,9 +97,15 @@ def buscar_referencia_pedido_por_merchant_order(sdk, merchant_order_id):
 
 def confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=''):
     if not payment_id or not settings.MERCADOPAGO_ACCESS_TOKEN:
+        logger.warning(
+            '[PAGAMENTO] Nao foi possivel consultar Mercado Pago. payment_id=%s token_configurado=%s',
+            payment_id,
+            bool(settings.MERCADOPAGO_ACCESS_TOKEN),
+        )
         return False
 
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    logger.info('[PAGAMENTO] Consultando pagamento Mercado Pago payment_id=%s fallback=%s', payment_id, pedido_id_fallback)
     payment_info = sdk.payment().get(payment_id)
     if payment_info.get("status", 500) >= 400:
         logger.warning('Falha ao consultar pagamento Mercado Pago %s: %s', payment_id, payment_info)
@@ -113,9 +123,22 @@ def confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=''):
             (payment.get("order") or {}).get("id")
             or payment.get("merchant_order_id")
         )
+        logger.info('[PAGAMENTO] Pagamento %s sem pedido direto. Buscando via merchant_order=%s', payment_id, merchant_order_id)
         pedido_id = buscar_referencia_pedido_por_merchant_order(sdk, merchant_order_id)
 
     status = payment.get("status")
+    status_detail = payment.get("status_detail")
+    payment_method_id = payment.get("payment_method_id")
+    payment_type_id = payment.get("payment_type_id")
+    logger.info(
+        '[PAGAMENTO] Mercado Pago retornou payment_id=%s pedido_id=%s status=%s detail=%s metodo=%s tipo=%s',
+        payment_id,
+        pedido_id,
+        status,
+        status_detail,
+        payment_method_id,
+        payment_type_id,
+    )
 
     if not pedido_id:
         logger.warning(
@@ -140,21 +163,29 @@ def confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=''):
         if pedido.status != "confirmado":
             pedido.status = "pendente"
             pedido.save(update_fields=['status'])
+            logger.info('[PAGAMENTO] Pedido %s marcado como pendente. detail=%s', pedido.id, status_detail)
         return True
     if status in ["cancelled", "rejected"]:
         pedido.status = "cancelado"
         pedido.save(update_fields=['status'])
+        logger.warning('[PAGAMENTO] Pedido %s cancelado/rejeitado. status=%s detail=%s', pedido.id, status, status_detail)
         return True
 
-    logger.info('Pagamento Mercado Pago %s recebido com status %s.', payment_id, status)
+    logger.info('Pagamento Mercado Pago %s recebido com status %s detail=%s.', payment_id, status, status_detail)
     return False
 
 
 def confirmar_merchant_order_mercadopago(merchant_order_id):
     if not merchant_order_id or not settings.MERCADOPAGO_ACCESS_TOKEN:
+        logger.warning(
+            '[PAGAMENTO] Nao foi possivel consultar merchant_order. merchant_order_id=%s token_configurado=%s',
+            merchant_order_id,
+            bool(settings.MERCADOPAGO_ACCESS_TOKEN),
+        )
         return False
 
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    logger.info('[PAGAMENTO] Consultando merchant_order Mercado Pago id=%s', merchant_order_id)
     order_info = sdk.merchant_order().get(merchant_order_id)
     if order_info.get("status", 500) >= 400:
         logger.warning('Falha ao consultar merchant_order Mercado Pago %s: %s', merchant_order_id, order_info)
@@ -163,6 +194,13 @@ def confirmar_merchant_order_mercadopago(merchant_order_id):
     order = order_info.get("response", {})
     pedido_id_fallback = str(order.get("external_reference") or (order.get("metadata") or {}).get("pedido_id") or '')
     pagamentos = order.get("payments") or []
+    logger.info(
+        '[PAGAMENTO] Merchant order %s retornou external_reference=%s status=%s pagamentos=%s',
+        merchant_order_id,
+        pedido_id_fallback,
+        order.get("status"),
+        len(pagamentos),
+    )
     confirmou = False
     for pagamento in pagamentos:
         payment_id = pagamento.get("id")
