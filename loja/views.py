@@ -78,7 +78,20 @@ def confirmar_pedido_pago(pedido):
     criar_envio_melhor_envio(pedido)
 
 
-def confirmar_pagamento_mercadopago(payment_id):
+def buscar_referencia_pedido_por_merchant_order(sdk, merchant_order_id):
+    if not merchant_order_id:
+        return ''
+
+    order_info = sdk.merchant_order().get(merchant_order_id)
+    if order_info.get("status", 500) >= 400:
+        logger.warning('Falha ao consultar merchant_order Mercado Pago %s: %s', merchant_order_id, order_info)
+        return ''
+
+    order = order_info.get("response", {})
+    return str(order.get("external_reference") or (order.get("metadata") or {}).get("pedido_id") or '')
+
+
+def confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=''):
     if not payment_id or not settings.MERCADOPAGO_ACCESS_TOKEN:
         return False
 
@@ -90,11 +103,28 @@ def confirmar_pagamento_mercadopago(payment_id):
 
     payment = payment_info.get("response", {})
 
-    pedido_id = payment.get("external_reference")
+    pedido_id = (
+        payment.get("external_reference")
+        or (payment.get("metadata") or {}).get("pedido_id")
+        or pedido_id_fallback
+    )
+    if not pedido_id:
+        merchant_order_id = (
+            (payment.get("order") or {}).get("id")
+            or payment.get("merchant_order_id")
+        )
+        pedido_id = buscar_referencia_pedido_por_merchant_order(sdk, merchant_order_id)
+
     status = payment.get("status")
 
     if not pedido_id:
-        logger.warning('Mercado Pago sem external_reference no pagamento %s.', payment_id)
+        logger.warning(
+            'Mercado Pago sem referencia de pedido no pagamento %s. status=%s order=%s metadata=%s',
+            payment_id,
+            status,
+            payment.get("order"),
+            payment.get("metadata"),
+        )
         return False
 
     try:
@@ -107,8 +137,9 @@ def confirmar_pagamento_mercadopago(payment_id):
         confirmar_pedido_pago(pedido)
         return True
     if status == "pending":
-        pedido.status = "pendente"
-        pedido.save(update_fields=['status'])
+        if pedido.status != "confirmado":
+            pedido.status = "pendente"
+            pedido.save(update_fields=['status'])
         return True
     if status in ["cancelled", "rejected"]:
         pedido.status = "cancelado"
@@ -130,15 +161,21 @@ def confirmar_merchant_order_mercadopago(merchant_order_id):
         return False
 
     order = order_info.get("response", {})
+    pedido_id_fallback = str(order.get("external_reference") or (order.get("metadata") or {}).get("pedido_id") or '')
     pagamentos = order.get("payments") or []
     confirmou = False
     for pagamento in pagamentos:
         payment_id = pagamento.get("id")
         if payment_id:
-            confirmou = confirmar_pagamento_mercadopago(payment_id) or confirmou
+            confirmou = confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=pedido_id_fallback) or confirmou
 
     if not pagamentos:
-        logger.info('Merchant order Mercado Pago %s ainda sem pagamentos vinculados.', merchant_order_id)
+        logger.info(
+            'Merchant order Mercado Pago %s ainda sem pagamentos vinculados. external_reference=%s status=%s',
+            merchant_order_id,
+            pedido_id_fallback,
+            order.get("status"),
+        )
     return confirmou
 
 
@@ -1091,15 +1128,27 @@ def criar_preferencia(request, pedido_id, token):
 
     # Limpa telefone — MP só aceita números
     telefone_limpo = "".join(filter(str.isdigit, pedido.telefone or ""))
+    cpf_limpo = apenas_digitos(pedido.cpf)
 
     payer = {
         "name": pedido.nome,
         "email": pedido.email if pedido.email else "cliente@barrsstore.com.br",
     }
+    if len(cpf_limpo) == 11:
+        payer["identification"] = {
+            "type": "CPF",
+            "number": cpf_limpo,
+        }
     if len(telefone_limpo) >= 10:
         payer["phone"] = {
             "area_code": telefone_limpo[:2],
             "number": telefone_limpo[2:],
+        }
+    if pedido.cep and pedido.rua and pedido.numero:
+        payer["address"] = {
+            "zip_code": apenas_digitos(pedido.cep),
+            "street_name": pedido.rua,
+            "street_number": pedido.numero,
         }
 
     preference_data = {
@@ -1113,12 +1162,21 @@ def criar_preferencia(request, pedido_id, token):
         "auto_return": "approved",
         "notification_url": site_url(reverse('webhook_mp')),
         "external_reference": str(pedido.id),
+        "metadata": {
+            "pedido_id": pedido.id,
+        },
         "statement_descriptor": "BARRS STORE",
     }
 
     preference_response = sdk.preference().create(preference_data)
     preference = preference_response.get("response", {})
     if preference_response.get("status", 500) >= 400 or "id" not in preference:
+        logger.warning(
+            'Falha ao criar preferencia Mercado Pago do pedido %s. Status %s: %s',
+            pedido.id,
+            preference_response.get("status"),
+            preference,
+        )
         return JsonResponse({'erro': 'Nao foi possivel iniciar o pagamento.'}, status=502)
 
     return JsonResponse({
