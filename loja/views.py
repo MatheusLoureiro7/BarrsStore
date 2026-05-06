@@ -758,6 +758,27 @@ def calcular_frete_melhor_envio(request):
         return JsonResponse({'erro': 'Frete indisponível no momento.'}, status=503)
     
     try:
+        carrinho = None
+        carrinho_id = request.session.get('carrinho_id')
+        if carrinho_id:
+            try:
+                carrinho = Carrinho.objects.prefetch_related('itens__produto').get(id=carrinho_id)
+            except Carrinho.DoesNotExist:
+                request.session.pop('carrinho_id', None)
+
+        produtos_envio = []
+        subtotal_declarado = Decimal('1.00')
+        if carrinho:
+            subtotal_declarado = max(carrinho.total(), Decimal('1.00'))
+            produtos_envio = [
+                {
+                    'name': item.produto.nome[:80],
+                    'quantity': str(item.quantidade),
+                    'unitary_value': str(item.produto.preco),
+                }
+                for item in carrinho.itens.all()
+            ]
+
         payload = {
             'from': {'postal_code': apenas_digitos(os.environ.get('ME_REMETENTE_CEP', '08275700'))},
             'to': {'postal_code': cep_destino},
@@ -768,10 +789,16 @@ def calcular_frete_melhor_envio(request):
                 'weight': CAIXA_ENVIO['weight'],
             },
             'options': {
+                # Mantem o calculo do carrinho igual ao envio criado depois da compra.
+                'insurance_value': float(subtotal_declarado),
                 'receipt': False,
                 'own_hand': False,
+                'reverse': False,
+                'non_commercial': True,
             },
         }
+        if produtos_envio:
+            payload['products'] = produtos_envio
 
         # Se quiser limitar manualmente no Railway, use MELHOR_ENVIO_SERVICES.
         # Sem essa variavel, o Melhor Envio retorna Correios, Loggi e outras opcoes disponiveis para o CEP.
