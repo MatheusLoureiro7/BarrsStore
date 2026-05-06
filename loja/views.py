@@ -21,6 +21,13 @@ from decimal import Decimal, InvalidOperation
 
 logger = logging.getLogger(__name__)
 
+CAIXA_ENVIO = {
+    'width': 11,
+    'length': 16,
+    'height': 6,
+    'weight': 0.5,
+}
+
 try:
     from django_ratelimit.decorators import ratelimit
 except ImportError:
@@ -259,7 +266,6 @@ def criar_envio_melhor_envio(pedido):
 
     service_id = inferir_servico_melhor_envio(pedido)
     subtotal_declarado = max(pedido.subtotal - pedido.desconto, Decimal('1.00'))
-    peso_total = max(Decimal('0.3'), Decimal('0.3') * sum(item.quantidade for item in pedido.itens.all()))
 
     payload = {
         'service': int(service_id),
@@ -298,10 +304,10 @@ def criar_envio_melhor_envio(pedido):
             for item in pedido.itens.all()
         ],
         'volumes': [{
-            'height': 4,
-            'width': 11,
-            'length': 16,
-            'weight': float(peso_total),
+            'height': CAIXA_ENVIO['height'],
+            'width': CAIXA_ENVIO['width'],
+            'length': CAIXA_ENVIO['length'],
+            'weight': CAIXA_ENVIO['weight'],
         }],
         'options': {
             'insurance_value': float(subtotal_declarado),
@@ -756,10 +762,10 @@ def calcular_frete_melhor_envio(request):
             'from': {'postal_code': apenas_digitos(os.environ.get('ME_REMETENTE_CEP', '08275700'))},
             'to': {'postal_code': cep_destino},
             'package': {
-                'height': 4,
-                'width': 11,
-                'length': 16,
-                'weight': 0.3,
+                'height': CAIXA_ENVIO['height'],
+                'width': CAIXA_ENVIO['width'],
+                'length': CAIXA_ENVIO['length'],
+                'weight': CAIXA_ENVIO['weight'],
             },
             'options': {
                 'receipt': False,
