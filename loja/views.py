@@ -536,6 +536,7 @@ def enviar_email_rastreio(pedido):
             logger.warning('BREVO_API_KEY nao configurada. E-mail de rastreio do pedido %s nao foi enviado.', pedido.id)
             return False
         rastreio_url = pedido.rastreio_url()
+        transportadora = pedido.rastreio_transportadora()
         resposta = http_requests.post(
             'https://api.brevo.com/v3/smtp/email',
             headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
@@ -549,8 +550,10 @@ def enviar_email_rastreio(pedido):
                     <h2 style="color:#3d2d20;margin-top:0">Seu pedido foi enviado</h2>
                     <p>Oi, {pedido.nome}! O pedido #{pedido.id} já foi enviado.</p>
                     <p><strong>Código de rastreio:</strong> {pedido.codigo_rastreio}</p>
-                    <p>Você pode acompanhar a entrega pelo botão abaixo.</p>
+                    <p><strong>Transportadora:</strong> {transportadora}</p>
+                    <p>Você pode acompanhar a entrega pelo botão abaixo. Se for Loggi, cole o código de rastreio no site da transportadora.</p>
                     <a href="{rastreio_url}" style="display:inline-block;background:#8A947C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Acompanhar entrega</a>
+                    <p style="font-size:13px;color:#9E9488;margin-top:18px">Link de rastreio: <a href="{rastreio_url}" style="color:#8A947C">{rastreio_url}</a></p>
                   </div>
                 </div>
                 """,

@@ -225,7 +225,16 @@ class Pedido(models.Model):
     def rastreio_url(self):
         if not self.codigo_rastreio:
             return ''
+        if self.melhor_envio_service_id == 31:
+            return 'https://www.loggi.com/rastreador/'
         return f'https://rastreamento.correios.com.br/app/index.php?objeto={self.codigo_rastreio}'
+
+    def rastreio_transportadora(self):
+        if self.melhor_envio_service_id == 31:
+            return 'Loggi'
+        if self.melhor_envio_service_id in (1, 2):
+            return 'Correios'
+        return 'transportadora'
 
 
 class Cupom(models.Model):
