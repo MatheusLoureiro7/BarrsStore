@@ -766,18 +766,21 @@ def calcular_frete_melhor_envio(request):
             except Carrinho.DoesNotExist:
                 request.session.pop('carrinho_id', None)
 
-        produtos_envio = []
+        produtos_cotacao = []
         subtotal_declarado = Decimal('1.00')
         if carrinho:
             subtotal_declarado = max(carrinho.total(), Decimal('1.00'))
-            produtos_envio = [
-                {
-                    'name': item.produto.nome[:80],
-                    'quantity': str(item.quantidade),
-                    'unitary_value': str(item.produto.preco),
-                }
-                for item in carrinho.itens.all()
-            ]
+            # A cotacao do Melhor Envio usa produtos com dimensoes e valor segurado.
+            # Como a loja envia tudo em uma caixa padrao, cotamos um volume unico.
+            produtos_cotacao = [{
+                'id': f'carrinho-{carrinho.id}',
+                'width': CAIXA_ENVIO['width'],
+                'height': CAIXA_ENVIO['height'],
+                'length': CAIXA_ENVIO['length'],
+                'weight': CAIXA_ENVIO['weight'],
+                'insurance_value': float(subtotal_declarado),
+                'quantity': 1,
+            }]
 
         payload = {
             'from': {'postal_code': apenas_digitos(os.environ.get('ME_REMETENTE_CEP', '08275700'))},
@@ -797,8 +800,8 @@ def calcular_frete_melhor_envio(request):
                 'non_commercial': True,
             },
         }
-        if produtos_envio:
-            payload['products'] = produtos_envio
+        if produtos_cotacao:
+            payload['products'] = produtos_cotacao
 
         # Se quiser limitar manualmente no Railway, use MELHOR_ENVIO_SERVICES.
         # Sem essa variavel, o Melhor Envio retorna Correios, Loggi e outras opcoes disponiveis para o CEP.
