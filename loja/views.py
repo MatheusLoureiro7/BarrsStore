@@ -1499,7 +1499,7 @@ def criar_preferencia(request, pedido_id, token):
 
     payer = {
         "name": pedido.nome,
-        "email": pedido.email if pedido.email else "cliente@barrsstore.com.br",
+        "email": pedido.email or os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com'),
     }
     if len(cpf_limpo) == 11:
         payer["identification"] = {
