@@ -19,11 +19,13 @@ class TamanhoInline(admin.TabularInline):
 
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'categoria', 'tipo', 'preco', 'estoque', 'visivel', 'destaque')
+    change_list_template = 'admin/loja/produto/change_list.html'
+    list_display = ('nome', 'categoria', 'tipo', 'preco', 'estoque', 'cliques', 'visivel', 'destaque')
     list_editable = ('preco', 'estoque', 'visivel', 'destaque')
     list_filter = ('visivel', 'destaque', 'categoria', 'tipo')
     search_fields = ('nome', 'descricao', 'slug')
     prepopulated_fields = {'slug': ('nome',)}
+    readonly_fields = ('cliques',)
     fieldsets = (
         ('Produto', {
             'fields': ('nome', 'slug', 'descricao', 'preco', 'imagem', 'estoque', 'visivel', 'destaque', 'categoria', 'tipo')
@@ -32,10 +34,17 @@ class ProdutoAdmin(admin.ModelAdmin):
             'fields': ('meta_description', 'imagem_alt')
         }),
         ('Controle interno', {
-            'fields': ('codigo_interno', 'estoque_proprio')
+            'fields': ('codigo_interno', 'estoque_proprio', 'cliques')
         }),
     )
     inlines = [TamanhoInline]
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['top_produtos_cliques'] = Produto.objects.filter(
+            cliques__gt=0
+        ).order_by('-cliques', 'nome')[:5]
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 class PedidoAdminForm(forms.ModelForm):

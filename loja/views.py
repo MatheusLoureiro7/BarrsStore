@@ -958,6 +958,8 @@ def home(request):
 # ── DETALHE DO PRODUTO ─────────────────────────────────────────────
 def detalhe_produto(request, slug):
     produto = get_object_or_404(Produto, slug=slug)
+    if not request.user.is_staff:
+        Produto.objects.filter(pk=produto.pk).update(cliques=F('cliques') + 1)
     relacionados = Produto.objects.filter(visivel=True, categoria=produto.categoria).exclude(id=produto.id)[:4]
     if not relacionados:
         relacionados = Produto.objects.filter(visivel=True).exclude(id=produto.id)[:4]

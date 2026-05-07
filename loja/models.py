@@ -72,6 +72,7 @@ class Produto(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='acessorio')
     codigo_interno = models.CharField(max_length=50, blank=True, default='', help_text='Código interno (só visível no admin)')
     estoque_proprio = models.BooleanField(default=True, help_text='Produto em estoque próprio? Se não, sob demanda.')
+    cliques = models.PositiveIntegerField(default=0, help_text='Quantidade de acessos na pagina do produto.')
 
     def __str__(self):
         return self.nome
