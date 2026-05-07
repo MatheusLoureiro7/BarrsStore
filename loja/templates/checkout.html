@@ -304,13 +304,15 @@
   let salvarContatoTimer = null;
   function salvarContatoCarrinho(imediato = false) {
     const telefone = document.getElementById('telefone');
-    if (!telefone) return;
+    const emailInput = document.querySelector('input[name="email"]');
+    if (!telefone && !emailInput) return;
 
     clearTimeout(salvarContatoTimer);
     const salvar = () => {
       const body = new URLSearchParams();
-      body.append('telefone', telefone.value);
-      body.append('aceita_whatsapp', telefone.value.trim() ? 'true' : 'false');
+      body.append('telefone', telefone ? telefone.value : '');
+      body.append('aceita_whatsapp', (telefone && telefone.value.trim()) ? 'true' : 'false');
+      if (emailInput && emailInput.value.trim()) body.append('email', emailInput.value.trim());
 
       fetch("{% url 'salvar_contato_carrinho' %}", {
         method: 'POST',
@@ -333,6 +335,7 @@
 
   document.getElementById('telefone')?.addEventListener('input', salvarContatoCarrinho);
   document.getElementById('telefone')?.addEventListener('blur', () => salvarContatoCarrinho(true));
+  document.querySelector('input[name="email"]')?.addEventListener('blur', () => salvarContatoCarrinho(true));
   window.addEventListener('beforeunload', () => salvarContatoCarrinho(true));
 
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
