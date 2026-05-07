@@ -14,7 +14,7 @@
   body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
   .navbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
   .nav-logo{font-size:15px;font-weight:600;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
-  .nav-logo::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+  .nav-logo img{width:38px;height:38px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
   .page{max-width:720px;margin:60px auto 80px;padding:0 20px}
   h1{font-size:28px;font-weight:600;margin-bottom:8px}
   .data{font-size:12px;color:var(--muted);margin-bottom:32px}
@@ -26,7 +26,7 @@
 </head>
 <body>
 <nav class="navbar">
-  <a href="/" class="nav-logo">Barrs Store</a>
+  <a href="/" class="nav-logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
   <div style="display:flex;align-items:center;gap:10px">
     {% if user.is_authenticated %}
       <a href="{% url 'minha_conta' %}" style="font-size:13px;font-weight:500;color:#9E9488;text-decoration:none">👤 {{ user.first_name|default:user.email }}</a>

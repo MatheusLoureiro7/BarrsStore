@@ -15,7 +15,7 @@
 
   .nav{position:sticky;top:0;z-index:100;background:rgba(247,246,243,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
   .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
-  .nav-logo::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%}
+  .nav-logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
   .nav-links{display:flex;align-items:center;gap:20px}
   .nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .15s}
   .nav-links a:hover{color:var(--text)}
@@ -78,7 +78,7 @@
 <body>
 
 <nav class="nav">
-  <a href="/" class="nav-logo">Barrs Store</a>
+<a href="/" class="nav-logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
   <div class="nav-links">
     <a href="{% url 'minha_conta' %}">Minha conta</a>
     <a href="{% url 'carrinho' %}">🛒{% if qtd_carrinho > 0 %} ({{ qtd_carrinho }}){% endif %}</a>

@@ -13,7 +13,8 @@
 :root{--bg:#F5F2EC;--surface:#fff;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--green-bg:#E8EDE3;--red:#b84c3a;--radius:14px;--radius-sm:8px}
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .nav{height:64px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 40px}
-.logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none}
+.logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
 .main{max-width:760px;margin:60px auto;padding:0 20px}
 h1{font-family:'Playfair Display',serif;font-size:34px;margin-bottom:8px}
 .lead{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:28px}
@@ -30,7 +31,7 @@ button,.btn{display:inline-block;border:0;background:var(--green);color:#fff;bor
 </head>
 <body>
 <nav class="nav">
-  <a href="/" class="logo">Barrs Store</a>
+  <a href="/" class="logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
   <a href="{% url 'contato' %}" style="font-size:13px;color:var(--muted);text-decoration:none">Atendimento</a>
 </nav>
 <main class="main">
