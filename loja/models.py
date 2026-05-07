@@ -126,9 +126,13 @@ class TamanhoAnel(models.Model):
 class Carrinho(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
     telefone_cliente = models.CharField(max_length=20, blank=True, default='')
+    email_cliente = models.EmailField(blank=True, default='')
     aceita_whatsapp = models.BooleanField(default=False)
     whatsapp_abandono_enviado = models.BooleanField(default=False)
     whatsapp_abandono_enviado_em = models.DateTimeField(null=True, blank=True)
+    email_abandono_1_enviado = models.BooleanField(default=False)
+    email_abandono_2_enviado = models.BooleanField(default=False)
+    email_abandono_3_enviado = models.BooleanField(default=False)
     atualizado_em = models.DateTimeField(auto_now=True)
 
     def total(self):
@@ -218,6 +222,11 @@ class Pedido(models.Model):
     access_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email_confirmacao_enviado = models.BooleanField(default=False)
     email_pagamento_pendente_enviado = models.BooleanField(default=False)
+    email_poscompra_1_enviado = models.BooleanField(default=False)
+    email_poscompra_2_enviado = models.BooleanField(default=False)
+    email_poscompra_3_enviado = models.BooleanField(default=False)
+    email_poscompra_4_enviado = models.BooleanField(default=False)
+    email_poscompra_5_enviado = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'

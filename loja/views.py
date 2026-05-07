@@ -65,6 +65,19 @@ def get_pedido_por_token(pedido_id, token):
     return get_object_or_404(Pedido, id=pedido_id, access_token=token)
 
 
+def _decrementar_estoque(pedido):
+    from .models import TamanhoAnel
+    for item in pedido.itens.all():
+        if item.produto:
+            if item.tamanho:
+                TamanhoAnel.objects.filter(
+                    produto=item.produto, numero=item.tamanho
+                ).update(estoque=F('estoque') - item.quantidade)
+            Produto.objects.filter(id=item.produto.id).update(
+                estoque=F('estoque') - item.quantidade
+            )
+
+
 def confirmar_pedido_pago(pedido):
     logger.info('[PAGAMENTO] Confirmando pedido %s. status_atual=%s', pedido.id, pedido.status)
     atualizou = False
@@ -73,6 +86,7 @@ def confirmar_pedido_pago(pedido):
         atualizou = True
         if pedido.cupom_codigo:
             Cupom.objects.filter(codigo__iexact=pedido.cupom_codigo).update(usado=F('usado') + 1)
+        _decrementar_estoque(pedido)
 
     if not pedido.email_confirmacao_enviado:
         enviado = enviar_email_confirmacao(pedido)
@@ -569,10 +583,274 @@ def enviar_email_rastreio(pedido):
                 resposta.text[:500],
             )
             return False
+        pedido.email_rastreio_enviado = True
+        pedido.save(update_fields=['email_rastreio_enviado'])
         return True
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail de rastreio do pedido %s: %s', pedido.id, exc)
         return False
+
+
+# ── HELPERS DE EMAIL ──────────────────────────────────────────────
+def _brevo_send(assunto, html, destinatario_email, destinatario_nome):
+    brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
+    if not brevo_api_key:
+        return False
+    brevo_from_email = os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip()
+    try:
+        r = http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
+            json={
+                'sender': {'name': 'Barrs Store', 'email': brevo_from_email},
+                'to': [{'email': destinatario_email, 'name': destinatario_nome}],
+                'subject': assunto,
+                'htmlContent': html,
+            },
+            timeout=10,
+        )
+        return r.status_code < 400
+    except Exception as exc:
+        logger.exception('[BREVO] Erro ao enviar "%s" para %s: %s', assunto, destinatario_email, exc)
+        return False
+
+
+def _email_wrapper(titulo, corpo_html):
+    return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F2EC;font-family:Arial,sans-serif">
+  <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(107,94,83,0.08)">
+    <div style="background:#8A947C;padding:28px 40px;text-align:center">
+      <p style="color:#E8EDE3;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px">Barrs Store</p>
+      <h1 style="color:#fff;font-size:21px;margin:0;font-weight:600;letter-spacing:-0.3px">{titulo}</h1>
+    </div>
+    <div style="padding:36px 40px">{corpo_html}</div>
+    <div style="background:#F5F2EC;padding:20px 40px;text-align:center;border-top:1px solid #E8EDE3">
+      <p style="font-size:11px;color:#9E9488;margin:0">© 2026 Barrs Store · <a href="https://www.barrsstore.com.br" style="color:#8A947C;text-decoration:none">barrsstore.com.br</a></p>
+      <p style="font-size:11px;color:#9E9488;margin:6px 0 0">Dúvidas? <a href="https://wa.me/5511913225256" style="color:#8A947C;text-decoration:none">WhatsApp</a></p>
+    </div>
+  </div>
+</body></html>"""
+
+
+def _btn(texto, url, cor='#8A947C'):
+    return f'<a href="{url}" style="display:inline-block;padding:13px 28px;background:{cor};color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">{texto}</a>'
+
+
+def _paragrafo(texto):
+    return f'<p style="font-size:14px;color:#6B5E53;line-height:1.7;margin:0 0 16px">{texto}</p>'
+
+
+# ── SEQUÊNCIA PÓS-COMPRA PREMIUM ──────────────────────────────────
+
+def enviar_email_poscompra_1(pedido):
+    """E-mail 1 (≈1h após confirmação): pedido em preparo."""
+    link_rastrear = site_url(reverse('rastrear_pedido'))
+    corpo = (
+        _paragrafo(f'Oi, <strong>{pedido.nome.split()[0]}</strong>! Que alegria receber seu pedido 💎')
+        + _paragrafo('Já estamos separando cada peça com muito cuidado para garantir que chegue até você perfeita. A Barrs Store cuida de cada detalhe — da embalagem à entrega.')
+        + _paragrafo(f'<strong>Pedido #{pedido.id}</strong> · Total: <strong style="color:#8A947C">R$ {pedido.total}</strong>')
+        + f'<div style="text-align:center;margin:28px 0">{_btn("Acompanhar meu pedido", link_rastrear)}</div>'
+        + _paragrafo('<span style="color:#9E9488;font-size:13px">Em breve você receberá o código de rastreio. Se tiver qualquer dúvida, estamos no WhatsApp.</span>')
+    )
+    html = _email_wrapper('Seu pedido está em boas mãos ✨', corpo)
+    ok = _brevo_send(f'Seu pedido #{pedido.id} está sendo preparado — Barrs Store', html, pedido.email, pedido.nome)
+    if ok:
+        pedido.email_poscompra_1_enviado = True
+        pedido.save(update_fields=['email_poscompra_1_enviado'])
+    return ok
+
+
+def enviar_email_poscompra_2(pedido):
+    """E-mail 2 (≈24h após confirmação): bastidores da marca."""
+    link_loja = site_url('/')
+    corpo = (
+        _paragrafo(f'<strong>{pedido.nome.split()[0]}</strong>, enquanto preparamos seu pedido com todo o carinho, queríamos te contar um pouquinho sobre como trabalhamos por aqui.')
+        + _paragrafo('Cada peça da Barrs Store passa por uma curadoria criteriosa. Acreditamos que um acessório bem escolhido não é apenas um adorno — é uma extensão da sua personalidade.')
+        + '<div style="background:#F5F2EC;border-radius:10px;padding:20px;margin:20px 0">'
+        + '<p style="font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9E9488;margin:0 0 12px">DICA DE CUIDADO</p>'
+        + _paragrafo('Guarde suas peças em local seco, longe de perfumes e produtos químicos. Para anéis e pulseiras, evite contato com água. Assim, elas duram muito mais 💎')
+        + '</div>'
+        + f'<div style="text-align:center;margin:24px 0">{_btn("Ver novidades na loja", link_loja)}</div>'
+    )
+    html = _email_wrapper('O cuidado que vai junto com cada peça', corpo)
+    ok = _brevo_send(f'Um segredo sobre seu pedido #{pedido.id} 💎 — Barrs Store', html, pedido.email, pedido.nome)
+    if ok:
+        pedido.email_poscompra_2_enviado = True
+        pedido.save(update_fields=['email_poscompra_2_enviado'])
+    return ok
+
+
+def enviar_email_poscompra_3(pedido):
+    """E-mail 3 (≈3 dias): atualização de envio / rastreio."""
+    link_rastrear = site_url(reverse('rastrear_pedido'))
+    if pedido.codigo_rastreio:
+        rastreio_url = pedido.rastreio_url()
+        transportadora = pedido.rastreio_transportadora()
+        trecho_rastreio = (
+            '<div style="background:#E8EDE3;border-radius:10px;padding:16px 20px;margin:20px 0;text-align:center">'
+            + f'<p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8A947C;margin:0 0 6px">CÓDIGO DE RASTREIO</p>'
+            + f'<p style="font-size:18px;font-weight:700;color:#3d2d20;margin:0;letter-spacing:1px">{pedido.codigo_rastreio}</p>'
+            + f'<p style="font-size:12px;color:#9E9488;margin:6px 0 0">{transportadora}</p>'
+            + '</div>'
+            + f'<div style="text-align:center;margin:20px 0">{_btn("Rastrear minha encomenda", rastreio_url)}</div>'
+        )
+        subtitulo = 'Seu pedido saiu para entrega 📦'
+        intro = _paragrafo(f'<strong>{pedido.nome.split()[0]}</strong>, uma ótima notícia! Seu pedido #{pedido.id} foi enviado e já está a caminho.')
+    else:
+        trecho_rastreio = (
+            _paragrafo('Estamos finalizando o preparo do seu pedido e em breve ele sairá para entrega. Você receberá o código de rastreio assim que for despachado.')
+            + f'<div style="text-align:center;margin:24px 0">{_btn("Rastrear pedido", link_rastrear)}</div>'
+        )
+        subtitulo = 'Seu pedido está quase pronto ✈️'
+        intro = _paragrafo(f'<strong>{pedido.nome.split()[0]}</strong>, o pedido #{pedido.id} está nos últimos detalhes de preparo!')
+
+    corpo = intro + trecho_rastreio + _paragrafo('<span style="color:#9E9488;font-size:13px">Qualquer dúvida, estamos no WhatsApp. Mal podemos esperar para você receber suas peças 💎</span>')
+    html = _email_wrapper(subtitulo, corpo)
+    ok = _brevo_send(f'Atualização do seu pedido #{pedido.id} — Barrs Store', html, pedido.email, pedido.nome)
+    if ok:
+        pedido.email_poscompra_3_enviado = True
+        pedido.save(update_fields=['email_poscompra_3_enviado'])
+    return ok
+
+
+def enviar_email_poscompra_4(pedido):
+    """E-mail 4 (≈7 dias): pós-entrega estimada, verificação."""
+    link_rastrear = site_url(reverse('rastrear_pedido'))
+    link_wa = 'https://wa.me/5511913225256'
+    corpo = (
+        _paragrafo(f'<strong>{pedido.nome.split()[0]}</strong>, já faz alguns dias desde que enviamos seu pedido. Chegou tudo certinho?')
+        + _paragrafo('Adoraríamos saber como está sendo a experiência com suas novas peças. Se tiver qualquer dúvida sobre a entrega, estamos aqui para resolver com agilidade.')
+        + '<div style="display:flex;gap:12px;margin:24px 0;justify-content:center;flex-wrap:wrap">'
+        + f'<a href="{link_wa}" style="display:inline-block;padding:12px 24px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">💬 Falar no WhatsApp</a>'
+        + f'<a href="{link_rastrear}" style="display:inline-block;padding:12px 24px;background:#F5F2EC;color:#6B5E53;border:1px solid #D9D3C7;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">Rastrear pedido</a>'
+        + '</div>'
+        + _paragrafo('<span style="color:#9E9488;font-size:13px">Sua satisfação é o que nos move a continuar criando peças exclusivas com tanto cuidado 💎</span>')
+    )
+    html = _email_wrapper('Chegou tudo bem? 🌿', corpo)
+    ok = _brevo_send(f'Tudo certo com seu pedido #{pedido.id}, {pedido.nome.split()[0]}? — Barrs Store', html, pedido.email, pedido.nome)
+    if ok:
+        pedido.email_poscompra_4_enviado = True
+        pedido.save(update_fields=['email_poscompra_4_enviado'])
+    return ok
+
+
+def enviar_email_poscompra_5(pedido):
+    """E-mail 5 (≈15 dias): fidelização e retorno à loja."""
+    link_loja = site_url('/')
+    link_wa = 'https://wa.me/5511913225256'
+    corpo = (
+        _paragrafo(f'<strong>{pedido.nome.split()[0]}</strong>, obrigada de verdade por escolher a Barrs Store 💎')
+        + _paragrafo('Clientes como você são a razão de cada detalhe que dedicamos às nossas peças — da curadoria à embalagem. Você é especial para a gente.')
+        + '<div style="background:#F5F2EC;border-radius:10px;padding:20px;margin:20px 0;text-align:center">'
+        + '<p style="font-size:13px;font-weight:600;color:#3d2d20;margin:0 0 8px">Novidades chegando todo mês ✨</p>'
+        + _paragrafo('<span style="font-size:13px;color:#9E9488">Acompanhe nossas novidades no Instagram e seja a primeira a saber dos lançamentos exclusivos.</span>')
+        + f'<a href="https://www.instagram.com/barrsstore" style="display:inline-block;margin-top:8px;padding:10px 22px;background:#8A947C;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">@barrsstore no Instagram</a>'
+        + '</div>'
+        + f'<div style="text-align:center;margin:20px 0">{_btn("Ver novas peças na loja", link_loja)}</div>'
+        + _paragrafo(f'<span style="color:#9E9488;font-size:13px">Tem alguma peça dos sonhos? Me conta pelo <a href="{link_wa}" style="color:#8A947C">WhatsApp</a> — amo ajudar 💚</span>')
+    )
+    html = _email_wrapper('Uma mensagem especial para você 💎', corpo)
+    ok = _brevo_send(f'Obrigada, {pedido.nome.split()[0]} — você é incrível 💎 — Barrs Store', html, pedido.email, pedido.nome)
+    if ok:
+        pedido.email_poscompra_5_enviado = True
+        pedido.save(update_fields=['email_poscompra_5_enviado'])
+    return ok
+
+
+# ── SEQUÊNCIA ABANDONO DE CARRINHO PREMIUM ─────────────────────────
+
+def enviar_email_abandono_1(carrinho):
+    """E-mail 1 (≈1h): primeiro contato suave."""
+    if not carrinho.email_cliente:
+        return False
+    link_checkout = carrinho.link_checkout()
+    itens = carrinho.itens.select_related('produto').all()
+    if not itens:
+        return False
+
+    itens_html = ''.join([
+        f'<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #E8EDE3">'
+        + (f'<img src="{item.produto.imagem.url}" alt="{item.produto.nome}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;background:#E8EDE3;flex-shrink:0">'
+           if item.produto.imagem else
+           '<div style="width:52px;height:52px;border-radius:8px;background:#E8EDE3;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💎</div>')
+        + f'<div style="flex:1"><p style="font-size:13px;font-weight:600;color:#3d2d20;margin:0">{item.produto.nome}</p>'
+        + (f'<p style="font-size:11px;color:#8A947C;margin:2px 0 0">Tamanho: {item.tamanho}</p>' if item.tamanho else '')
+        + f'</div><p style="font-size:14px;font-weight:600;color:#8A947C;flex-shrink:0">R$ {item.subtotal()}</p></div>'
+        for item in itens
+    ])
+
+    corpo = (
+        _paragrafo('Você deixou algumas peças especiais no carrinho 💫')
+        + _paragrafo('Não queremos que essas peças fiquem esperando sem você. Seu carrinho ainda está salvo, exatamente como você deixou.')
+        + f'<div style="background:#F5F2EC;border-radius:10px;padding:16px 20px;margin:20px 0">{itens_html}</div>'
+        + f'<div style="text-align:center;margin:24px 0">{_btn("Finalizar minha compra", link_checkout)}</div>'
+        + _paragrafo('<span style="color:#9E9488;font-size:13px">Com dúvida sobre tamanho ou entrega? Estamos no WhatsApp, é só chamar 💬</span>')
+    )
+    html = _email_wrapper('Você esqueceu algo especial... 💫', corpo)
+    nome = carrinho.email_cliente.split('@')[0].capitalize()
+    ok = _brevo_send('Seu carrinho ainda está aqui — Barrs Store', html, carrinho.email_cliente, nome)
+    if ok:
+        carrinho.email_abandono_1_enviado = True
+        carrinho.save(update_fields=['email_abandono_1_enviado', 'atualizado_em'])
+    return ok
+
+
+def enviar_email_abandono_2(carrinho):
+    """E-mail 2 (≈24h): destaca benefícios e produtos."""
+    if not carrinho.email_cliente:
+        return False
+    itens = carrinho.itens.select_related('produto').all()
+    if not itens:
+        return False
+    link_checkout = carrinho.link_checkout()
+    total = carrinho.total()
+
+    corpo = (
+        _paragrafo('Suas peças ainda estão esperando por você 💎')
+        + _paragrafo('Reunimos com carinho as peças do seu carrinho porque acreditamos que elas foram feitas para você. Cada acessório da Barrs Store é escolhido a dedo para mulheres que valorizam qualidade e estilo.')
+        + '<div style="background:#E8EDE3;border-radius:10px;padding:16px 20px;margin:20px 0">'
+        + '<p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8A947C;margin:0 0 10px">POR QUE COMPRAR NA BARRS STORE</p>'
+        + '<p style="font-size:13px;color:#6B5E53;margin:0 0 6px;line-height:1.6">✓ &nbsp;Entrega para todo o Brasil</p>'
+        + '<p style="font-size:13px;color:#6B5E53;margin:0 0 6px;line-height:1.6">✓ &nbsp;Frete grátis a partir de R$ 79 (SP)</p>'
+        + '<p style="font-size:13px;color:#6B5E53;margin:0;line-height:1.6">✓ &nbsp;Atendimento humanizado via WhatsApp</p>'
+        + '</div>'
+        + f'<p style="font-size:15px;font-weight:600;color:#3d2d20;margin:16px 0">Total do carrinho: <span style="color:#8A947C">R$ {total}</span></p>'
+        + f'<div style="text-align:center;margin:24px 0">{_btn("Garantir meu pedido agora", link_checkout)}</div>'
+    )
+    html = _email_wrapper('Suas peças estão esperando só por você 💎', corpo)
+    nome = carrinho.email_cliente.split('@')[0].capitalize()
+    ok = _brevo_send('Ainda dá tempo — seu carrinho está salvo 💎 — Barrs Store', html, carrinho.email_cliente, nome)
+    if ok:
+        carrinho.email_abandono_2_enviado = True
+        carrinho.save(update_fields=['email_abandono_2_enviado', 'atualizado_em'])
+    return ok
+
+
+def enviar_email_abandono_3(carrinho):
+    """E-mail 3 (≈48h): urgência suave, última mensagem."""
+    if not carrinho.email_cliente:
+        return False
+    itens = carrinho.itens.select_related('produto').all()
+    if not itens:
+        return False
+    link_checkout = carrinho.link_checkout()
+
+    corpo = (
+        _paragrafo('Esta é nossa última mensagem sobre seu carrinho — prometemos 😊')
+        + _paragrafo('Só queríamos lembrar que os estoques da Barrs Store são limitados. Não queremos que você perca as peças que escolheu com tanto cuidado.')
+        + '<div style="background:#F5F2EC;border:1px solid #D9D3C7;border-radius:10px;padding:16px 20px;margin:20px 0;text-align:center">'
+        + f'<p style="font-size:13px;color:#6B5E53;margin:0 0 4px">Você tem <strong>{sum(i.quantidade for i in itens)} peça(s)</strong> reservada(s)</p>'
+        + f'<p style="font-size:18px;font-weight:700;color:#8A947C;margin:0">R$ {carrinho.total()}</p>'
+        + '</div>'
+        + f'<div style="text-align:center;margin:24px 0">{_btn("Finalizar antes que esgote", link_checkout)}</div>'
+        + _paragrafo('<span style="color:#9E9488;font-size:12px">Se mudou de ideia, sem problema — não vamos te incomodar mais. Mas se precisar de nós, estamos sempre no WhatsApp 💬</span>')
+    )
+    html = _email_wrapper('Última chance — seu carrinho 🛍️', corpo)
+    nome = carrinho.email_cliente.split('@')[0].capitalize()
+    ok = _brevo_send('Não deixe escapar — Barrs Store', html, carrinho.email_cliente, nome)
+    if ok:
+        carrinho.email_abandono_3_enviado = True
+        carrinho.save(update_fields=['email_abandono_3_enviado', 'atualizado_em'])
+    return ok
 
 
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
@@ -934,14 +1212,19 @@ def salvar_contato_carrinho(request):
         return JsonResponse({'ok': False, 'erro': 'Carrinho nao encontrado.'}, status=404)
 
     carrinho = get_object_or_404(Carrinho, id=carrinho_id)
-    carrinho.telefone_cliente = request.POST.get('telefone', '').strip()
-    carrinho.aceita_whatsapp = bool(carrinho.telefone_cliente)
-    carrinho.save(update_fields=['telefone_cliente', 'aceita_whatsapp', 'atualizado_em'])
+    telefone = request.POST.get('telefone', '').strip()
+    email = request.POST.get('email', '').strip().lower()
+    carrinho.telefone_cliente = telefone
+    carrinho.aceita_whatsapp = bool(telefone)
+    if email and '@' in email:
+        carrinho.email_cliente = email
+    carrinho.save(update_fields=['telefone_cliente', 'aceita_whatsapp', 'email_cliente', 'atualizado_em'])
 
     logger.info(
-        '[CARRINHO] Contato salvo no carrinho %s. Aceita WhatsApp=%s',
+        '[CARRINHO] Contato salvo no carrinho %s. WhatsApp=%s email=%s',
         carrinho.id,
         carrinho.aceita_whatsapp,
+        bool(carrinho.email_cliente),
     )
     return JsonResponse({'ok': True})
 
@@ -1017,6 +1300,9 @@ def checkout(request):
             'cep': 'CEP',
             'rua': 'Rua',
             'numero': 'Numero',
+            'bairro': 'Bairro',
+            'cidade': 'Cidade',
+            'estado': 'Estado (UF)',
         }
         for campo, rotulo in campos_obrigatorios.items():
             if not request.POST.get(campo, '').strip():
@@ -1142,6 +1428,9 @@ def checkout(request):
                 tamanho=item.tamanho,
             )
 
+        # Salva email no carrinho antes de deletar (para possível recuperação futura)
+        carrinho.email_cliente = request.POST.get('email', '').strip().lower()
+        carrinho.save(update_fields=['email_cliente'])
         carrinho.delete()
         del request.session['carrinho_id']
 
