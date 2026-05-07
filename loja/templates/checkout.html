@@ -463,9 +463,9 @@ function mascaraCpf(input) {
         return;
       }
 
-      descontoCupom = parseFloat(data.desconto || 0);
+      descontoCupom = data.tipo === 'frete_gratis' ? freteGet : parseFloat(data.desconto || 0);
       input.value = data.codigo;
-      document.getElementById('desconto-label').textContent = `Desconto ${data.codigo}`;
+      document.getElementById('desconto-label').textContent = data.tipo === 'frete_gratis' ? `Frete grátis ${data.codigo}` : `Desconto ${data.codigo}`;
       document.getElementById('desconto-display').textContent = '- ' + formatarMoeda(descontoCupom);
       document.getElementById('desconto-row').style.display = 'flex';
       status.textContent = 'Cupom aplicado com sucesso!';

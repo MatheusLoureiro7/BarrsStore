@@ -250,6 +250,7 @@ class Cupom(models.Model):
     TIPO_CHOICES = [
         ('percentual', 'Percentual'),
         ('valor', 'Valor fixo'),
+        ('frete_gratis', 'Frete grátis'),
     ]
 
     codigo = models.CharField(max_length=30, unique=True)
@@ -278,7 +279,9 @@ class Cupom(models.Model):
             return False, f'Cupom valido para compras a partir de R$ {self.valor_minimo}.'
         return True, ''
 
-    def calcular_desconto(self, subtotal):
+    def calcular_desconto(self, subtotal, frete=Decimal('0')):
+        if self.tipo == 'frete_gratis':
+            return min(frete, frete).quantize(Decimal('0.01'))
         if self.tipo == 'percentual':
             desconto = subtotal * (self.valor / Decimal('100'))
         else:

@@ -1255,6 +1255,7 @@ def aplicar_cupom_ajax(request):
     return JsonResponse({
         'ok': True,
         'codigo': cupom.codigo.upper(),
+        'tipo': cupom.tipo,
         'desconto': float(desconto),
         'subtotal': float(subtotal),
     })
@@ -1388,7 +1389,7 @@ def checkout(request):
             if not valido:
                 messages.error(request, motivo)
                 return render_checkout()
-            desconto = cupom.calcular_desconto(subtotal)
+            desconto = cupom.calcular_desconto(subtotal, frete)
 
         total = subtotal - desconto + frete
         try:
