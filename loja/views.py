@@ -1778,6 +1778,18 @@ def medidas(request):
     return render(request, 'medidas.html', context)
 
 
+def garantia(request):
+    context = {
+        'qtd_carrinho': get_carrinho_info(request),
+        **seo_context(
+            request,
+            'Garantia Barrs Store - Semijoias com 12 meses de garantia',
+            'Entenda a garantia de 12 meses da Barrs Store, o que cobre, o que nao cobre e como cuidar das suas semijoias.',
+        ),
+    }
+    return render(request, 'garantia.html', context)
+
+
 def rastrear_pedido(request):
     pedido = None
     erro = ''
