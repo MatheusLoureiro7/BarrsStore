@@ -660,7 +660,8 @@ def home(request):
     seo = seo_context(
         request,
         'Barrs Store - Acessorios modernos e exclusivos',
-        'Compre acessorios femininos modernos na Barrs Store: aneis, brincos, colares e pulseiras com envio para todo o Brasil.'
+        'Compre acessorios femininos modernos na Barrs Store: aneis, brincos, colares e pulseiras com envio para todo o Brasil.',
+        robots='noindex, follow' if request.GET else 'index, follow',
     )
 
     context = {
