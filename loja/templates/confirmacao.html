@@ -6,366 +6,344 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pedido Confirmado — Barrs Store</title>
 {% include "partials/seo_head.html" %}
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+{% include "partials/base_styles.html" %}
 <script src="https://sdk.mercadopago.com/js/v2"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ═══════════════════════════════════════════════════════════
+   CONFIRMAÇÃO — pós-checkout, integração Mercado Pago
+═══════════════════════════════════════════════════════════ */
 
-  :root {
-    --bg: #F5F2EC;
-    --surface: #FFFFFF;
-    --border: #D9D3C7;
-    --text: #6B5E53;
-    --muted: #9E9488;
-    --green: #8A947C;
-    --green-bg: #E8EDE3;
-    --radius: 14px;
-    --radius-sm: 8px;
-  }
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7) var(--space-5);
+  min-height: 100vh;
+}
 
-  body {
-    font-family: 'Sora', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-  }
+.confirm {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-7) var(--space-6);
+  max-width: 540px;
+  width: 100%;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 42px 40px;
-    max-width: 540px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 18px 50px rgba(107, 94, 83, 0.10);
-  }
+.confirm__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-5);
+  background: var(--color-brand-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand);
+  animation: pop 400ms var(--ease) both;
+}
+@keyframes pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
 
-  .icone-sucesso {
-    width: 72px;
-    height: 72px;
-    background: var(--green-bg);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px;
-    font-size: 32px;
-    animation: pop .4s cubic-bezier(.175,.885,.32,1.275) both;
-  }
+.confirm__badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  border: 1px solid var(--color-border);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+}
 
-  @keyframes pop {
-    from { transform: scale(0); opacity: 0; }
-    to   { transform: scale(1); opacity: 1; }
-  }
+.confirm__title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-2);
+}
 
-  .titulo {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
+.confirm__sub {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
+.confirm__sub strong { color: var(--color-ink-soft); }
 
-  .subtitulo {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 26px;
-  }
+/* DETALHES DO PEDIDO */
+.confirm__details {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  text-align: left;
+  margin-bottom: var(--space-5);
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  margin-bottom: var(--space-2);
+  gap: var(--space-3);
+  align-items: baseline;
+}
+.detail-row:last-child { margin-bottom: 0; }
+.detail-row__label {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.detail-row__value {
+  color: var(--color-ink-soft);
+  font-weight: 500;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.detail-row__value--total {
+  color: var(--color-brand);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
 
-  .detalhes {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 20px;
-    text-align: left;
-    margin-bottom: 28px;
-  }
+/* AVISO PIX/PAGAMENTO */
+.confirm__notice {
+  background: var(--color-brand-bg);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+  margin-bottom: var(--space-5);
+  text-align: left;
+}
 
-  .detalhe-linha {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    margin-bottom: 10px;
-    gap: 16px;
-  }
+/* SEÇÃO PAGAMENTO */
+.payment {
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+.payment__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+.payment__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.01em;
+}
+.payment__text {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-ink-muted);
+  margin: 0 auto var(--space-4);
+  max-width: 380px;
+}
+.payment__shield {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
 
-  .detalhe-linha:last-child { margin-bottom: 0; }
+/* LOADING / ERRO */
+.mp-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  padding: var(--space-3);
+}
+.mp-loading__spinner {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--color-border);
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  .detalhe-label {
-    color: var(--muted);
-    font-weight: 500;
-    flex-shrink: 0;
-  }
+.mp-erro {
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: none;
+}
+.mp-erro a {
+  color: var(--color-error);
+  font-weight: 600;
+  text-decoration: underline;
+}
 
-  .detalhe-valor {
-    font-weight: 500;
-    text-align: right;
-  }
+#wallet_container {
+  max-width: 420px;
+  margin: 0 auto;
+}
+#wallet_container iframe,
+#wallet_container button {
+  border-radius: var(--radius-sm) !important;
+}
 
-  .total-valor {
-    color: var(--green);
-    font-size: 15px;
-    font-weight: 600;
-  }
+.mp-direto {
+  display: none;
+  margin-top: var(--space-3);
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  line-height: 1.5;
+}
+.mp-direto a {
+  color: var(--color-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+.mp-direto a:hover { color: var(--color-ink-soft); }
 
-  .badge-pedido {
-    display: inline-block;
-    background: #6B5E53;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-  }
+/* DIVISOR E AÇÕES FINAIS */
+.confirm__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+.confirm__divider::before,
+.confirm__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
 
-  /* SEÇÃO DE PAGAMENTO */
-  .secao-pagamento {
-    margin: 22px 0 24px;
-    padding: 18px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: linear-gradient(180deg, #fff 0%, #fbfaf7 100%);
-    text-align: center;
-  }
+.confirm__btn {
+  display: block;
+  width: 100%;
+  padding: 0.875rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+  margin-bottom: var(--space-2);
+}
+.confirm__btn:hover {
+  background: var(--color-ink-soft);
+  border-color: var(--color-ink-soft);
+}
 
-  .pagamento-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .pagamento-titulo {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 8px;
-  }
-
-  .pagamento-texto {
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--muted);
-    margin: 0 auto 16px;
-    max-width: 390px;
-  }
-
-  .pagamento-destaque {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 12px;
-    border-radius: 999px;
-    background: var(--green-bg);
-    color: var(--green);
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 14px;
-  }
-
-  .pagamento-destaque::before {
-    content: '1';
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--green);
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-  }
-
-  /* Loading do botão MP */
-  .mp-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--muted);
-    padding: 12px;
-  }
-
-  .mp-loading-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--muted);
-    border-radius: 50%;
-    animation: pulse 1.2s ease-in-out infinite;
-  }
-
-  .mp-loading-dot:nth-child(2) { animation-delay: 0.2s; }
-  .mp-loading-dot:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes pulse {
-    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-    40% { opacity: 1; transform: scale(1); }
-  }
-
-  .mp-erro {
-    font-size: 13px;
-    color: #c0392b;
-    background: #fdf0ef;
-    border: 1px solid #f5c6c2;
-    border-radius: var(--radius-sm);
-    padding: 12px;
-    display: none;
-  }
-
-  .mp-direto {
-    display: none;
-    margin-top: 12px;
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  .mp-direto a {
-    color: #1455cc;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .pix-aviso {
-    background: var(--green-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 13px 14px;
-    font-size: 12px;
-    color: var(--text);
-    line-height: 1.6;
-    margin-bottom: 20px;
-    text-align: left;
-  }
-
-  #wallet_container {
-    max-width: 420px;
-    margin: 0 auto;
-  }
-
-  #wallet_container iframe,
-  #wallet_container button {
-    border-radius: var(--radius-sm) !important;
-  }
-
-  /* Divisor */
-  .divisor {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .divisor::before,
-  .divisor::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .btn-home {
-    display: block;
-    width: 100%;
-    padding: 13px;
-    background: #6B5E53;
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: 'Sora', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    transition: opacity .2s;
-    margin-bottom: 10px;
-  }
-
-  .btn-home:hover { opacity: 0.85; }
-
-  .link-continuar {
-    font-size: 13px;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color .15s;
-  }
-
-  .link-continuar:hover { color: var(--text); }
+.confirm__back {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+.confirm__back:hover { color: var(--color-ink-soft); }
 </style>
 </head>
 <body>
 
-<div class="card">
+<div class="confirm">
 
-  <div class="icone-sucesso">✓</div>
+  <div class="confirm__icon">
+    <svg class="icon" style="width:28px;height:28px;stroke-width:2" aria-hidden="true">
+      <use href="#i-check"/>
+    </svg>
+  </div>
 
-  <div class="badge-pedido">PEDIDO #{{ pedido.id }}</div>
+  <div class="confirm__badge">Pedido #{{ pedido.id }}</div>
 
-  <h1 class="titulo">Pedido recebido!</h1>
-  <p class="subtitulo">
+  <h1 class="confirm__title">Pedido recebido!</h1>
+  <p class="confirm__sub">
     Obrigada pela sua compra, <strong>{{ pedido.nome }}</strong>.<br>
     Seu pedido foi criado e agora falta apenas concluir o pagamento.
   </p>
 
-  <div class="detalhes">
-    <div class="detalhe-linha">
-      <span class="detalhe-label">Entrega para</span>
-      <span class="detalhe-valor">{{ pedido.rua }}, {{ pedido.numero }} — {{ pedido.cidade }}/{{ pedido.estado }}</span>
+  <div class="confirm__details">
+    <div class="detail-row">
+      <span class="detail-row__label">Entrega para</span>
+      <span class="detail-row__value">{{ pedido.rua }}, {{ pedido.numero }} — {{ pedido.cidade }}/{{ pedido.estado }}</span>
     </div>
-    <div class="detalhe-linha">
-      <span class="detalhe-label">Pagamento</span>
-      <span class="detalhe-valor">{{ pedido.get_forma_pagamento_display }}</span>
+    <div class="detail-row">
+      <span class="detail-row__label">Pagamento</span>
+      <span class="detail-row__value">{{ pedido.get_forma_pagamento_display }}</span>
     </div>
-    <div class="detalhe-linha">
-      <span class="detalhe-label">Total</span>
-      <span class="detalhe-valor total-valor">R$ {{ pedido.total }}</span>
+    <div class="detail-row">
+      <span class="detail-row__label">Total</span>
+      <span class="detail-row__value detail-row__value--total">R$ {{ pedido.total }}</span>
     </div>
   </div>
 
-  <div class="pix-aviso">
-    Após pagar, a aprovação é confirmada automaticamente pelo Mercado Pago. Se a tela não voltar sozinha para a loja, pode ficar tranquila: seu pedido será atualizado assim que recebermos a confirmação.
+  <div class="confirm__notice">
+    Após pagar, a aprovação é confirmada automaticamente pelo Mercado Pago. Se a tela não voltar sozinha para a loja, fique tranquila — seu pedido será atualizado assim que recebermos a confirmação.
   </div>
 
   <!-- BOTÃO MERCADO PAGO -->
-  <div class="secao-pagamento">
-    <p class="pagamento-label">Próximo passo</p>
-    <div class="pagamento-titulo">Clique no botão abaixo para pagar</div>
-    <p class="pagamento-texto">
+  <section class="payment">
+    <div class="payment__eyebrow">Próximo passo</div>
+    <div class="payment__title">Clique abaixo para pagar</div>
+    <p class="payment__text">
       Você será direcionada ao ambiente seguro do Mercado Pago para escolher Pix, cartão ou outra opção disponível.
     </p>
-    <div class="pagamento-destaque">Pagamento seguro via Mercado Pago</div>
+    <div class="payment__shield">
+      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-shield"/></svg>
+      Pagamento seguro via Mercado Pago
+    </div>
     <div id="mp-loading" class="mp-loading">
-      <div class="mp-loading-dot"></div>
-      <div class="mp-loading-dot"></div>
-      <div class="mp-loading-dot"></div>
-      Carregando opções de pagamento...
+      <span class="mp-loading__spinner"></span>
+      Carregando opções de pagamento
     </div>
     <div id="mp-erro" class="mp-erro">
       Não foi possível carregar o pagamento. <a href="javascript:location.reload()">Tentar novamente</a>
     </div>
     <div id="wallet_container"></div>
     <div id="mp-direto" class="mp-direto">
-      Se o botão não abrir corretamente, <a href="#" id="mp-direto-link">clique aqui para ir ao Mercado Pago</a>.
+      Se o botão não abrir, <a href="#" id="mp-direto-link">clique aqui para ir ao Mercado Pago</a>.
     </div>
-  </div>
+  </section>
 
-  <div class="divisor">ou</div>
+  <div class="confirm__divider">ou</div>
 
-  <a href="/" class="btn-home">Voltar para a loja</a>
-  <a href="/" class="link-continuar">Continuar comprando</a>
+  <a href="/" class="confirm__btn">Voltar para a loja</a>
+  <a href="/" class="confirm__back">Continuar comprando</a>
 
 </div>
 

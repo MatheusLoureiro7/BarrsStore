@@ -6,123 +6,467 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finalizar Compra — Barrs Store</title>
 {% include "partials/seo_head.html" %}
+{% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg:#F5F2EC;--surface:#FFFFFF;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;
-    --green:#8A947C;--green-light:#B7C1A8;--green-bg:#E8EDE3;--gold:#C8A96A;
-    --red:#b84c3a;--radius:14px;--radius-sm:8px;
+/* ═══════════════════════════════════════════════════════════
+   CHECKOUT — estilos exclusivos
+═══════════════════════════════════════════════════════════ */
+
+/* STEPS DE PROGRESSO */
+.steps {
+  max-width: 540px;
+  margin: var(--space-5) auto 0;
+  padding: 0 var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+}
+.step.active { color: var(--color-ink-soft); font-weight: 600; }
+.step.done { color: var(--color-brand); }
+.step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.step.active .step__num {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+}
+.step.done .step__num {
+  background: var(--color-brand-bg);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+.step__line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+  margin: 0 var(--space-3);
+  min-width: 24px;
+}
+
+/* MENSAGENS */
+.messages {
+  max-width: 1120px;
+  margin: var(--space-4) auto 0;
+  padding: 0 var(--space-5);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.messages li {
+  padding: 0.75rem 1rem;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink-soft);
+}
+.messages li.error {
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* LAYOUT */
+.checkout {
+  max-width: 1120px;
+  margin: var(--space-5) auto var(--space-9);
+  padding: 0 var(--space-6);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* SEÇÃO */
+.cko-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+.cko-section__title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* GRID DE CAMPOS */
+.cko-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+.cko-grid .full { grid-column: 1 / -1; }
+
+.cko-field { display: flex; flex-direction: column; gap: 6px; }
+.cko-field label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.cko-field input {
+  width: 100%;
+  padding: 0.6875rem 0.875rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  outline: none;
+  transition: border-color var(--duration) var(--ease),
+              background var(--duration) var(--ease);
+}
+.cko-field input:focus { border-color: var(--color-ink-soft); }
+.cko-field input::placeholder { color: var(--color-ink-muted); }
+
+/* CEP COM BOTÃO INTEGRADO */
+.cep-wrap { position: relative; display: flex; align-items: center; }
+.cep-wrap input { padding-right: 100px; }
+.cep-wrap__btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 12px;
+  background: var(--color-brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+.cep-wrap__btn:hover { background: var(--color-ink-soft); }
+.cep-status {
+  font-size: 0.75rem;
+  margin-top: 4px;
+  min-height: 14px;
+  color: var(--color-ink-muted);
+}
+.cep-status.cep-ok { color: var(--color-brand); }
+.cep-status.cep-erro { color: var(--color-error); }
+
+/* SENHA / NOVA CONTA */
+.account-callout {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-brand-bg);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-sm);
+}
+.account-callout__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-brand);
+  margin-bottom: 4px;
+}
+.account-callout__sub {
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-3);
+  line-height: 1.6;
+}
+.account-callout input {
+  width: 100%;
+  padding: 0.6875rem 0.875rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  outline: none;
+  transition: border-color var(--duration) var(--ease);
+}
+.account-callout input:focus { border-color: var(--color-ink-soft); }
+.account-callout__hint {
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+  margin-top: 6px;
+}
+
+/* RESUMO */
+.summary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  position: sticky;
+  top: 88px;
+  box-shadow: var(--shadow);
+}
+.summary h2 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-4);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.summary-item__media {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+}
+.summary-item__media img { width: 100%; height: 100%; object-fit: cover; }
+.summary-item__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-border);
+}
+.summary-item__name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex: 1;
+  line-height: 1.4;
+  color: var(--color-ink-soft);
+}
+.summary-item__qty {
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+  margin-top: 2px;
+}
+.summary-item__val {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-brand);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-divider {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-4) 0;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-2);
+  align-items: center;
+}
+.summary-row span:last-child {
+  color: var(--color-ink-soft);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.summary-row .frete-pendente {
+  color: var(--color-ink-muted);
+  font-style: italic;
+  font-size: 0.75rem;
+}
+
+/* CUPOM */
+.coupon-box {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+.coupon-box label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: 6px;
+}
+.coupon-row { display: flex; gap: var(--space-2); }
+.coupon-row input {
+  flex: 1;
+  padding: 0.625rem 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  outline: none;
+  text-transform: uppercase;
+  transition: border-color var(--duration) var(--ease);
+}
+.coupon-row input:focus { border-color: var(--color-ink-soft); }
+.coupon-btn {
+  padding: 0 var(--space-3);
+  background: var(--color-brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--duration) var(--ease);
+}
+.coupon-btn:hover { background: var(--color-ink-soft); }
+.coupon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.coupon-status {
+  font-size: 0.6875rem;
+  margin-top: 6px;
+  min-height: 12px;
+  color: var(--color-ink-muted);
+}
+.coupon-status.ok { color: var(--color-brand); }
+.coupon-status.erro { color: var(--color-error); }
+
+/* TOTAL */
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.summary-total span:last-child {
+  color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
+}
+
+/* TRUST */
+.trust-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+.trust-item svg { color: var(--color-brand); flex-shrink: 0; }
+
+/* CTA */
+.checkout-cta {
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: 0.875rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+.checkout-cta:hover { background: var(--color-ink-soft); border-color: var(--color-ink-soft); }
+
+/* MOBILE */
+@media (max-width: 820px) {
+  .checkout {
+    grid-template-columns: 1fr;
+    padding: 0 var(--space-4);
+    gap: var(--space-4);
   }
-  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-  .navbar{background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
-  .nav-logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
-  .nav-right{display:flex;align-items:center;gap:16px}
-  .nav-voltar{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
-  .nav-voltar:hover{color:var(--text)}
-  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
-  .nav-conta:hover{color:var(--text)}
-
-  .steps{max-width:500px;margin:28px auto 0;padding:0 20px;display:flex;align-items:center;justify-content:center}
-  .step{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:var(--muted)}
-  .step.active{color:var(--text)}
-  .step-num{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
-  .step.active .step-num{background:var(--green);color:#fff;border-color:var(--green)}
-  .step-line{flex:1;height:1px;background:var(--border);margin:0 12px}
-
-  .page{max-width:1180px;margin:28px auto 80px;padding:0 28px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
-
-  .secao{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
-  .secao-titulo{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .form-grid .full{grid-column:1/-1}
-  .campo label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-  .campo input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s,background .15s}
-  .campo input:focus{border-color:var(--green);background:var(--surface)}
-  .campo input::placeholder{color:#bbb}
-
-
-  .cep-status{font-size:11px;margin-top:5px;min-height:16px}
-  .cep-ok{color:var(--green)}
-  .cep-erro{color:var(--red)}
-  .messages{max-width:960px;margin:20px auto 0;padding:0 20px;list-style:none}
-  .messages li{padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-size:13px;color:var(--text)}
-  .messages li.error{border-color:#e0a99d;background:#fff4f1;color:var(--red)}
-
-  /* RESUMO */
-  .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:sticky;top:84px;box-shadow:0 14px 40px rgba(107,94,83,.08)}
-  .resumo h2{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text)}
-  .resumo-item{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-  .resumo-item-img{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--bg);flex-shrink:0;border:1px solid var(--border)}
-  .resumo-item-img-placeholder{width:44px;height:44px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-  .resumo-item-nome{font-size:12px;font-weight:500;flex:1;line-height:1.4}
-  .resumo-item-qtd{font-size:11px;color:var(--muted)}
-  .resumo-item-val{font-size:13px;font-weight:600;color:var(--green);flex-shrink:0}
-  .sep{border:none;border-top:1px solid var(--border);margin:14px 0}
-  .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px;align-items:center}
-  .resumo-linha span:last-child{color:var(--text);font-weight:500}
-  .frete-gratis-tag{color:var(--green)!important;font-weight:600!important}
-  .frete-pendente{color:var(--muted);font-style:italic;font-size:12px}
-  .resumo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-  .resumo-total span:last-child{color:var(--green)}
-
-  /* FRETE CALCULADO */
-  .frete-calculado{background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text);margin-top:8px;display:none}
-  .frete-calculado.show{display:block}
-  .frete-calculado strong{color:var(--green)}
-  .cupom-box{margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)}
-  .cupom-box label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-  .cupom-box input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface);text-transform:uppercase}
-  .cupom-row{display:flex;gap:8px}
-  .cupom-row input{flex:1}
-  .btn-cupom{padding:10px 12px;border:none;border-radius:var(--radius-sm);background:var(--green);color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
-  .cupom-status{font-size:11px;margin-top:7px;min-height:15px;color:var(--muted)}
-  .cupom-status.ok{color:var(--green)}
-  .cupom-status.erro{color:#b84c3a}
-  .trust-list{display:grid;gap:8px;margin-top:14px;font-size:12px;color:var(--muted)}
-  .trust-item{display:flex;align-items:center;gap:8px}
-  .trust-dot{width:22px;height:22px;border-radius:50%;background:var(--green-bg);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-
-  .btn-finalizar{width:100%;margin-top:16px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
-  .btn-finalizar:hover{background:var(--text)}
-
-  @media(max-width:820px){
-    .page{grid-template-columns:1fr;padding:0 20px}
-    .navbar{padding:0 20px}
-    .resumo{position:static}
-    .form-grid{grid-template-columns:1fr}
-    .form-grid .full{grid-column:1}
-  }
+  .summary { position: static; }
+  .cko-grid { grid-template-columns: 1fr; }
+  .cko-grid .full { grid-column: 1; }
+  .step { font-size: 0.6875rem; }
+  .step__line { min-width: 16px; margin: 0 var(--space-2); }
+}
 </style>
 </head>
 <body>
+
 <h1 class="sr-only">Finalizar compra</h1>
 
-<nav class="navbar">
-  <a href="/" class="nav-logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
-  <div class="nav-right">
+<!-- NAVEGAÇÃO -->
+<nav class="nav">
+  <a href="/" class="nav__logo">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    Barrs Store
+  </a>
+  <div class="nav__right">
     {% if user.is_authenticated %}
-      <a href="{% url 'minha_conta' %}" class="nav-conta">👤 {{ user.first_name|default:user.email }}</a>
+      <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+      </a>
     {% else %}
-      <a href="{% url 'login' %}" class="nav-conta">Entrar</a>
+      <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
     {% endif %}
-    <a href="{% url 'carrinho' %}" class="nav-voltar">← Voltar ao carrinho</a>
+    <a href="{% url 'carrinho' %}" class="nav__icon-btn" style="font-size:0.75rem;color:var(--color-ink-muted)">
+      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+      Voltar ao carrinho
+    </a>
   </div>
 </nav>
 
-<div class="steps">
-  <div class="step"><div class="step-num">✓</div>Carrinho</div>
-  <div class="step-line"></div>
-  <div class="step active"><div class="step-num">2</div>Checkout</div>
-  <div class="step-line"></div>
-  <div class="step"><div class="step-num">3</div>Confirmação</div>
+<!-- STEPS -->
+<div class="steps" aria-label="Etapas do checkout">
+  <div class="step done">
+    <div class="step__num">
+      <svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-check"/></svg>
+    </div>
+    Carrinho
+  </div>
+  <div class="step__line"></div>
+  <div class="step active"><div class="step__num">2</div>Checkout</div>
+  <div class="step__line"></div>
+  <div class="step"><div class="step__num">3</div>Confirmação</div>
 </div>
 
+<!-- MENSAGENS -->
 {% if messages %}
 <ul class="messages">
   {% for message in messages %}
@@ -131,168 +475,177 @@
 </ul>
 {% endif %}
 
+<!-- FORMULÁRIO -->
 <form method="POST" action="{% url 'finalizar_compra' %}">
-{% csrf_token %}
-<input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ frete_valor_selecionado }}">
-<input type="hidden" name="frete_nome" id="frete_nome_hidden" value="{{ frete_nome_selecionado }}">
-<input type="hidden" name="frete_service_id" id="frete_service_id_hidden" value="{{ frete_service_id_selecionado }}">
-<input type="hidden" name="forma_pagamento" value="pix">
-<div class="page">
-  <div>
-    <div class="secao">
-      <div class="secao-titulo">Dados pessoais</div>
-      <div class="form-grid">
-        <div class="campo full">
-          <label>Nome completo</label>
-          <input type="text" name="nome" placeholder="Seu nome" required
-            value="{% if request.POST.nome %}{{ request.POST.nome }}{% elif user.is_authenticated %}{{ user.get_full_name }}{% endif %}">
-        </div>
-        <div class="campo">
-          <label>E-mail</label>
-          <input type="email" name="email" placeholder="seu@email.com" required
-            value="{% if request.POST.email %}{{ request.POST.email }}{% elif user.is_authenticated %}{{ user.email }}{% endif %}">
-        </div>
-        <div class="campo">
-          <label>CPF</label>
-          <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" maxlength="14" required
-            oninput="mascaraCpf(this)"
-            value="{{ request.POST.cpf }}">
-        </div>
-        <div class="campo">
-          <label>Telefone</label>
-          <input type="tel" name="telefone" id="telefone" placeholder="(11) 99999-9999" required
-            value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% elif carrinho.telefone_cliente %}{{ carrinho.telefone_cliente }}{% endif %}">
-        </div>
-      </div>
+  {% csrf_token %}
+  <input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ frete_valor_selecionado }}">
+  <input type="hidden" name="frete_nome" id="frete_nome_hidden" value="{{ frete_nome_selecionado }}">
+  <input type="hidden" name="frete_service_id" id="frete_service_id_hidden" value="{{ frete_service_id_selecionado }}">
+  <input type="hidden" name="forma_pagamento" value="pix">
 
-      {% if not user.is_authenticated %}
-      <div style="margin-top:16px;padding:16px;background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm)">
-        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:4px">Entrar ou criar conta</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Se o e-mail ja tiver cadastro, use sua senha. Se for novo, criaremos sua conta automaticamente.</div>
-        <div class="campo">
-          <label>Senha</label>
-          <input type="password" name="senha" placeholder="Minimo 8 caracteres" minlength="8" required
-            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none">
-          <div style="font-size:11px;color:var(--muted);margin-top:5px">Obrigatoria para finalizar e acompanhar seu pedido.</div>
+  <div class="checkout">
+    <div>
+      <!-- DADOS PESSOAIS -->
+      <section class="cko-section">
+        <h2 class="cko-section__title">Dados pessoais</h2>
+        <div class="cko-grid">
+          <div class="cko-field full">
+            <label>Nome completo</label>
+            <input type="text" name="nome" placeholder="Seu nome" required
+              value="{% if request.POST.nome %}{{ request.POST.nome }}{% elif user.is_authenticated %}{{ user.get_full_name }}{% endif %}">
+          </div>
+          <div class="cko-field">
+            <label>E-mail</label>
+            <input type="email" name="email" placeholder="seu@email.com" required
+              value="{% if request.POST.email %}{{ request.POST.email }}{% elif user.is_authenticated %}{{ user.email }}{% endif %}">
+          </div>
+          <div class="cko-field">
+            <label>CPF</label>
+            <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" maxlength="14" required
+              oninput="mascaraCpf(this)"
+              value="{{ request.POST.cpf }}">
+          </div>
+          <div class="cko-field full">
+            <label>Telefone</label>
+            <input type="tel" name="telefone" id="telefone" placeholder="(11) 99999-9999" required
+              value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% elif carrinho.telefone_cliente %}{{ carrinho.telefone_cliente }}{% endif %}">
+          </div>
         </div>
-      </div>
-      {% endif %}
 
-    </div>
-
-    <div class="secao">
-      <div class="secao-titulo">Endereço de entrega</div>
-      <div class="form-grid">
-        <div class="campo full">
-          <label>CEP</label>
-<div style="position:relative;display:flex;align-items:center">
-  <input type="text" name="cep" id="cep" placeholder="00000-000" maxlength="9" required
-    oninput="mascaraCep(this)"
-    style="width:100%;padding:10px 100px 10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none"
-    value="{% if request.POST.cep %}{{ request.POST.cep }}{% elif request.GET.cep %}{{ request.GET.cep|slice:":5" }}-{{ request.GET.cep|slice:"5:" }}{% elif perfil %}{{ perfil.cep }}{% endif %}">
-  <button type="button" onclick="buscarCep()"
-    style="position:absolute;right:4px;top:50%;transform:translateY(-50%);padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer">
-    Buscar CEP
-  </button>
-</div>
-<div class="cep-status" id="cep-status"></div>
+        {% if not user.is_authenticated %}
+        <div class="account-callout">
+          <div class="account-callout__title">Entrar ou criar conta</div>
+          <div class="account-callout__sub">Se o e-mail já tiver cadastro, use sua senha. Se for novo, criamos sua conta automaticamente.</div>
+          <input type="password" name="senha" placeholder="Senha (mínimo 8 caracteres)" minlength="8" required>
+          <div class="account-callout__hint">Obrigatória para finalizar e acompanhar seu pedido</div>
         </div>
-        <div class="campo full">
-          <label>Rua / Logradouro</label>
-          <input type="text" name="rua" id="rua" placeholder="Rua, Avenida..." required
-            value="{% if request.POST.rua %}{{ request.POST.rua }}{% elif perfil %}{{ perfil.rua }}{% endif %}">
-        </div>
-        <div class="campo">
-          <label>Número</label>
-          <input type="text" name="numero" placeholder="123" required
-            value="{% if request.POST.numero %}{{ request.POST.numero }}{% elif perfil %}{{ perfil.numero }}{% endif %}">
-        </div>
-        <div class="campo">
-          <label>Complemento</label>
-          <input type="text" name="complemento" placeholder="Apto, Bloco..."
-            value="{% if request.POST.complemento %}{{ request.POST.complemento }}{% elif perfil %}{{ perfil.complemento }}{% endif %}">
-        </div>
-        <div class="campo">
-          <label>Bairro</label>
-          <input type="text" name="bairro" id="bairro" placeholder="Bairro" required
-            value="{% if request.POST.bairro %}{{ request.POST.bairro }}{% elif perfil %}{{ perfil.bairro }}{% endif %}">
-        </div>
-        <div class="campo">
-          <label>Cidade</label>
-          <input type="text" name="cidade" id="cidade" placeholder="Cidade" required
-            value="{% if request.POST.cidade %}{{ request.POST.cidade }}{% elif perfil %}{{ perfil.cidade }}{% endif %}">
-        </div>
-        <div class="campo">
-          <label>Estado (UF)</label>
-          <input type="text" name="estado" id="estado" placeholder="SP" maxlength="2" required
-            value="{% if request.POST.estado %}{{ request.POST.estado }}{% elif perfil %}{{ perfil.estado }}{% endif %}">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RESUMO -->
-  <div class="resumo">
-    <h2>Resumo do pedido</h2>
-    {% for item in itens %}
-    <div class="resumo-item">
-      {% if item.produto.imagem %}
-        <img class="resumo-item-img" src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" loading="lazy" decoding="async">
-      {% else %}
-        <div class="resumo-item-img-placeholder">🛍️</div>
-      {% endif %}
-      <div class="resumo-item-nome">
-        {{ item.produto.nome }}
-        <div class="resumo-item-qtd">Qtd: {{ item.quantidade }}</div>
-      </div>
-      <div class="resumo-item-val">R$ {{ item.subtotal }}</div>
-    </div>
-    {% endfor %}
-    <hr class="sep">
-    <div class="resumo-linha"><span>Subtotal</span><span>R$ {{ total }}</span></div>
-    <div class="resumo-linha">
-      <span>Frete</span>
-      <span id="frete-display">
-        {% if frete_nome_selecionado %}
-          {{ frete_nome_selecionado }}
-        {% else %}
-          <em class="frete-pendente">selecione no carrinho</em>
         {% endif %}
-      </span>
-    </div>
-    <div class="resumo-linha">
-      <span></span>
-      <span id="frete-valor-display" style="color:var(--green);font-weight:600">
-        {% if frete_valor_selecionado %}R$ {{ frete_valor_selecionado }}{% endif %}
-      </span>
-    </div>
-    <div class="resumo-linha" id="desconto-row" style="display:none">
-      <span id="desconto-label">Desconto</span>
-      <span id="desconto-display" style="color:var(--green);font-weight:600"></span>
-    </div>
-    <div id="frete-info" class="frete-calculado"></div>
+      </section>
 
-    <div class="cupom-box">
-      <label>Cupom de desconto</label>
-      <div class="cupom-row">
-        <input type="text" name="cupom_codigo" id="cupom_codigo" placeholder="Digite seu cupom" value="{{ request.POST.cupom_codigo }}">
-        <button type="button" class="btn-cupom" id="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
+      <!-- ENDEREÇO -->
+      <section class="cko-section">
+        <h2 class="cko-section__title">Endereço de entrega</h2>
+        <div class="cko-grid">
+          <div class="cko-field full">
+            <label>CEP</label>
+            <div class="cep-wrap">
+              <input type="text" name="cep" id="cep" placeholder="00000-000" maxlength="9" required
+                oninput="mascaraCep(this)"
+                value="{% if request.POST.cep %}{{ request.POST.cep }}{% elif request.GET.cep %}{{ request.GET.cep|slice:':5' }}-{{ request.GET.cep|slice:'5:' }}{% elif perfil %}{{ perfil.cep }}{% endif %}">
+              <button type="button" class="cep-wrap__btn" onclick="buscarCep()">Buscar CEP</button>
+            </div>
+            <div class="cep-status" id="cep-status"></div>
+          </div>
+          <div class="cko-field full">
+            <label>Rua / Logradouro</label>
+            <input type="text" name="rua" id="rua" placeholder="Rua, Avenida..." required
+              value="{% if request.POST.rua %}{{ request.POST.rua }}{% elif perfil %}{{ perfil.rua }}{% endif %}">
+          </div>
+          <div class="cko-field">
+            <label>Número</label>
+            <input type="text" name="numero" placeholder="123" required
+              value="{% if request.POST.numero %}{{ request.POST.numero }}{% elif perfil %}{{ perfil.numero }}{% endif %}">
+          </div>
+          <div class="cko-field">
+            <label>Complemento</label>
+            <input type="text" name="complemento" placeholder="Apto, Bloco..."
+              value="{% if request.POST.complemento %}{{ request.POST.complemento }}{% elif perfil %}{{ perfil.complemento }}{% endif %}">
+          </div>
+          <div class="cko-field">
+            <label>Bairro</label>
+            <input type="text" name="bairro" id="bairro" placeholder="Bairro" required
+              value="{% if request.POST.bairro %}{{ request.POST.bairro }}{% elif perfil %}{{ perfil.bairro }}{% endif %}">
+          </div>
+          <div class="cko-field">
+            <label>Cidade</label>
+            <input type="text" name="cidade" id="cidade" placeholder="Cidade" required
+              value="{% if request.POST.cidade %}{{ request.POST.cidade }}{% elif perfil %}{{ perfil.cidade }}{% endif %}">
+          </div>
+          <div class="cko-field full">
+            <label>Estado (UF)</label>
+            <input type="text" name="estado" id="estado" placeholder="SP" maxlength="2" required
+              value="{% if request.POST.estado %}{{ request.POST.estado }}{% elif perfil %}{{ perfil.estado }}{% endif %}">
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RESUMO -->
+    <aside class="summary">
+      <h2>Resumo do pedido</h2>
+
+      {% for item in itens %}
+      <div class="summary-item">
+        <div class="summary-item__media">
+          {% if item.produto.imagem %}
+            <img src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" loading="lazy" decoding="async">
+          {% else %}
+            <div class="summary-item__placeholder">
+              <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-gem"/></svg>
+            </div>
+          {% endif %}
+        </div>
+        <div class="summary-item__name">
+          {{ item.produto.nome }}
+          <div class="summary-item__qty">Qtd: {{ item.quantidade }}</div>
+        </div>
+        <div class="summary-item__val">R$ {{ item.subtotal }}</div>
       </div>
-      <div class="cupom-status" id="cupom-status"></div>
-    </div>
+      {% endfor %}
 
-    <div class="resumo-total">
-      <span>Total</span>
-      <span id="total-display">R$ {{ total }}</span>
-    </div>
-    <div class="trust-list">
-      <div class="trust-item"><span class="trust-dot">✓</span><span>Pagamento protegido pelo Mercado Pago</span></div>
-      <div class="trust-item"><span class="trust-dot">✓</span><span>Compra confirmada automaticamente após o Pix</span></div>
-      <div class="trust-item"><span class="trust-dot">✓</span><span>Atendimento humanizado e rápido pelo WhatsApp</span></div>
-    </div>
-    <button type="submit" class="btn-finalizar">Confirmar pedido</button>
+      <hr class="summary-divider">
+      <div class="summary-row"><span>Subtotal</span><span>R$ {{ total }}</span></div>
+      <div class="summary-row">
+        <span>Frete</span>
+        <span id="frete-display">
+          {% if frete_nome_selecionado %}{{ frete_nome_selecionado }}{% else %}<em class="frete-pendente">selecione no carrinho</em>{% endif %}
+        </span>
+      </div>
+      <div class="summary-row">
+        <span></span>
+        <span id="frete-valor-display" style="color:var(--color-brand);font-weight:600">
+          {% if frete_valor_selecionado %}R$ {{ frete_valor_selecionado }}{% endif %}
+        </span>
+      </div>
+      <div class="summary-row" id="desconto-row" style="display:none">
+        <span id="desconto-label">Desconto</span>
+        <span id="desconto-display" style="color:var(--color-brand);font-weight:600"></span>
+      </div>
+
+      <!-- CUPOM -->
+      <div class="coupon-box">
+        <label>Cupom de desconto</label>
+        <div class="coupon-row">
+          <input type="text" name="cupom_codigo" id="cupom_codigo" placeholder="Digite seu cupom" value="{{ request.POST.cupom_codigo }}">
+          <button type="button" class="coupon-btn" id="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
+        </div>
+        <div class="coupon-status" id="cupom-status"></div>
+      </div>
+
+      <div class="summary-total">
+        <span>Total</span>
+        <span id="total-display">R$ {{ total }}</span>
+      </div>
+
+      <!-- TRUST -->
+      <div class="trust-list">
+        <div class="trust-item">
+          <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-shield"/></svg>
+          Pagamento protegido pelo Mercado Pago
+        </div>
+        <div class="trust-item">
+          <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-check"/></svg>
+          Confirmação automática após o Pix
+        </div>
+        <div class="trust-item">
+          <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+          Atendimento humanizado pelo WhatsApp
+        </div>
+      </div>
+
+      <button type="submit" class="checkout-cta">Confirmar pedido</button>
+    </aside>
   </div>
-</div>
 </form>
 
 <script>
@@ -325,11 +678,7 @@
       }).catch(() => {});
     };
 
-    if (imediato) {
-      salvar();
-      return;
-    }
-
+    if (imediato) { salvar(); return; }
     salvarContatoTimer = setTimeout(salvar, 700);
   }
 
@@ -350,31 +699,35 @@
     const total = Math.max(0, subtotal + freteGet - descontoCupom);
     document.getElementById('total-display').textContent = formatarMoeda(total);
   }
-  
+
   window.addEventListener('load', () => {
     atualizarTotalCheckout();
-    // Preenche CEP se veio do carrinho
     const cepGet = "{{ request.GET.cep|default:'' }}";
     if (cepGet.length === 8 && !document.getElementById('cep').value) {
       document.getElementById('cep').value = cepGet.slice(0,5) + '-' + cepGet.slice(5);
       buscarCep();
     }
+    const cepInput = document.getElementById('cep');
+    const cep = cepInput.value.replace(/\D/g, '');
+    if (cep.length === 8) {
+      cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
+    }
   });
 
-function mascaraCep(input) {
-  let v = input.value.replace(/\D/g, '');
-  if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
-  input.value = v;
-  if (v.replace('-','').length === 8) buscarCep();
-}
+  function mascaraCep(input) {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
+    input.value = v;
+    if (v.replace('-','').length === 8) buscarCep();
+  }
 
-function mascaraCpf(input) {
-  let v = input.value.replace(/\D/g, '').slice(0, 11);
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-  input.value = v;
-}
+  function mascaraCpf(input) {
+    let v = input.value.replace(/\D/g, '').slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    input.value = v;
+  }
 
   async function buscarCep() {
     const cepInput = document.getElementById('cep');
@@ -387,10 +740,8 @@ function mascaraCpf(input) {
       return;
     }
 
-    // Aplica máscara se não tiver
     cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
-
-    status.textContent = 'Buscando...';
+    status.textContent = 'Buscando endereço...';
     status.className = 'cep-status';
 
     try {
@@ -405,7 +756,7 @@ function mascaraCpf(input) {
       document.getElementById('bairro').value = data.bairro || '';
       document.getElementById('cidade').value = data.localidade || '';
       document.getElementById('estado').value = data.uf || '';
-      status.textContent = '✓ Endereço encontrado!';
+      status.textContent = 'Endereço encontrado';
       status.className = 'cep-status cep-ok';
       document.querySelector('input[name="numero"]').focus();
     } catch(e) {
@@ -414,15 +765,6 @@ function mascaraCpf(input) {
     }
   }
 
-  // Ao carregar: aplica máscara no CEP preenchido.
-  window.addEventListener('load', () => {
-    const cepInput = document.getElementById('cep');
-    const cep = cepInput.value.replace(/\D/g, '');
-    if (cep.length === 8) {
-      cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
-    }
-  });
-
   async function aplicarCupom() {
     const input = document.getElementById('cupom_codigo');
     const status = document.getElementById('cupom-status');
@@ -430,14 +772,14 @@ function mascaraCpf(input) {
     const codigo = input.value.trim().toUpperCase();
 
     status.textContent = '';
-    status.className = 'cupom-status';
+    status.className = 'coupon-status';
     descontoCupom = 0;
     document.getElementById('desconto-row').style.display = 'none';
     atualizarTotalCheckout();
 
     if (!codigo) {
       status.textContent = 'Digite um cupom.';
-      status.className = 'cupom-status erro';
+      status.className = 'coupon-status erro';
       return;
     }
 
@@ -459,7 +801,7 @@ function mascaraCpf(input) {
       const data = await res.json();
       if (!res.ok || !data.ok) {
         status.textContent = data.erro || 'Não foi possível aplicar o cupom.';
-        status.className = 'cupom-status erro';
+        status.className = 'coupon-status erro';
         return;
       }
 
@@ -468,19 +810,18 @@ function mascaraCpf(input) {
       document.getElementById('desconto-label').textContent = data.tipo === 'frete_gratis' ? `Frete grátis ${data.codigo}` : `Desconto ${data.codigo}`;
       document.getElementById('desconto-display').textContent = '- ' + formatarMoeda(descontoCupom);
       document.getElementById('desconto-row').style.display = 'flex';
-      status.textContent = 'Cupom aplicado com sucesso!';
-      status.className = 'cupom-status ok';
+      status.textContent = 'Cupom aplicado com sucesso';
+      status.className = 'coupon-status ok';
       atualizarTotalCheckout();
     } catch(e) {
       status.textContent = 'Erro ao aplicar cupom. Tente novamente.';
-      status.className = 'cupom-status erro';
+      status.className = 'coupon-status erro';
     } finally {
       botao.disabled = false;
       botao.textContent = 'Aplicar';
     }
   }
 </script>
+
 </body>
 </html>
-
-

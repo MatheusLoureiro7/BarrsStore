@@ -4,116 +4,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pagamento Aprovado — Barrs Store</title>
+<title>Pagamento aprovado — Barrs Store</title>
 {% include "partials/seo_head.html" %}
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+{% include "partials/base_styles.html" %}
+<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #F5F2EC; --surface: #FFFFFF; --border: #D9D3C7;
-    --text: #6B5E53; --muted: #9E9488;
-    --green: #8A947C; --green-bg: #E8EDE3;
-    --radius: 14px; --radius-sm: 8px;
-  }
-  body {
-    font-family: 'Sora', sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; display: flex;
-    flex-direction: column; align-items: center;
-    justify-content: center; padding: 40px 20px;
-  }
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 48px 40px;
-    max-width: 480px; width: 100%; text-align: center;
-  }
-  .icone {
-    width: 72px; height: 72px; background: var(--green-bg);
-    border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; margin: 0 auto 24px;
-    font-size: 32px;
-    animation: pop .4s cubic-bezier(.175,.885,.32,1.275) both;
-  }
-  @keyframes pop {
-    from { transform: scale(0); opacity: 0; }
-    to   { transform: scale(1); opacity: 1; }
-  }
-  .titulo {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px; font-weight: 700; margin-bottom: 8px;
-  }
-  .subtitulo {
-    font-size: 14px; color: var(--muted);
-    line-height: 1.6; margin-bottom: 32px;
-  }
-  .detalhes {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 20px;
-    text-align: left; margin-bottom: 28px;
-  }
-  .detalhe-linha {
-    display: flex; justify-content: space-between;
-    font-size: 13px; margin-bottom: 10px; gap: 16px;
-  }
-  .detalhe-linha:last-child { margin-bottom: 0; }
-  .detalhe-label { color: var(--muted); font-weight: 500; flex-shrink: 0; }
-  .detalhe-valor { font-weight: 500; text-align: right; }
-  .total-valor { color: var(--green); font-size: 15px; font-weight: 600; }
-  .badge {
-    display: inline-block; background: var(--green);
-    color: #fff; font-size: 11px; font-weight: 600;
-    letter-spacing: 1px; padding: 4px 12px;
-    border-radius: 20px; margin-bottom: 20px;
-  }
-  .btn {
-    display: block; width: 100%; padding: 13px;
-    background: #6B5E53; color: #fff; border: none;
-    border-radius: var(--radius-sm); font-family: 'Sora', sans-serif;
-    font-size: 14px; font-weight: 600; text-align: center;
-    text-decoration: none; cursor: pointer;
-    transition: opacity .2s; margin-bottom: 10px;
-  }
-  .btn:hover { opacity: 0.85; }
-  .link-continuar {
-    font-size: 13px; color: var(--muted);
-    text-decoration: none; transition: color .15s;
-  }
-  .link-continuar:hover { color: var(--text); }
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7) var(--space-5);
+  min-height: 100vh;
+}
+
+.status-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-7) var(--space-6);
+  max-width: 480px;
+  width: 100%;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.status-card__icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--space-5);
+  background: var(--color-brand-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand);
+  animation: pop 400ms var(--ease) both;
+}
+@keyframes pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.status-card__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin-bottom: var(--space-3);
+}
+
+.status-card__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.625rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-3);
+}
+
+.status-card__sub {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
+.status-card__sub strong { color: var(--color-ink-soft); }
+
+.status-card__steps {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  text-align: left;
+}
+.status-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+.status-step__icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.status-step__text {
+  font-size: 0.8125rem;
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+}
+.status-step__text strong { color: var(--color-ink-soft); font-weight: 600; }
+
+.status-card__btn {
+  display: block;
+  width: 100%;
+  padding: 0.875rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+  margin-bottom: var(--space-2);
+}
+.status-card__btn:hover {
+  background: var(--color-ink-soft);
+  border-color: var(--color-ink-soft);
+}
+.status-card__btn--ghost {
+  background: var(--color-surface);
+  color: var(--color-ink-soft);
+  border-color: var(--color-border);
+}
+.status-card__btn--ghost:hover {
+  background: var(--color-bg);
+  border-color: var(--color-ink-soft);
+  color: var(--color-ink-soft);
+}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="icone">✓</div>
-  <div class="badge">PAGAMENTO APROVADO</div>
-  {% if pedido.status == 'confirmado' %}
-    <h1 class="titulo">Tudo certo!</h1>
-    <p class="subtitulo">
-      Seu pagamento foi confirmado, <strong>{{ pedido.nome }}</strong>!<br>
-      Seu pedido já está sendo preparado com carinho.
-    </p>
-  {% else %}
-    <h1 class="titulo">Pagamento recebido</h1>
-    <p class="subtitulo">
-      Recebemos o retorno do pagamento, <strong>{{ pedido.nome }}</strong>.<br>
-      A confirmação automática pode levar alguns instantes.
-    </p>
-  {% endif %}
-  <div class="detalhes">
-    <div class="detalhe-linha">
-      <span class="detalhe-label">Pedido</span>
-      <span class="detalhe-valor">#{{ pedido.id }}</span>
+
+<div class="status-card">
+
+  <div class="status-card__icon">
+    <svg class="icon" style="width:32px;height:32px;stroke-width:2.5" aria-hidden="true">
+      <use href="#i-check"/>
+    </svg>
+  </div>
+
+  <div class="status-card__eyebrow">Pagamento confirmado</div>
+
+  <h1 class="status-card__title">Tudo certo, obrigada!</h1>
+  <p class="status-card__sub">
+    Recebemos a confirmação do seu pagamento.{% if pedido %} Seu pedido <strong>#{{ pedido.id }}</strong> está sendo preparado para envio.{% endif %}
+  </p>
+
+  <div class="status-card__steps">
+    <div class="status-step">
+      <span class="status-step__icon">
+        <svg class="icon" style="width:13px;height:13px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+      </span>
+      <span class="status-step__text"><strong>Pagamento aprovado</strong> — confirmação recebida</span>
     </div>
-    <div class="detalhe-linha">
-      <span class="detalhe-label">Entrega para</span>
-      <span class="detalhe-valor">{{ pedido.rua }}, {{ pedido.numero }} — {{ pedido.cidade }}/{{ pedido.estado }}</span>
+    <div class="status-step">
+      <span class="status-step__icon">
+        <svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-package"/></svg>
+      </span>
+      <span class="status-step__text"><strong>Em separação</strong> — em até 2 dias úteis</span>
     </div>
-    <div class="detalhe-linha">
-      <span class="detalhe-label">Total pago</span>
-      <span class="detalhe-valor total-valor">R$ {{ pedido.total }}</span>
+    <div class="status-step">
+      <span class="status-step__icon">
+        <svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-truck"/></svg>
+      </span>
+      <span class="status-step__text"><strong>Envio</strong> — código de rastreio por e-mail</span>
     </div>
   </div>
-  <a href="/" class="btn">Voltar para a loja</a>
-  <a href="/" class="link-continuar">Continuar comprando</a>
+
+  {% if user.is_authenticated %}
+    <a href="{% url 'minha_conta' %}" class="status-card__btn">Acompanhar meu pedido</a>
+  {% else %}
+    <a href="/" class="status-card__btn">Voltar para a loja</a>
+  {% endif %}
+  <a href="/" class="status-card__btn status-card__btn--ghost">Continuar comprando</a>
+
 </div>
+
 </body>
 </html>

@@ -6,89 +6,187 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Entrar — Barrs Store</title>
 {% include "partials/seo_head.html" %}
+{% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#F5F2EC;--surface:#fff;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--green-bg:#E8EDE3;--gold:#C8A96A;--red:#c0392b;--red-bg:#fdf0ef;--radius:14px;--radius-sm:8px}
-  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+.auth {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7) var(--space-5);
+  min-height: calc(100vh - 64px);
+}
 
-  .nav{position:sticky;top:0;z-index:100;background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
-  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
-  .nav-logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
-  .nav-cart{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 14px;transition:border-color .2s,background .2s}
-  .nav-cart:hover{border-color:var(--green);background:var(--green-bg)}
-  .cart-badge{background:var(--gold);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.auth-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-7) var(--space-6);
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+}
 
-  .main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.auth-card__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin-bottom: var(--space-3);
+}
 
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px 40px;width:100%;max-width:420px}
+.auth-card__title {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-2);
+}
 
-  .card-titulo{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:6px}
-  .card-sub{font-size:13px;color:var(--muted);margin-bottom:32px;line-height:1.6}
-  .card-sub a{color:var(--text);font-weight:600;text-decoration:none}
-  .card-sub a:hover{text-decoration:underline}
+.auth-card__sub {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-6);
+  line-height: var(--leading-relaxed);
+}
 
-  .campo{margin-bottom:16px}
-  .campo label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
-  .campo input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
-  .campo input:focus{border-color:var(--text);background:#fff}
+.auth-field { margin-bottom: var(--space-4); }
+.auth-field label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: 6px;
+}
+.auth-field input {
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  outline: none;
+  transition: border-color var(--duration) var(--ease),
+              background var(--duration) var(--ease);
+}
+.auth-field input:focus { border-color: var(--color-ink-soft); background: #fff; }
+.auth-field input::placeholder { color: var(--color-ink-muted); }
 
-  .btn-submit{width:100%;padding:13px;background:var(--text);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:8px}
-  .btn-submit:hover{opacity:0.85}
+.auth-btn {
+  width: 100%;
+  padding: 0.875rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: var(--space-2);
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+.auth-btn:hover {
+  background: var(--color-ink-soft);
+  border-color: var(--color-ink-soft);
+}
 
-  .erro{background:var(--red-bg);border:1px solid #f5c6c2;border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--red);margin-bottom:20px}
+.auth-error {
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  margin-bottom: var(--space-4);
+}
 
-  .divisor{display:flex;align-items:center;gap:12px;margin:24px 0;font-size:12px;color:var(--muted)}
-  .divisor::before,.divisor::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
 
-  .link-cadastro{display:block;text-align:center;font-size:13px;color:var(--muted)}
-  .link-cadastro a{color:var(--text);font-weight:600;text-decoration:none}
-  .link-cadastro a:hover{text-decoration:underline}
-
-  footer{border-top:1px solid var(--border);padding:20px 40px;text-align:center;font-size:12px;color:var(--muted)}
+.auth-link {
+  display: block;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+.auth-link a {
+  color: var(--color-brand);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+.auth-link a:hover { color: var(--color-ink-soft); text-decoration: underline; }
 </style>
 </head>
 <body>
 
+<!-- NAVEGAÇÃO MÍNIMA -->
 <nav class="nav">
-  <a href="/" class="nav-logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
-  <a href="{% url 'carrinho' %}" class="nav-cart">Carrinho{% if qtd_carrinho > 0 %}<span class="cart-badge">{{ qtd_carrinho }}</span>{% endif %}</a>
+  <a href="/" class="nav__logo">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    Barrs Store
+  </a>
+  <div class="nav__right">
+    <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
+      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      Carrinho
+      {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
+    </a>
+  </div>
 </nav>
 
-<main class="main">
-  <div class="card">
-    <h1 class="card-titulo">Bem-vinda de volta!</h1>
-    <p class="card-sub">Entre na sua conta para acompanhar seus pedidos.</p>
+<main class="auth">
+  <div class="auth-card">
+    <div class="auth-card__eyebrow">Acesso</div>
+    <h1 class="auth-card__title">Bem-vinda de volta</h1>
+    <p class="auth-card__sub">Entre na sua conta para acompanhar pedidos e ofertas.</p>
 
     {% if messages %}
       {% for msg in messages %}
-        <div class="erro">{{ msg }}</div>
+        <div class="auth-error">{{ msg }}</div>
       {% endfor %}
     {% endif %}
 
     <form method="POST">
       {% csrf_token %}
-      <div class="campo">
+      <div class="auth-field">
         <label>E-mail</label>
-        <input type="email" name="email" placeholder="seu@email.com" required autofocus>
+        <input type="email" name="email" placeholder="seu@email.com" required autofocus autocomplete="email">
       </div>
-      <div class="campo">
+      <div class="auth-field">
         <label>Senha</label>
-        <input type="password" name="senha" placeholder="••••••••" required>
+        <input type="password" name="senha" placeholder="••••••••" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-submit">Entrar</button>
+      <button type="submit" class="auth-btn">Entrar</button>
     </form>
 
-    <div class="divisor">ou</div>
+    <div class="auth-divider">ou</div>
 
-    <p class="link-cadastro">Não tem conta? <a href="{% url 'cadastro' %}">Criar conta grátis</a></p>
+    <p class="auth-link">Não tem conta? <a href="{% url 'cadastro' %}">Criar conta</a></p>
   </div>
 </main>
 
-<footer>© 2026 Barrs Store — Todos os direitos reservados · Desenvolvido por Bicodex</footer>
-
 </body>
 </html>
-
-

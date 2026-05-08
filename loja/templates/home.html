@@ -36,6 +36,7 @@
 .hero__inner {
   position: relative;
   z-index: 1;
+  width: 100%;
   max-width: 580px;
   padding: var(--space-8) var(--space-7) var(--space-8) var(--space-8);
 }
@@ -58,11 +59,19 @@
   opacity: 0.5;
 }
 .hero h1 {
-  font-size: var(--text-3xl);
+  font-size: var(--text-2xl);
   line-height: 1.05;
   letter-spacing: -0.025em;
   color: var(--color-ink);
   margin-bottom: var(--space-4);
+  max-width: 680px;
+}
+
+.hero h1 em {
+  display: block;
+  margin-top: 10px;
+  color: var(--color-brand);
+  font-style: italic;
 }
 .hero__lead {
   font-size: var(--text-base);
@@ -497,8 +506,7 @@
 <section class="hero">
   <div class="hero__inner">
     <div class="hero__eyebrow">Coleção 2026</div>
-    <h1>Acessórios que definem presença.</h1>
-    <p class="hero__lead">Semijoias com banho de prata 1.000, design contemporâneo e acabamento que dura. Para todos os dias e ocasiões especiais.</p>
+    <h1>Detalhes não completam o visual. <em>Eles definem.</em></h1>
     <a href="#produtos" class="hero__cta">
       Explorar coleção
       <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-arrow-right"/></svg>
@@ -659,7 +667,6 @@
     <a href="https://www.instagram.com/barrsstore" target="_blank" rel="noopener" aria-label="Instagram Barrs Store"
        style="display:inline-flex;align-items:center;gap:8px;color:var(--color-ink-muted);text-decoration:none;transition:color var(--duration) var(--ease)">
       <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-instagram"/></svg>
-      @barrsstore
     </a>
     <span style="font-size:0.75rem">© 2026 · Desenvolvido por Bicodex</span>
   </div>
