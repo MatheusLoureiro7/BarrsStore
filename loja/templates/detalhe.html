@@ -7,282 +7,695 @@
 <title>{{ produto.nome }} — Barrs Store</title>
 {% include "partials/seo_head.html" %}
 {% include "partials/product_schema.html" %}
+{% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#F5F2EC;--surface:#FFFFFF;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--green-light:#B7C1A8;--green-bg:#E8EDE3;--gold:#C8A96A;--radius:14px;--radius-sm:8px}
-  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-  .navbar{background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
-  .nav-logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
-  .nav-links{display:flex;align-items:center;gap:28px}
-  .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
-  .nav-links a:hover{color:var(--text)}
-  .nav-right{display:flex;align-items:center;gap:10px}
-  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
-  .nav-conta:hover{color:var(--text)}
-  .nav-cart{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 14px;transition:border-color .2s}
-  .nav-cart:hover{border-color:var(--green);background:var(--green-bg)}
-  .cart-badge{background:var(--gold);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
-  .breadcrumb{max-width:1100px;margin:24px auto 0;padding:0 40px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-  .breadcrumb a{color:var(--muted);text-decoration:none}
-  .breadcrumb a:hover{color:var(--text)}
-  .breadcrumb span{color:var(--text);font-weight:500}
-  .page{max-width:1100px;margin:32px auto 60px;padding:0 40px;display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:start}
-  .img-wrap{position:sticky;top:84px;align-self:start}
-  .img-principal{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);display:block}
-  .img-placeholder{width:100%;aspect-ratio:1/1;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:64px;color:#ddd}
-  .badge-novo{display:inline-block;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;background:var(--green);color:#fff;padding:4px 10px;border-radius:4px;margin-bottom:16px}
-  .produto-nome{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,38px);font-weight:700;line-height:1.15;letter-spacing:-0.5px;margin-bottom:12px}
-  .produto-preco{font-size:26px;font-weight:600;color:var(--green);margin-bottom:8px}
-  .estoque-ok{font-size:12px;color:var(--green);margin-bottom:20px;display:flex;align-items:center;gap:5px}
-  .estoque-ok::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
-  .estoque-zero{font-size:12px;color:#b84c3a;margin-bottom:20px}
-  .sep{border:none;border-top:1px solid var(--border);margin:20px 0}
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-  .chip{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--surface)}
-  .produto-desc-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-  .produto-desc{font-size:14px;color:var(--text);line-height:1.8}
-  .btn-comprar{display:block;width:100%;padding:15px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s;margin-top:24px}
-  .btn-comprar:hover{background:var(--text)}
-  .btn-comprar.indisponivel{opacity:0.4;pointer-events:none}
-  .btn-voltar{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:none;transition:color .15s}
-  .btn-voltar:hover{color:var(--text)}
-  .size-help-card{display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(135deg,var(--surface),var(--green-bg));border:1px solid var(--green-light);border-radius:var(--radius);padding:14px 16px;margin:18px 0 4px;text-decoration:none;color:var(--text);transition:transform .2s,border-color .2s,box-shadow .2s}
-  .size-help-card:hover{transform:translateY(-2px);border-color:var(--green);box-shadow:0 10px 28px rgba(107,94,83,.10)}
-  .size-help-copy{display:flex;align-items:center;gap:12px}
-  .size-help-icon{width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-  .size-help-title{font-size:13px;font-weight:700;margin-bottom:2px}
-  .size-help-text{font-size:11px;color:var(--muted);line-height:1.5}
-  .size-help-arrow{font-size:18px;color:var(--green);font-weight:600}
-  .garantias{margin-top:24px;display:flex;flex-direction:column;gap:10px}
-  .garantia-item{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
-  .garantia-icon{width:28px;height:28px;border-radius:50%;background:var(--green-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-  .relacionados{max-width:1100px;margin:0 auto 60px;padding:0 40px}
-  .relacionados h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
-  .rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
-  .rel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;text-decoration:none;color:var(--text);transition:border-color .2s,transform .2s}
-  .rel-card:hover{border-color:var(--green-light);transform:translateY(-3px)}
-  .rel-card img{width:100%;aspect-ratio:1/1;object-fit:cover}
-  .rel-card-body{padding:12px}
-  .rel-card-nome{font-size:13px;font-weight:600}
-  .rel-card-preco{font-size:14px;font-weight:600;color:var(--green);margin-top:3px}
-  .whatsapp-btn{position:fixed;bottom:24px;right:24px;z-index:999;width:56px;height:56px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,0.4);text-decoration:none;transition:transform .2s}
-  .whatsapp-btn:hover{transform:scale(1.1)}
-  .whatsapp-btn svg{width:28px;height:28px;fill:#fff}
-  @media(max-width:760px){.page{grid-template-columns:1fr;padding:0 20px}.img-wrap{position:static}.navbar{padding:0 20px}.breadcrumb{padding:0 20px}.relacionados{padding:0 20px}.nav-links{display:none}}
+/* ═══════════════════════════════════════════════════════════
+   PRODUTO — estilos exclusivos da página de detalhe
+═══════════════════════════════════════════════════════════ */
+
+.breadcrumb {
+  max-width: 1100px;
+  margin: var(--space-5) auto 0;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+.breadcrumb a {
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+.breadcrumb a:hover { color: var(--color-ink); }
+.breadcrumb__separator { opacity: 0.5; }
+.breadcrumb__current { color: var(--color-ink); font-weight: 500; }
+
+.product {
+  max-width: 1100px;
+  margin: var(--space-6) auto var(--space-8);
+  padding: 0 var(--space-6);
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+/* GALERIA */
+.product__gallery {
+  position: sticky;
+  top: 88px;
+}
+.product__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: block;
+}
+.product__placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-border);
+}
+
+/* INFO DO PRODUTO */
+.product__tag {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+}
+.product__tag--new      { background: var(--color-brand-bg); color: var(--color-brand); }
+.product__tag--featured { background: var(--color-brand); color: #fff; }
+.product__tag--last     { background: var(--color-error-bg); color: var(--color-error); }
+
+.product__name {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin-bottom: var(--space-3);
+}
+.product__price {
+  font-size: 1.625rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--space-2);
+}
+.product__stock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-5);
+}
+.product__stock--ok { color: var(--color-brand); }
+.product__stock--ok::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.product__stock--low {
+  color: var(--color-error);
+  font-weight: 500;
+}
+.product__stock--low::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.product__stock--out  { color: var(--color-ink-muted); }
+
+/* PROPRIEDADES (substitui chips com emojis) */
+.product__props {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+}
+.product__prop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+.product__prop svg { color: var(--color-brand); flex-shrink: 0; }
+
+/* DESCRIÇÃO */
+.product__description {
+  margin-bottom: var(--space-5);
+}
+.product__description-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-3);
+}
+.product__description p {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-ink-soft);
+}
+
+/* TAMANHOS */
+.size-section { margin-bottom: var(--space-5); }
+.size-section__label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-3);
+}
+.size-options {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.size-options input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.size-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease),
+              background var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+.size-options label:hover .size-option { border-color: var(--color-ink); }
+.size-options input[type="radio"]:checked + .size-option {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+}
+.size-section__hint {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  margin-top: var(--space-2);
+}
+
+/* GUIA DE MEDIDAS — agora editorial */
+.size-guide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-5);
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: border-color var(--duration) var(--ease);
+}
+.size-guide:hover { border-color: var(--color-ink); }
+.size-guide__copy { display: flex; align-items: center; gap: var(--space-3); }
+.size-guide__icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  letter-spacing: 0.04em;
+}
+.size-guide__title { font-size: var(--text-sm); font-weight: 600; margin-bottom: 1px; }
+.size-guide__sub { font-size: 0.75rem; color: var(--color-ink-muted); }
+
+/* QUANTIDADE */
+.qty-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.qty-section__label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.qty-control {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.qty-control button {
+  width: 38px;
+  height: 38px;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--color-ink);
+  transition: background var(--duration) var(--ease);
+}
+.qty-control button:hover { background: var(--color-bg-alt); }
+.qty-control input {
+  width: 50px;
+  border: none;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink);
+  background: var(--color-bg);
+  outline: none;
+}
+
+/* CTA PRINCIPAL */
+.product__cta {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+.product__cta:hover { background: var(--color-ink-soft); border-color: var(--color-ink-soft); }
+.product__cta--disabled {
+  background: var(--color-bg-alt);
+  color: var(--color-ink-muted);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.product__back {
+  display: block;
+  text-align: center;
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+.product__back:hover { color: var(--color-ink); }
+
+/* GARANTIAS */
+.guarantees {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+.guarantee-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+.guarantee-item svg { color: var(--color-brand); flex-shrink: 0; }
+
+/* RELACIONADOS */
+.related {
+  max-width: 1100px;
+  margin: 0 auto var(--space-8);
+  padding: 0 var(--space-6);
+}
+.related h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-5);
+}
+.related__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+.related__card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: border-color var(--duration) var(--ease),
+              box-shadow var(--duration) var(--ease),
+              transform var(--duration) var(--ease);
+}
+.related__card:hover {
+  border-color: var(--color-brand-soft);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.related__card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+.related__card-body { padding: var(--space-3); }
+.related__card-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.related__card-price {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-brand);
+  margin-top: var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-ink);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration) var(--ease),
+              transform var(--duration) var(--ease);
+  z-index: 9999;
+  max-width: 90vw;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast svg { color: var(--color-brand-soft); }
+
+/* MOBILE */
+@media (max-width: 760px) {
+  .product {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    padding: 0 var(--space-4);
+  }
+  .product__gallery { position: static; }
+  .breadcrumb { padding: 0 var(--space-4); }
+  .related { padding: 0 var(--space-4); }
+  .product__name { font-size: 1.5rem; }
+  .product__price { font-size: 1.375rem; }
+  .product__props {
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+}
 </style>
 </head>
 <body>
-<nav class="navbar">
-  <a href="/" class="nav-logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
-  <div class="nav-links">
-    <a href="/">Início</a>
-    <a href="/#produtos">Produtos</a>
-    <a href="{% url 'medidas' %}">Medidas</a>
-  </div>
-  <div class="nav-right">
+
+<!-- NAVEGAÇÃO -->
+<nav class="nav">
+  <a href="/" class="nav__logo">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    Barrs Store
+  </a>
+  <ul class="nav__links">
+    <li><a href="/">Início</a></li>
+    <li><a href="/#produtos">Coleção</a></li>
+    <li><a href="{% url 'medidas' %}">Medidas</a></li>
+  </ul>
+  <div class="nav__right">
     {% if user.is_authenticated %}
-      <a href="{% url 'minha_conta' %}" class="nav-conta">👤 {{ user.first_name|default:user.email }}</a>
+      <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+      </a>
     {% else %}
-      <a href="{% url 'login' %}" class="nav-conta">Entrar</a>
+      <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
     {% endif %}
-    <a href="{% url 'carrinho' %}" class="nav-cart">
-      🛒 Carrinho
-      {% if qtd_carrinho > 0 %}<span class="cart-badge">{{ qtd_carrinho }}</span>{% endif %}
+    <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
+      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      Carrinho
+      {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
     </a>
   </div>
 </nav>
-<div class="breadcrumb">
-  <a href="/">Início</a> &rsaquo;
-  <a href="/#produtos">Produtos</a> &rsaquo;
-  <span>{{ produto.nome }}</span>
-</div>
-<div class="page">
-  <div class="img-wrap">
+
+<!-- BREADCRUMB -->
+<nav class="breadcrumb" aria-label="Navegação estrutural">
+  <a href="/">Início</a>
+  <span class="breadcrumb__separator">/</span>
+  <a href="/#produtos">Produtos</a>
+  <span class="breadcrumb__separator">/</span>
+  <span class="breadcrumb__current">{{ produto.nome }}</span>
+</nav>
+
+<!-- PRODUTO -->
+<article class="product">
+  <!-- GALERIA -->
+  <div class="product__gallery">
     {% if produto.imagem %}
-      <img class="img-principal" src="{{ produto.imagem.url }}" alt="{{ produto.alt_text }}" loading="eager" decoding="async">
+      <img class="product__image" src="{{ produto.imagem.url }}" alt="{{ produto.alt_text }}" loading="eager" decoding="async">
     {% else %}
-      <div class="img-placeholder">🛍️</div>
+      <div class="product__placeholder">
+        <svg class="icon" style="width:64px;height:64px" aria-hidden="true"><use href="#i-gem"/></svg>
+      </div>
     {% endif %}
   </div>
-  <div>
-    <!-- BADGE DINÂMICO -->
-    <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
-      {% if produto.estoque > 0 and produto.estoque <= 3 %}
-        <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#b84c3a;color:#fff;padding:4px 10px;border-radius:4px">🔥 Últimas unidades</span>
-      {% elif produto.destaque %}
-        <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--gold);color:#fff;padding:4px 10px;border-radius:4px">⭐ Mais vendido</span>
-      {% else %}
-        <span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:var(--green);color:#fff;padding:4px 10px;border-radius:4px">🆕 Novo</span>
-      {% endif %}
-    </div>
 
-    <h1 class="produto-nome">{{ produto.nome }}</h1>
-    <div class="produto-preco">R$ {{ produto.preco }}</div>
+  <!-- INFO -->
+  <div>
+    <!-- TAG DINÂMICA -->
+    {% if produto.estoque > 0 and produto.estoque <= 3 %}
+      <span class="product__tag product__tag--last">Últimas unidades</span>
+    {% elif produto.destaque %}
+      <span class="product__tag product__tag--featured">Mais vendido</span>
+    {% else %}
+      <span class="product__tag product__tag--new">Novo</span>
+    {% endif %}
+
+    <h1 class="product__name">{{ produto.nome }}</h1>
+    <div class="product__price">R$ {{ produto.preco }}</div>
 
     {% if produto.disponivel %}
       {% if produto.estoque <= 3 %}
-        <div class="estoque-ok" style="color:#b84c3a">⚠️ Últimas unidades!</div>
+        <div class="product__stock product__stock--low">Apenas {{ produto.estoque }} em estoque</div>
       {% else %}
-        <div class="estoque-ok">Em estoque</div>
+        <div class="product__stock product__stock--ok">Em estoque</div>
       {% endif %}
     {% else %}
-      <div class="estoque-zero">Fora de estoque</div>
+      <div class="product__stock product__stock--out">Fora de estoque</div>
     {% endif %}
 
-    <div class="chips">
-      <span class="chip">✨ Semijoia</span>
-      <span class="chip">🥈 Banho de prata 1.000</span>
-      <span class="chip">🛡️ Garantia de 1 ano</span>
-      <span class="chip">🌿 Antialérgica</span>
+    <!-- PROPRIEDADES -->
+    <div class="product__props">
+      <div class="product__prop">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-gem"/></svg>
+        Banho de prata 1.000
+      </div>
+      <div class="product__prop">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-shield"/></svg>
+        Garantia de 1 ano
+      </div>
+      <div class="product__prop">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-leaf"/></svg>
+        Antialérgica
+      </div>
+      <div class="product__prop">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-sparkle"/></svg>
+        Acabamento premium
+      </div>
     </div>
 
-    <div style="background:#E8EDE3;border:1px solid #B7C1A8;border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#6B5E53;line-height:1.7">
-      <strong style="color:#8A947C">✦ Semijoia com qualidade premium</strong><br>
-      Banho de prata 1.000 com verniz importado — maior brilho e durabilidade. Peça antialérgica, livre de níquel. <strong>Garantia de 1 ano</strong>.
-    </div>
+    <!-- DESCRIÇÃO -->
     {% if produto.descricao %}
-      <hr class="sep">
-      <div class="produto-desc-label">Descrição</div>
-      <p class="produto-desc">{{ produto.descricao }}</p>
+    <div class="product__description">
+      <div class="product__description-label">Sobre a peça</div>
+      <p>{{ produto.descricao }}</p>
+    </div>
     {% endif %}
+
+    <!-- COMPRA -->
     {% if produto.disponivel %}
-    <form method="POST" action="{% url 'add_carrinho' produto.id %}" style="margin-top:24px">
+    <form method="POST" action="{% url 'add_carrinho' produto.id %}">
       {% csrf_token %}
       <input type="hidden" name="next" value="detalhe">
 
       {% if produto.tem_tamanhos %}
-      <div style="margin-bottom:16px">
-        <label style="display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Tamanho do anel</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap" id="tamanhos-wrap">
+      <div class="size-section">
+        <label class="size-section__label">Tamanho do anel</label>
+        <div class="size-options">
           {% for t in produto.tamanhos_disponiveis %}
-          <label style="cursor:pointer">
-            <input type="radio" name="tamanho" value="{{ t.numero }}" style="display:none" required>
-            <span class="tamanho-btn" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--text);background:var(--surface);cursor:pointer;transition:all .15s">
-              {{ t.numero }}
-            </span>
+          <label>
+            <input type="radio" name="tamanho" value="{{ t.numero }}" required>
+            <span class="size-option">{{ t.numero }}</span>
           </label>
           {% empty %}
-          <p style="font-size:13px;color:var(--muted)">Nenhum tamanho disponível.</p>
+          <p style="font-size:var(--text-sm);color:var(--color-ink-muted)">Nenhum tamanho disponível.</p>
           {% endfor %}
         </div>
-        <p style="font-size:11px;color:var(--muted);margin-top:8px">💡 Não sabe seu tamanho? Entre em contato pelo WhatsApp.</p>
+        <p class="size-section__hint">Não sabe seu tamanho? Veja o guia de medidas abaixo ou fale conosco no WhatsApp.</p>
       </div>
       {% endif %}
 
       {% if produto.tipo == 'anel' or produto.categoria.slug == 'anel' %}
-        <a href="{% url 'medidas' %}" class="size-help-card" target="_blank" rel="noopener">
-          <span class="size-help-copy"><span class="size-help-icon">cm</span><span><span class="size-help-title">Guia de medidas</span><span class="size-help-text">Veja o guia antes de escolher seu tamanho.</span></span></span><span class="size-help-arrow">&rsaquo;</span>
-        </a>
+      <a href="{% url 'medidas' %}" class="size-guide" target="_blank" rel="noopener">
+        <span class="size-guide__copy">
+          <span class="size-guide__icon">cm</span>
+          <span>
+            <span class="size-guide__title">Guia de medidas</span>
+            <span class="size-guide__sub">Veja como escolher seu tamanho</span>
+          </span>
+        </span>
+        <svg class="icon" style="width:16px;height:16px;color:var(--color-ink-muted)" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+      </a>
       {% endif %}
 
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <label style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Quantidade</label>
-        <div style="display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
-          <button type="button" onclick="alterarQtd(-1)" style="width:36px;height:36px;background:var(--bg);border:none;font-size:18px;cursor:pointer;color:var(--text)">−</button>
-          <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ produto.estoque }}"
-            style="width:48px;height:36px;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);text-align:center;font-family:'Sora',sans-serif;font-size:14px;font-weight:600;color:var(--text);background:var(--surface);outline:none">
-          <button type="button" onclick="alterarQtd(1)" style="width:36px;height:36px;background:var(--bg);border:none;font-size:18px;cursor:pointer;color:var(--text)">+</button>
+      <div class="qty-section">
+        <span class="qty-section__label">Quantidade</span>
+        <div class="qty-control">
+          <button type="button" onclick="alterarQtd(-1)" aria-label="Diminuir quantidade">−</button>
+          <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ produto.estoque }}">
+          <button type="button" onclick="alterarQtd(1)" aria-label="Aumentar quantidade">+</button>
         </div>
       </div>
 
-      <button type="submit" class="btn-comprar">Adicionar ao carrinho</button>
+      <button type="submit" class="product__cta">Adicionar ao carrinho</button>
     </form>
     {% else %}
-    <div class="btn-comprar indisponivel" style="margin-top:24px">Indisponível</div>
+    <div class="product__cta product__cta--disabled">Indisponível</div>
     {% endif %}
-    <a href="/" class="btn-voltar">← Voltar para a loja</a>
-    <div class="garantias">
-      <div class="garantia-item"><div class="garantia-icon">🔒</div>Pagamento 100% seguro</div>
-      <div class="garantia-item"><div class="garantia-icon">📦</div>Entrega para todo o Brasil</div>
-      <div class="garantia-item"><div class="garantia-icon">⭐</div>Garantia por defeito de fábrica</div>
+
+    <a href="/" class="product__back">← Voltar para a loja</a>
+
+    <!-- GARANTIAS -->
+    <div class="guarantees">
+      <div class="guarantee-item">
+        <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-shield"/></svg>
+        Pagamento 100% seguro pelo Mercado Pago
+      </div>
+      <div class="guarantee-item">
+        <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-truck"/></svg>
+        Entrega para todo o Brasil
+      </div>
+      <div class="guarantee-item">
+        <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-package"/></svg>
+        Garantia de 1 ano por defeito de fábrica
+      </div>
     </div>
   </div>
-</div>
+</article>
+
+<!-- RELACIONADOS -->
 {% if relacionados %}
-<div class="relacionados">
+<section class="related">
   <h2>Você também pode gostar</h2>
-  <div class="rel-grid">
+  <div class="related__grid">
     {% for p in relacionados %}
-    <a href="{% url 'detalhe_produto' p.slug %}" class="rel-card">
-      {% if p.imagem %}<img src="{{ p.imagem.url }}" alt="{{ p.alt_text }}" loading="lazy" decoding="async">{% endif %}
-      <div class="rel-card-body">
-        <div class="rel-card-nome">{{ p.nome }}</div>
-        <div class="rel-card-preco">R$ {{ p.preco }}</div>
+    <a href="{% url 'detalhe_produto' p.slug %}" class="related__card">
+      {% if p.imagem %}
+        <img src="{{ p.imagem.url }}" alt="{{ p.alt_text }}" loading="lazy" decoding="async">
+      {% endif %}
+      <div class="related__card-body">
+        <div class="related__card-name">{{ p.nome }}</div>
+        <div class="related__card-price">R$ {{ p.preco }}</div>
       </div>
     </a>
     {% endfor %}
   </div>
-</div>
+</section>
 {% endif %}
-<a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!" class="whatsapp-btn" target="_blank">
-  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+
+<!-- TOAST -->
+<div id="toast-carrinho" class="toast" role="status" aria-live="polite">
+  <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-check"/></svg>
+  Produto adicionado ao carrinho
+</div>
+
+<!-- WHATSAPP FLOAT -->
+<a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!"
+   class="wa-float" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
 </a>
+
 <script>
 function alterarQtd(delta) {
   const input = document.getElementById('quantidade');
-  const val = parseInt(input.value) + delta;
-  const max = parseInt(input.max);
+  if (!input) return;
+  const val = parseInt(input.value || '1') + delta;
+  const max = parseInt(input.max || '99');
   if (val >= 1 && val <= max) input.value = val;
 }
 
-// Highlight tamanho selecionado
-document.querySelectorAll('input[name="tamanho"]').forEach(radio => {
-  radio.addEventListener('change', function() {
-    document.querySelectorAll('.tamanho-btn').forEach(btn => {
-      btn.style.borderColor = 'var(--border)';
-      btn.style.background = 'var(--surface)';
-      btn.style.color = 'var(--text)';
-    });
-    this.nextElementSibling.style.borderColor = 'var(--green)';
-    this.nextElementSibling.style.background = 'var(--green)';
-    this.nextElementSibling.style.color = '#fff';
-  });
-});
-</script>
-<div id="toast-carrinho" style="
-  position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:#3d2d20;color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:500;
-  padding:12px 24px;border-radius:40px;box-shadow:0 8px 24px rgba(0,0,0,0.2);
-  display:flex;align-items:center;gap:8px;
-  opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.175,.885,.32,1.275);z-index:9999">
-  🛒 Produto adicionado ao carrinho!
-</div>
-
-<script>
-// Interceptar o form de adicionar ao carrinho para mostrar toast
+// Toast ao adicionar ao carrinho
 const formCarrinho = document.querySelector('form[action*="add"]');
 if (formCarrinho) {
-  formCarrinho.addEventListener('submit', function(e) {
-    // Mostra toast antes de submeter
+  formCarrinho.addEventListener('submit', function() {
     const toast = document.getElementById('toast-carrinho');
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateX(-50%) translateY(0)';
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(-50%) translateY(20px)';
-    }, 2000);
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
   });
 }
 
-// Se vier ?added=1 na URL (depois do redirect), mostrar toast
+// Toast pós-redirect (?added=1)
 if (window.location.search.includes('added=1')) {
   const toast = document.getElementById('toast-carrinho');
-  toast.style.opacity = '1';
-  toast.style.transform = 'translateX(-50%) translateY(0)';
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 2500);
-  // Limpar URL
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
   history.replaceState(null, '', window.location.pathname);
 }
 </script>
+
 </body>
 </html>
-
-
-
-

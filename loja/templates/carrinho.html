@@ -6,208 +6,588 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Carrinho — Barrs Store</title>
 {% include "partials/seo_head.html" %}
+{% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#F5F2EC;--surface:#FFFFFF;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--green-light:#B7C1A8;--green-bg:#E8EDE3;--gold:#C8A96A;--red:#b84c3a;--red-bg:#fdf2f0;--radius:14px;--radius-sm:8px}
-  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+/* ═══════════════════════════════════════════════════════════
+   CARRINHO — estilos exclusivos
+═══════════════════════════════════════════════════════════ */
 
-  .navbar{background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:10px}
-  .nav-logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply}
-  .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
-  .nav-links a:hover{color:var(--text)}
-  .nav-right{display:flex;align-items:center;gap:10px}
-  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none}
-  .nav-conta:hover{color:var(--text)}
+.cart-page {
+  max-width: 960px;
+  margin: var(--space-6) auto var(--space-8);
+  padding: 0 var(--space-6);
+}
 
-  .page{max-width:920px;margin:40px auto;padding:0 20px}
-  .topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-  .topo h1{font-family:'Playfair Display',serif;font-size:26px;font-weight:700}
-  .badge-itens{background:var(--green);color:#fff;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px}
-  .grid{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
-  .lista{display:flex;flex-direction:column;gap:12px}
+.cart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.cart-head h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+}
+.cart-head__count {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
 
-  .item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
-  .item-card:hover{border-color:var(--green-light)}
-  .item-img{width:72px;height:72px;border-radius:var(--radius-sm);object-fit:cover;background:var(--bg);flex-shrink:0}
-  .item-info{flex:1;min-width:0}
-  .item-nome{font-size:14px;font-weight:600}
-  .item-unit{font-size:12px;color:var(--muted);margin-top:3px}
-  .item-tamanho{font-size:11px;color:var(--green);margin-top:2px;font-weight:500}
-  .qtd-wrap{display:flex;align-items:center;gap:8px;margin-top:10px}
-  .btn-qtd{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
-  .btn-qtd:hover{background:var(--green-bg);border-color:var(--green)}
-  .qtd-num{font-size:14px;font-weight:600;min-width:22px;text-align:center}
-  .item-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
-  .item-subtotal{font-size:16px;font-weight:600;color:var(--green)}
-  .btn-remover{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,color .15s}
-  .btn-remover:hover{background:var(--red-bg);border-color:#e8b4b0;color:var(--red)}
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: var(--space-5);
+  align-items: start;
+}
 
-  /* RESUMO */
-  .resumo{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:sticky;top:80px}
-  .resumo h2{font-size:15px;font-weight:600;margin-bottom:18px;color:var(--text)}
+/* ITEM */
+.cart-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.cart-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration) var(--ease);
+}
+.cart-item:hover { border-color: var(--color-brand-soft); }
 
-  /* CEP + FRETE */
-  .frete-wrap{margin-bottom:16px}
-  .frete-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
-  .cep-row{display:flex;gap:8px}
-  .cep-input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
-  .cep-input:focus{border-color:var(--green);background:var(--surface)}
-  .btn-calcular{padding:10px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
-  .btn-calcular:hover{background:var(--text)}
-  .btn-calcular:disabled{opacity:0.6;cursor:not-allowed}
-  .cep-status{font-size:11px;margin-top:5px;color:var(--muted)}
-  .cep-status.ok{color:var(--green)}
-  .cep-status.erro{color:var(--red)}
+.cart-item__media {
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-bg-alt);
+}
+.cart-item__media img { width: 100%; height: 100%; object-fit: cover; }
+.cart-item__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-border);
+}
 
-  .opcoes-frete{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-  .opcao-frete{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s,background .15s}
-  .opcao-frete:hover{border-color:var(--green-light);background:var(--green-bg)}
-  .opcao-frete.selecionado{border-color:var(--green);background:var(--green-bg)}
-  .opcao-frete input[type=radio]{accent-color:var(--green)}
-  .opcao-info{flex:1}
-  .opcao-nome{font-size:13px;font-weight:600;color:var(--text)}
-  .opcao-prazo{font-size:11px;color:var(--muted);margin-top:2px}
-  .opcao-preco{font-size:14px;font-weight:600;color:var(--green)}
+.cart-item__info { flex: 1; min-width: 0; }
+.cart-item__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  letter-spacing: -0.005em;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.cart-item__unit {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.cart-item__size {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+  border-radius: var(--radius-full);
+  letter-spacing: 0.04em;
+}
 
-  .frete-loading{display:none;font-size:12px;color:var(--muted);padding:10px 0;text-align:center}
-  .frete-loading.show{display:block}
-  .frete-erro{display:none;font-size:12px;color:var(--red);padding:8px;background:#fdf2f0;border-radius:6px;margin-top:8px}
-  .frete-erro.show{display:block}
+.cart-item__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.cart-item__qty form { margin: 0; }
+.cart-item__qty-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  color: var(--color-ink-soft);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease),
+              background var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+.cart-item__qty-btn:hover {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: #fff;
+}
+.cart-item__qty-num {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-soft);
+}
 
-  .sep{border:none;border-top:1px solid var(--border);margin:14px 0}
-  .resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:10px}
-  .resumo-linha span:last-child{color:var(--text);font-weight:500}
-  .frete-pendente{font-style:italic;font-size:12px}
-  .frete-gratis{color:var(--green)!important;font-weight:600!important}
-  .resumo-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600}
-  .resumo-total span:last-child{color:var(--green)}
-  .btn-finalizar{display:block;width:100%;margin-top:16px;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s}
-  .btn-finalizar:hover{background:var(--text)}
-  .btn-finalizar:disabled{opacity:0.5;cursor:not-allowed}
-  .voltar{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:none}
-  .voltar:hover{color:var(--text)}
+.cart-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+.cart-item__remove {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease),
+              background var(--duration) var(--ease),
+              color var(--duration) var(--ease);
+}
+.cart-item__remove:hover {
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+.cart-item__subtotal {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
+  margin-top: auto;
+}
 
-  .carrinho-vazio{text-align:center;padding:80px 24px;color:var(--muted)}
-  .carrinho-vazio p{font-size:15px;margin-bottom:16px}
-  .carrinho-vazio a{display:inline-block;padding:10px 22px;background:var(--green);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:13px;font-weight:600}
+/* RESUMO */
+.summary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  position: sticky;
+  top: 88px;
+}
+.summary h2 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
 
-  @media(max-width:680px){.grid{grid-template-columns:1fr}.navbar{padding:0 20px}.resumo{position:static}}
-  form.qtd-form, form.remover-form{margin:0}
-  button.btn-qtd, button.btn-remover{font-family:inherit;cursor:pointer}
+/* CALCULAR FRETE */
+.shipping-block { margin-bottom: var(--space-4); }
+.shipping-block__label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-2);
+}
+.shipping-input-row {
+  display: flex;
+  gap: var(--space-2);
+}
+.shipping-input {
+  flex: 1;
+  padding: 0.625rem 0.75rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  outline: none;
+  transition: border-color var(--duration) var(--ease),
+              background var(--duration) var(--ease);
+  font-variant-numeric: tabular-nums;
+}
+.shipping-input:focus { border-color: var(--color-ink-soft); background: #fff; }
+.shipping-btn {
+  padding: 0.625rem 1rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+.shipping-btn:hover {
+  background: var(--color-ink-soft);
+  border-color: var(--color-ink-soft);
+}
+.shipping-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.shipping-status {
+  font-size: 0.75rem;
+  margin-top: 6px;
+  min-height: 14px;
+  color: var(--color-ink-muted);
+}
+.shipping-status.ok { color: var(--color-brand); }
+.shipping-status.erro { color: var(--color-error); }
+
+/* OPÇÕES DE FRETE */
+.shipping-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.opcao-frete {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease),
+              background var(--duration) var(--ease);
+  background: var(--color-surface);
+}
+.opcao-frete:hover { border-color: var(--color-brand-soft); }
+.opcao-frete.selecionado {
+  border-color: var(--color-brand);
+  background: var(--color-brand-bg);
+}
+.opcao-frete input[type="radio"] {
+  accent-color: var(--color-brand);
+  margin: 0;
+}
+.opcao-info { flex: 1; min-width: 0; }
+.opcao-nome {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+.opcao-prazo {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  margin-top: 2px;
+}
+.opcao-preco {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.frete-loading {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  padding: var(--space-3);
+}
+.frete-loading.show { display: flex; }
+.frete-loading__spinner {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--color-border);
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.frete-erro {
+  display: none;
+  font-size: 0.75rem;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+}
+.frete-erro.show { display: block; }
+
+/* RESUMO LINHAS */
+.summary-divider {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-4) 0;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-2);
+}
+.summary-row span:last-child {
+  color: var(--color-ink-soft);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.summary-row .frete-pendente {
+  color: var(--color-ink-muted);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.summary-total span:last-child {
+  color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-cta {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: 0.875rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+.summary-cta:hover {
+  background: var(--color-ink-soft);
+  border-color: var(--color-ink-soft);
+}
+.summary-cta:disabled {
+  background: var(--color-bg-alt);
+  border-color: var(--color-border);
+  color: var(--color-ink-muted);
+  cursor: not-allowed;
+}
+
+.summary-back {
+  display: block;
+  text-align: center;
+  margin-top: var(--space-3);
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+.summary-back:hover { color: var(--color-ink-soft); }
+
+/* CARRINHO VAZIO */
+.empty-cart {
+  text-align: center;
+  padding: var(--space-9) var(--space-5);
+  color: var(--color-ink-muted);
+}
+.empty-cart__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  margin-bottom: var(--space-4);
+  color: var(--color-ink-muted);
+}
+.empty-cart p {
+  font-size: var(--text-base);
+  margin-bottom: var(--space-4);
+}
+.empty-cart a {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-brand);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: background var(--duration) var(--ease);
+}
+.empty-cart a:hover { background: var(--color-ink-soft); }
+
+/* MOBILE */
+@media (max-width: 720px) {
+  .cart-page { padding: 0 var(--space-4); margin-top: var(--space-5); }
+  .cart-grid { grid-template-columns: 1fr; gap: var(--space-4); }
+  .summary { position: static; }
+  .cart-item { padding: var(--space-3); gap: var(--space-3); }
+  .cart-item__media { width: 70px; height: 70px; }
+}
 </style>
 </head>
 <body>
 
-<nav class="navbar">
-  <a href="/" class="nav-logo">
+<!-- NAVEGAÇÃO -->
+<nav class="nav">
+  <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
     Barrs Store
   </a>
-  <div class="nav-links">
-    <a href="/">← Continuar comprando</a>
-  </div>
-  <div class="nav-right">
+  <ul class="nav__links">
+    <li><a href="/">Continuar comprando</a></li>
+  </ul>
+  <div class="nav__right">
     {% if user.is_authenticated %}
-      <a href="{% url 'minha_conta' %}" class="nav-conta">👤 {{ user.first_name|default:user.email }}</a>
+      <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+      </a>
     {% else %}
-      <a href="{% url 'login' %}" class="nav-conta">Entrar</a>
+      <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
     {% endif %}
   </div>
 </nav>
 
-<div class="page">
-  <div class="topo">
+<main class="cart-page">
+  <header class="cart-head">
     <h1>Carrinho</h1>
-    {% if itens %}<span class="badge-itens">{{ itens|length }} {% if itens|length == 1 %}item{% else %}itens{% endif %}</span>{% endif %}
-  </div>
+    {% if itens %}
+      <span class="cart-head__count">{{ itens|length }} {% if itens|length == 1 %}item{% else %}itens{% endif %}</span>
+    {% endif %}
+  </header>
 
   {% if itens %}
-  <div class="grid">
-    <div class="lista">
+  <div class="cart-grid">
+    <!-- LISTA DE ITENS -->
+    <div class="cart-list">
       {% for item in itens %}
-      <div class="item-card">
-        {% if item.produto.imagem %}
-          <img class="item-img" src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" loading="lazy" decoding="async">
-        {% else %}
-          <div class="item-img" style="display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px;">🛍️</div>
-        {% endif %}
-        <div class="item-info">
-          <div class="item-nome">{{ item.produto.nome }}</div>
-          <div class="item-unit">R$ {{ item.produto.preco }} / un.</div>
-          {% if item.tamanho %}<div class="item-tamanho">Tamanho: {{ item.tamanho }}</div>{% endif %}
-          <div class="qtd-wrap">
+      <article class="cart-item">
+        <div class="cart-item__media">
+          {% if item.produto.imagem %}
+            <img src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" loading="lazy" decoding="async">
+          {% else %}
+            <div class="cart-item__placeholder">
+              <svg class="icon" style="width:28px;height:28px" aria-hidden="true"><use href="#i-gem"/></svg>
+            </div>
+          {% endif %}
+        </div>
+        <div class="cart-item__info">
+          <div class="cart-item__name">{{ item.produto.nome }}</div>
+          <div class="cart-item__unit">R$ {{ item.produto.preco }} / unidade</div>
+          {% if item.tamanho %}<div class="cart-item__size">Tamanho {{ item.tamanho }}</div>{% endif %}
+          <div class="cart-item__qty">
             <form method="POST" action="{% url 'remover_item' item.id %}" class="qtd-form">
               {% csrf_token %}
-              <button type="submit" class="btn-qtd" title="Diminuir">−</button>
+              <button type="submit" class="cart-item__qty-btn" title="Diminuir" aria-label="Diminuir quantidade">−</button>
             </form>
-            <span class="qtd-num">{{ item.quantidade }}</span>
+            <span class="cart-item__qty-num">{{ item.quantidade }}</span>
             <form method="POST" action="{% url 'add_carrinho' item.produto.id %}" class="qtd-form">
               {% csrf_token %}
               <input type="hidden" name="next" value="carrinho">
               <input type="hidden" name="tamanho" value="{{ item.tamanho }}">
-              <button type="submit" class="btn-qtd" title="Aumentar">+</button>
+              <button type="submit" class="cart-item__qty-btn" title="Aumentar" aria-label="Aumentar quantidade">+</button>
             </form>
           </div>
         </div>
-        <div class="item-right">
+        <div class="cart-item__right">
           <form method="POST" action="{% url 'deletar_item' item.id %}" class="remover-form" onsubmit="return confirm('Remover {{ item.produto.nome }}?')">
             {% csrf_token %}
-            <button type="submit" class="btn-remover" title="Remover">✕</button>
+            <button type="submit" class="cart-item__remove" title="Remover" aria-label="Remover item">
+              <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-trash"/></svg>
+            </button>
           </form>
-          <div class="item-subtotal">R$ {{ item.subtotal }}</div>
+          <div class="cart-item__subtotal">R$ {{ item.subtotal }}</div>
         </div>
-      </div>
+      </article>
       {% endfor %}
     </div>
 
-    <div class="resumo">
+    <!-- RESUMO -->
+    <aside class="summary">
       <h2>Resumo do pedido</h2>
 
       <!-- CALCULAR FRETE -->
-      <div class="frete-wrap">
-        <span class="frete-label">Calcular frete</span>
-        <div class="cep-row">
-          <input type="text" id="cep-frete" class="cep-input" placeholder="00000-000" maxlength="9" oninput="mascaraCepFrete(this)">
-          <button type="button" class="btn-calcular" id="btn-calcular" onclick="calcularFrete()">Calcular</button>
+      <div class="shipping-block">
+        <span class="shipping-block__label">Calcular frete</span>
+        <div class="shipping-input-row">
+          <input type="text" id="cep-frete" class="shipping-input" placeholder="00000-000" maxlength="9" oninput="mascaraCepFrete(this)" aria-label="CEP">
+          <button type="button" class="shipping-btn" id="btn-calcular" onclick="calcularFrete()">Calcular</button>
         </div>
-        <div class="cep-status" id="cep-status-frete"></div>
-        <div class="frete-loading" id="frete-loading">⏳ Calculando opções de frete...</div>
+        <div class="shipping-status" id="cep-status-frete"></div>
+        <div class="frete-loading" id="frete-loading">
+          <span class="frete-loading__spinner"></span>
+          Calculando opções de frete
+        </div>
         <div class="frete-erro" id="frete-erro">Não foi possível calcular o frete. Verifique o CEP.</div>
-        <div class="opcoes-frete" id="opcoes-frete"></div>
+        <div class="shipping-options" id="opcoes-frete"></div>
       </div>
 
-      <hr class="sep">
-      <div class="resumo-linha"><span>Subtotal</span><span>R$ {{ total }}</span></div>
-      <div class="resumo-linha">
+      <hr class="summary-divider">
+      <div class="summary-row"><span>Subtotal</span><span>R$ {{ total }}</span></div>
+      <div class="summary-row">
         <span>Frete</span>
         <span id="frete-display" class="frete-pendente">informe o CEP</span>
       </div>
-      <hr class="sep">
-      <div class="resumo-total"><span>Total</span><span id="total-display">R$ {{ total }}</span></div>
+      <hr class="summary-divider">
+      <div class="summary-total"><span>Total</span><span id="total-display">R$ {{ total }}</span></div>
 
       <form method="GET" action="{% url 'finalizar_compra' %}" id="form-checkout">
         <input type="hidden" name="cep" id="hidden-cep">
         <input type="hidden" name="frete_valor" id="hidden-frete-valor">
         <input type="hidden" name="frete_nome" id="hidden-frete-nome">
         <input type="hidden" name="frete_service_id" id="hidden-frete-service-id">
-        <button type="submit" class="btn-finalizar" id="btn-finalizar" disabled>
+        <button type="submit" class="summary-cta" id="btn-finalizar" disabled>
           Finalizar compra
         </button>
       </form>
-      <a href="/" class="voltar">← Continuar comprando</a>
-    </div>
+      <a href="/" class="summary-back">← Continuar comprando</a>
+    </aside>
   </div>
 
   {% else %}
-  <div class="carrinho-vazio">
+  <!-- CARRINHO VAZIO -->
+  <div class="empty-cart">
+    <div class="empty-cart__icon">
+      <svg class="icon" style="width:28px;height:28px" aria-hidden="true"><use href="#i-cart"/></svg>
+    </div>
     <p>Seu carrinho está vazio.</p>
     <a href="/">Ver produtos</a>
   </div>
   {% endif %}
-</div>
+</main>
 
 <script>
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
@@ -231,7 +611,7 @@
 
     if (cep.length !== 8) {
       status.textContent = 'Digite um CEP válido.';
-      status.className = 'cep-status erro';
+      status.className = 'shipping-status erro';
       return;
     }
 
@@ -258,12 +638,10 @@
         return;
       }
 
-      // Guardar CEP para checkout
       document.getElementById('hidden-cep').value = cep;
-      status.textContent = '✓ Frete calculado!';
-      status.className = 'cep-status ok';
+      status.textContent = 'Frete calculado com sucesso';
+      status.className = 'shipping-status ok';
 
-      // Renderizar opções
       data.opcoes.forEach((op, i) => {
         const div = document.createElement('div');
         div.className = 'opcao-frete' + (i === 0 ? ' selecionado' : '');
@@ -305,6 +683,6 @@
     document.getElementById('btn-finalizar').disabled = false;
   }
 </script>
+
 </body>
 </html>
-
