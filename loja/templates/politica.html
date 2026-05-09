@@ -6,40 +6,89 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Política de Privacidade — Barrs Store</title>
 {% include "partials/seo_head.html" %}
+{% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#F5F2EC;--surface:#fff;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--radius:14px;--radius-sm:8px}
-  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-  .navbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .nav-logo{font-size:15px;font-weight:600;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
-  .nav-logo img{width:38px;height:38px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
-  .page{max-width:720px;margin:60px auto 80px;padding:0 20px}
-  h1{font-size:28px;font-weight:600;margin-bottom:8px}
-  .data{font-size:12px;color:var(--muted);margin-bottom:32px}
-  h2{font-size:16px;font-weight:600;margin:28px 0 10px}
-  p{font-size:14px;color:#555;line-height:1.8;margin-bottom:12px}
-  a{color:var(--green)}
-  @media(max-width:600px){.navbar{padding:0 20px}}
+.policy {
+  max-width: 720px;
+  margin: var(--space-7) auto var(--space-9);
+  padding: 0 var(--space-5);
+}
+.policy__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin-bottom: var(--space-3);
+}
+.policy__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-2);
+}
+.policy__date {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-6);
+}
+.policy h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--color-ink-soft);
+  margin: var(--space-6) 0 var(--space-3);
+}
+.policy p {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-3);
+}
+.policy a {
+  color: var(--color-brand);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+.policy a:hover { color: var(--color-ink-soft); text-decoration: underline; }
+.policy__intro {
+  font-size: var(--text-base);
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
 </style>
 </head>
 <body>
-<nav class="navbar">
-  <a href="/" class="nav-logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
-  <div style="display:flex;align-items:center;gap:10px">
+
+<nav class="nav">
+  <a href="/" class="nav__logo">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    Barrs Store
+  </a>
+  <div class="nav__right">
     {% if user.is_authenticated %}
-      <a href="{% url 'minha_conta' %}" style="font-size:13px;font-weight:500;color:#9E9488;text-decoration:none">👤 {{ user.first_name|default:user.email }}</a>
+      <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+      </a>
     {% else %}
-      <a href="{% url 'login' %}" style="font-size:13px;font-weight:500;color:#9E9488;text-decoration:none">Entrar</a>
+      <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
     {% endif %}
   </div>
 </nav>
-<div class="page">
-  <h1>Política de Privacidade</h1>
-  <div class="data">Última atualização: 26 de abril de 2026</div>
 
-  <p>A Barrs Store está comprometida com a proteção da sua privacidade. Esta política descreve como coletamos, usamos e protegemos suas informações pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).</p>
+<main class="policy">
+  <div class="policy__eyebrow">Privacidade</div>
+  <h1 class="policy__title">Política de Privacidade</h1>
+  <div class="policy__date">Última atualização: 26 de abril de 2026</div>
+
+  <p class="policy__intro">A Barrs Store está comprometida com a proteção da sua privacidade. Esta política descreve como coletamos, usamos e protegemos suas informações pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).</p>
 
   <h2>1. Dados que coletamos</h2>
   <p>Coletamos os seguintes dados quando você realiza uma compra: nome completo, e-mail, telefone, endereço de entrega e forma de pagamento escolhida. Não armazenamos dados de cartão de crédito.</p>
@@ -58,15 +107,14 @@
 
   <h2>6. Trocas e devoluções</h2>
   <p>Você pode solicitar troca ou devolução em até 7 dias corridos após o recebimento do pedido, conforme o Código de Defesa do Consumidor. O produto deve estar sem sinais de uso, na embalagem original e com todos os acessórios enviados.</p>
-  <p>Para iniciar o atendimento, chame no WhatsApp informando o número do pedido e fotos do produto. Nosso atendimento é humanizado e rápido para orientar o melhor caminho.</p>
+  <p>Para iniciar o atendimento, fale conosco no WhatsApp informando o número do pedido e fotos do produto. Nosso atendimento é humanizado e rápido para orientar o melhor caminho.</p>
 
   <h2>7. Prazos de entrega</h2>
   <p>O prazo de entrega começa a contar após a confirmação do pagamento. Quando o pedido for enviado, você receberá o código de rastreio por e-mail e também poderá acompanhar pela área Minha Conta.</p>
 
   <h2>8. Contato</h2>
-  <p>Dúvidas sobre esta política? Entre em contato: <a href="mailto:contato@barrsstore.com.br">contato@barrsstore.com.br</a> ou <a href="https://wa.me/5511913225256">WhatsApp (11) 91322-5256</a>.</p>
-</div>
+  <p>Dúvidas sobre esta política? Entre em contato: <a href="mailto:contato.barrsstore@gmail.com">contato.barrsstore@gmail.com</a> ou <a href="https://wa.me/5511913225256">WhatsApp (11) 91322-5256</a>.</p>
+</main>
+
 </body>
 </html>
-
-

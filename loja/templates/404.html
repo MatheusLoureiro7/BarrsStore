@@ -1,27 +1,99 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Página não encontrada — Barrs Store</title>
-{% include "partials/seo_head.html" %}
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+{% include "partials/base_styles.html" %}
+<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#f7f6f3;--surface:#fff;--border:#e5e3de;--text:#1a1a1a;--muted:#888580;--green:#1d7a4f;--radius:14px;--radius-sm:8px}
-  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center}
-  .num{font-family:'Playfair Display',serif;font-size:120px;font-weight:700;color:var(--border);line-height:1}
-  h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin:16px 0 8px}
-  p{font-size:14px;color:var(--muted);margin-bottom:32px}
-  a{display:inline-block;padding:12px 28px;background:var(--text);color:#fff;border-radius:var(--radius-sm);text-decoration:none;font-size:14px;font-weight:600;transition:opacity .2s}
-  a:hover{opacity:0.85}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7) var(--space-5);
+  min-height: 100vh;
+  text-align: center;
+}
+.notfound {
+  max-width: 480px;
+}
+.notfound__code {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--color-brand);
+  line-height: 1;
+  margin-bottom: var(--space-3);
+  font-variant-numeric: tabular-nums;
+}
+.notfound__title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-3);
+}
+.notfound__text {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
+.notfound__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.notfound__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.75rem 1.5rem;
+  background: var(--color-brand);
+  color: #fff;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease),
+              border-color var(--duration) var(--ease);
+}
+.notfound__btn:hover {
+  background: var(--color-ink-soft);
+  border-color: var(--color-ink-soft);
+}
+.notfound__btn--ghost {
+  background: var(--color-surface);
+  color: var(--color-ink-soft);
+  border-color: var(--color-border);
+}
+.notfound__btn--ghost:hover {
+  border-color: var(--color-ink-soft);
+  background: var(--color-bg);
+}
 </style>
 </head>
 <body>
-  <div class="num">404</div>
-  <h1>Página não encontrada</h1>
-  <p>A página que você procura não existe ou foi removida.</p>
-  <a href="/">Voltar para a loja</a>
+
+<div class="notfound">
+  <div class="notfound__code">404</div>
+  <h1 class="notfound__title">Página não encontrada</h1>
+  <p class="notfound__text">A página que você procurava pode ter sido removida ou está temporariamente indisponível. Que tal explorar a coleção?</p>
+  <div class="notfound__actions">
+    <a href="/" class="notfound__btn">
+      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+      Voltar para a loja
+    </a>
+    <a href="/#produtos" class="notfound__btn notfound__btn--ghost">Ver produtos</a>
+  </div>
+</div>
+
 </body>
 </html>
-

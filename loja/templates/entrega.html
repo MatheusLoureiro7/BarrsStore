@@ -6,150 +6,290 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Entrega e Trocas — Barrs Store</title>
 {% include "partials/seo_head.html" %}
+{% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#F5F2EC;--surface:#FFFFFF;--border:#D9D3C7;--text:#6B5E53;--muted:#9E9488;--green:#8A947C;--green-light:#B7C1A8;--green-bg:#E8EDE3;--gold:#C8A96A;--radius:14px;--radius-sm:8px}
-  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-  .navbar{background:rgba(245,242,236,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .nav-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:8px}
-  .nav-logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;mix-blend-mode:multiply;flex-shrink:0}
-  .nav-links{display:flex;gap:24px}
-  .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
-  .nav-links a:hover{color:var(--text)}
-  .nav-right{display:flex;align-items:center;gap:10px}
-  .nav-conta{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none}
-  .nav-conta:hover{color:var(--text)}
-  .nav-cart{font-size:13px;color:var(--text);text-decoration:none;background:var(--surface);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-weight:500}
+.delivery {
+  max-width: 720px;
+  margin: var(--space-7) auto var(--space-9);
+  padding: 0 var(--space-5);
+}
+.delivery__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin-bottom: var(--space-3);
+}
+.delivery__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-3);
+}
+.delivery__lead {
+  font-size: var(--text-base);
+  color: var(--color-ink-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
 
-  .page{max-width:720px;margin:60px auto 80px;padding:0 20px}
-  .tag{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:16px}
-  h1{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,40px);font-weight:700;margin-bottom:12px}
-  .lead{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:40px}
+.info-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+.info-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  transition: border-color var(--duration) var(--ease);
+}
+.info-card:hover { border-color: var(--color-brand-soft); }
+.info-card__icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-brand-bg);
+  border-radius: 50%;
+  color: var(--color-brand);
+  margin-bottom: var(--space-3);
+}
+.info-card__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-2);
+}
+.info-card__desc {
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  line-height: var(--leading-relaxed);
+}
+.info-card__desc strong { color: var(--color-ink-soft); font-weight: 600; }
+.info-card__highlight {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-brand);
+}
 
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px}
-  .info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
-  .info-card-icon{font-size:28px;margin-bottom:12px}
-  .info-card-titulo{font-size:14px;font-weight:600;margin-bottom:8px}
-  .info-card-desc{font-size:13px;color:var(--muted);line-height:1.7}
-  .info-card-dest{font-size:13px;font-weight:600;color:var(--green);margin-top:8px}
+.delivery__divider {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-7) 0;
+}
+.delivery h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-4);
+}
 
-  .sep{border:none;border-top:1px solid var(--border);margin:32px 0}
-  h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:16px}
+/* CALLOUTS */
+.callout {
+  background: var(--color-brand-bg);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4) var(--space-5);
+  font-size: 0.8125rem;
+  color: var(--color-ink-soft);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
+.callout strong { color: var(--color-brand); font-weight: 600; }
+.callout--warn {
+  background: var(--color-warn-bg);
+  border-color: var(--color-warn);
+}
+.callout--warn strong { color: var(--color-warn); }
 
-  .passos{display:flex;flex-direction:column;gap:16px;margin-bottom:32px}
-  .passo{display:flex;gap:16px;align-items:flex-start}
-  .passo-num{width:32px;height:32px;border-radius:50%;background:var(--green-bg);border:1px solid var(--green-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--green);flex-shrink:0}
-  .passo-titulo{font-size:14px;font-weight:600;margin-bottom:4px}
-  .passo-desc{font-size:13px;color:var(--muted);line-height:1.6}
+/* PASSOS */
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.step-item {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+.step-item__num {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 32px;
+  font-variant-numeric: tabular-nums;
+}
+.step-item__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  margin-bottom: 4px;
+}
+.step-item__desc {
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  line-height: var(--leading-relaxed);
+}
 
-  .aviso{background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm);padding:16px 20px;font-size:13px;color:var(--text);line-height:1.7;margin-bottom:32px}
-  .aviso strong{color:var(--green)}
+/* CTA */
+.delivery-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.75rem 1.5rem;
+  background: var(--color-brand);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease),
+              transform var(--duration) var(--ease);
+}
+.delivery-cta:hover { background: var(--color-ink-soft); transform: translateY(-1px); }
 
-  .btn-wa{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25d366;color:#fff;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;transition:opacity .2s}
-  .btn-wa:hover{opacity:0.85}
-
-  @media(max-width:600px){.cards{grid-template-columns:1fr}.navbar{padding:0 20px}.nav-links{display:none}}
+@media (max-width: 600px) {
+  .info-cards { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<nav class="navbar">
-  <a href="/" class="nav-logo"><img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async"> Barrs Store</a>
-  <div class="nav-links">
-    <a href="/">Início</a>
-    <a href="/sobre/">Sobre</a>
-    <a href="/contato/">Contato</a>
-  </div>
-  <div class="nav-right">
+
+<nav class="nav">
+  <a href="/" class="nav__logo">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    Barrs Store
+  </a>
+  <ul class="nav__links">
+    <li><a href="/">Início</a></li>
+    <li><a href="/sobre/">Sobre</a></li>
+    <li><a href="/contato/">Contato</a></li>
+  </ul>
+  <div class="nav__right">
     {% if user.is_authenticated %}
-      <a href="{% url 'minha_conta' %}" class="nav-conta">👤 {{ user.first_name|default:user.email }}</a>
+      <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+      </a>
     {% else %}
-      <a href="{% url 'login' %}" class="nav-conta">Entrar</a>
+      <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
     {% endif %}
-    <a href="{% url 'carrinho' %}" class="nav-cart">🛒 Carrinho</a>
+    <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
+      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      Carrinho
+      {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
+    </a>
   </div>
 </nav>
 
-<div class="page">
-  <div class="tag">Informações de entrega</div>
-  <h1>Entrega, Trocas e Devoluções</h1>
-  <p class="lead">Aqui você encontra tudo sobre prazos de envio e como funciona nossa política de trocas.</p>
+<main class="delivery">
+  <div class="delivery__eyebrow">Informações de entrega</div>
+  <h1 class="delivery__title">Entrega, trocas e devoluções</h1>
+  <p class="delivery__lead">Aqui você encontra tudo sobre prazos de envio e como funciona nossa política de trocas.</p>
 
-  <div class="cards">
+  <div class="info-cards">
     <div class="info-card">
-      <div class="info-card-icon">🚚</div>
-      <div class="info-card-titulo">Envio</div>
-      <div class="info-card-desc">Enviamos em até <strong>2 dias úteis</strong> após a confirmação do pagamento. O frete é calculado no carrinho conforme o CEP e a opção escolhida.</div>
-      <div class="info-card-dest">Enviamos de São Paulo/SP</div>
+      <div class="info-card__icon">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-truck"/></svg>
+      </div>
+      <div class="info-card__title">Envio</div>
+      <div class="info-card__desc">Enviamos em até <strong>2 dias úteis</strong> após a confirmação do pagamento. O frete é calculado no carrinho conforme o CEP e a opção escolhida.</div>
+      <span class="info-card__highlight">Enviamos de São Paulo/SP</span>
     </div>
     <div class="info-card">
-      <div class="info-card-icon">📦</div>
-      <div class="info-card-titulo">Prazo de entrega</div>
-      <div class="info-card-desc">Grande SP: 3 a 5 dias úteis<br>Demais estados: 5 a 10 dias úteis<br>Norte: 10 a 15 dias úteis</div>
+      <div class="info-card__icon">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-package"/></svg>
+      </div>
+      <div class="info-card__title">Prazo de entrega</div>
+      <div class="info-card__desc">Grande SP: 2 a 5 dias úteis<br>Demais estados: 5 a 10 dias úteis<br>Norte: 10 a 15 dias úteis</div>
     </div>
     <div class="info-card">
-      <div class="info-card-icon">🔄</div>
-      <div class="info-card-titulo">Trocas</div>
-      <div class="info-card-desc">Aceitamos troca em até <strong>7 dias corridos</strong> após o recebimento.</div>
-      <div class="info-card-dest">Produto deve estar sem uso</div>
+      <div class="info-card__icon">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+      </div>
+      <div class="info-card__title">Trocas</div>
+      <div class="info-card__desc">Aceitamos troca em até <strong>7 dias corridos</strong> após o recebimento.</div>
+      <span class="info-card__highlight">Produto deve estar sem uso</span>
     </div>
     <div class="info-card">
-      <div class="info-card-icon">💰</div>
-      <div class="info-card-titulo">Reembolso</div>
-      <div class="info-card-desc">Devoluções aceitas em até <strong>7 dias</strong>. Reembolso em até 5 dias úteis após recebimento.</div>
+      <div class="info-card__icon">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-check"/></svg>
+      </div>
+      <div class="info-card__title">Reembolso</div>
+      <div class="info-card__desc">Devoluções aceitas em até <strong>7 dias</strong>. Reembolso em até 5 dias úteis após recebimento.</div>
     </div>
     <div class="info-card">
-      <div class="info-card-icon">🛡️</div>
-      <div class="info-card-titulo">Garantia</div>
-      <div class="info-card-desc">Todas as peças possuem <strong>1 ano de garantia</strong> contra defeitos de fabricação.</div>
-      <div class="info-card-dest">Não cobre mau uso</div>
+      <div class="info-card__icon">
+        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-shield"/></svg>
+      </div>
+      <div class="info-card__title">Garantia</div>
+      <div class="info-card__desc">Todas as peças possuem <strong>1 ano de garantia</strong> contra defeitos de fabricação.</div>
+      <span class="info-card__highlight">Não cobre mau uso</span>
     </div>
   </div>
 
-  <hr class="sep">
+  <hr class="delivery__divider">
 
   <h2>Como funciona a garantia</h2>
-  <div class="aviso">
+  <div class="callout">
     <strong>Garantia de 1 ano:</strong> cobre defeitos de fabricação, como falha no banho, oxidação fora do padrão ou problemas estruturais identificados em condições normais de uso. A garantia não cobre mau uso, queda, quebra, riscos, amassados, contato com produtos químicos, perfume, cosméticos, água do mar, piscina ou desgaste causado por uso inadequado.
   </div>
 
   <h2>Como fazer uma troca ou devolução</h2>
-  <div class="passos">
-    <div class="passo">
-      <div class="passo-num">1</div>
+  <div class="steps-list">
+    <div class="step-item">
+      <div class="step-item__num">01</div>
       <div>
-        <div class="passo-titulo">Entre em contato</div>
-        <div class="passo-desc">Fale com a gente pelo WhatsApp em até 7 dias após receber o produto informando o motivo da troca/devolução.</div>
+        <div class="step-item__title">Entre em contato</div>
+        <div class="step-item__desc">Fale conosco pelo WhatsApp em até 7 dias após receber o produto, informando o motivo da troca ou devolução.</div>
       </div>
     </div>
-    <div class="passo">
-      <div class="passo-num">2</div>
+    <div class="step-item">
+      <div class="step-item__num">02</div>
       <div>
-        <div class="passo-titulo">Envie o produto</div>
-        <div class="passo-desc">Envie o produto sem uso, na embalagem original, com nota fiscal, para o endereço que passaremos pelo WhatsApp.</div>
+        <div class="step-item__title">Envie o produto</div>
+        <div class="step-item__desc">Envie o produto sem uso, na embalagem original, com nota fiscal, para o endereço que passaremos pelo WhatsApp.</div>
       </div>
     </div>
-    <div class="passo">
-      <div class="passo-num">3</div>
+    <div class="step-item">
+      <div class="step-item__num">03</div>
       <div>
-        <div class="passo-titulo">Troca ou reembolso</div>
-        <div class="passo-desc">Após receber e conferir o produto, enviamos o novo item ou processamos o reembolso em até 5 dias úteis.</div>
+        <div class="step-item__title">Troca ou reembolso</div>
+        <div class="step-item__desc">Após receber e conferir o produto, enviamos o novo item ou processamos o reembolso em até 5 dias úteis.</div>
       </div>
     </div>
   </div>
 
-  <div class="aviso">
-    ⚠️ <strong>Atenção:</strong> Não aceitamos trocas de produtos com sinais de uso, sem embalagem original ou fora do prazo de 7 dias corridos após o recebimento.
+  <div class="callout callout--warn">
+    <strong>Atenção:</strong> não aceitamos trocas de produtos com sinais de uso, sem embalagem original ou fora do prazo de 7 dias corridos após o recebimento.
   </div>
 
   <h2>Ficou com dúvidas?</h2>
-  <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.7">Nossa equipe está disponível de segunda a sexta, das 9h às 18h. Fale conosco pelo WhatsApp!</p>
-  <a href="https://wa.me/5511913225256?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20entrega%20ou%20troca." class="btn-wa" target="_blank">
-    💬 Falar no WhatsApp
+  <p style="font-size:var(--text-sm);color:var(--color-ink-muted);margin-bottom:var(--space-5);line-height:var(--leading-relaxed)">
+    Nossa equipe está disponível de segunda a sexta, das 9h às 18h. Fale conosco pelo WhatsApp.
+  </p>
+  <a href="https://wa.me/5511913225256?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20entrega%20ou%20troca." class="delivery-cta" target="_blank" rel="noopener">
+    <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+    Falar no WhatsApp
   </a>
-</div>
+</main>
+
 </body>
 </html>
-
-
