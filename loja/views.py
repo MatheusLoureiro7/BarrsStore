@@ -806,11 +806,11 @@ def enviar_email_abandono_2(carrinho):
 
     corpo = (
         _paragrafo('Suas peças ainda estão esperando por você 💎')
-        + _paragrafo('Reunimos com carinho as peças do seu carrinho porque acreditamos que elas foram feitas para você. Cada acessório da Barrs Store é escolhido a dedo para mulheres que valorizam qualidade e estilo.')
+        + _paragrafo('Percebemos que algumas peças ficaram no seu carrinho… e sinceramente? Elas combinam muito com você ✨')
         + '<div style="background:#E8EDE3;border-radius:10px;padding:16px 20px;margin:20px 0">'
         + '<p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8A947C;margin:0 0 10px">POR QUE COMPRAR NA BARRS STORE</p>'
         + '<p style="font-size:13px;color:#6B5E53;margin:0 0 6px;line-height:1.6">✓ &nbsp;Entrega para todo o Brasil</p>'
-        + '<p style="font-size:13px;color:#6B5E53;margin:0 0 6px;line-height:1.6">✓ &nbsp;Frete grátis a partir de R$ 79 (SP)</p>'
+        + '<p style="font-size:13px;color:#6B5E53;margin:0 0 6px;line-height:1.6">✓ &nbsp;Semijoias com acabamento premium</p>'
         + '<p style="font-size:13px;color:#6B5E53;margin:0;line-height:1.6">✓ &nbsp;Atendimento humanizado via WhatsApp</p>'
         + '</div>'
         + f'<p style="font-size:15px;font-weight:600;color:#3d2d20;margin:16px 0">Total do carrinho: <span style="color:#8A947C">R$ {total}</span></p>'

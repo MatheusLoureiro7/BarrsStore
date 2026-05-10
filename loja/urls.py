@@ -2,6 +2,7 @@ from django.urls import path
 from django.contrib.sitemaps.views import sitemap
 from . import views
 from .sitemaps import ProdutoSitemap, StaticViewSitemap
+from django.views.generic.base import RedirectView
 
 sitemaps = {
     'produtos': ProdutoSitemap,
