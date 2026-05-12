@@ -1035,6 +1035,10 @@ body {
   const pixCopyEl    = document.getElementById('mp-pix-copy');
   const pixStatusEl  = document.getElementById('mp-pix-status-link');
   const csrfToken    = '{{ csrf_token }}';
+  const statusUrl    = '{% url "status_pagamento" pedido.id pedido.access_token %}';
+  let statusTimerId  = null;
+  let statusInFlight = false;
+  let statusStartedAt = 0;
 
   /* O valor deve ser um Number puro (sem vírgula) */
   const totalPedido = Number(
@@ -1054,6 +1058,47 @@ body {
       statusEl.style.display   = 'flex';
     } else {
       statusEl.style.display   = 'none';
+    }
+  }
+
+  function startStatusPolling() {
+    if (statusTimerId) return;
+    statusStartedAt = Date.now();
+    checkPedidoStatus();
+    statusTimerId = setInterval(checkPedidoStatus, 5000);
+  }
+
+  function stopStatusPolling() {
+    if (!statusTimerId) return;
+    clearInterval(statusTimerId);
+    statusTimerId = null;
+  }
+
+  async function checkPedidoStatus() {
+    if (statusInFlight) return;
+    if (statusStartedAt && Date.now() - statusStartedAt > 30 * 60 * 1000) {
+      stopStatusPolling();
+      return;
+    }
+
+    statusInFlight = true;
+    try {
+      const response = await fetch(statusUrl, {
+        headers: { 'Accept': 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data.confirmado && data.sucesso_url) {
+        stopStatusPolling();
+        showStatus('Pagamento aprovado. Redirecionando...');
+        window.location.href = data.sucesso_url;
+      }
+    } catch (error) {
+      // Mantem a tela do Pix aberta e tenta novamente no proximo ciclo.
+    } finally {
+      statusInFlight = false;
     }
   }
 
@@ -1092,8 +1137,13 @@ body {
     }
 
     pixBoxEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    startStatusPolling();
     return true;
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkPedidoStatus();
+  });
 
   pixCopyEl.addEventListener('click', async () => {
     const code = pixCodeEl.value;

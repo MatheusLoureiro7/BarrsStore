@@ -1674,6 +1674,8 @@ def checkout(request):
 # ── CONFIRMAÇÃO ────────────────────────────────────────────────────
 def confirmacao(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
+    if pedido.status == 'confirmado':
+        return redirect('pagamento_sucesso', pedido_id=pedido.id, token=pedido.access_token)
     context = {
         'pedido': pedido,
         'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
