@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db import transaction
 from django.db.models import Q, F
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -9,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom
+from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom
 from .mercadopago_security import validar_assinatura_mercadopago
 from .validators import cpf_valido
 import mercadopago
@@ -17,6 +18,7 @@ import json
 import requests as http_requests
 import os
 import logging
+import uuid
 from decimal import Decimal, InvalidOperation
 
 logger = logging.getLogger(__name__)
@@ -65,17 +67,99 @@ def get_pedido_por_token(pedido_id, token):
     return get_object_or_404(Pedido, id=pedido_id, access_token=token)
 
 
-def _decrementar_estoque(pedido):
-    from .models import TamanhoAnel
-    for item in pedido.itens.all():
-        if item.produto:
+def dados_pagador_mercadopago(pedido):
+    """Monta os dados do pagador sem confiar em dados digitados no frontend."""
+    telefone_limpo = "".join(filter(str.isdigit, pedido.telefone or ""))
+    cpf_limpo = apenas_digitos(pedido.cpf)
+    partes_nome = (pedido.nome or '').strip().split()
+
+    payer = {
+        "name": pedido.nome,
+        "first_name": partes_nome[0] if partes_nome else pedido.nome,
+        "last_name": " ".join(partes_nome[1:]) if len(partes_nome) > 1 else "",
+        "email": pedido.email or os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com'),
+    }
+    if len(cpf_limpo) == 11:
+        payer["identification"] = {
+            "type": "CPF",
+            "number": cpf_limpo,
+        }
+    if len(telefone_limpo) >= 10:
+        payer["phone"] = {
+            "area_code": telefone_limpo[:2],
+            "number": telefone_limpo[2:],
+        }
+    if pedido.cep and pedido.rua and pedido.numero:
+        payer["address"] = {
+            "zip_code": apenas_digitos(pedido.cep),
+            "street_name": pedido.rua,
+            "street_number": pedido.numero,
+            "neighborhood": pedido.bairro,
+            "city": pedido.cidade,
+            "federal_unit": pedido.estado,
+        }
+    return payer
+
+
+def resumir_erro_mercadopago(payment):
+    """Evita gravar dados sensiveis do payload completo do Mercado Pago nos logs."""
+    causes = payment.get('cause') or []
+    return {
+        'message': payment.get('message'),
+        'error': payment.get('error'),
+        'status': payment.get('status'),
+        'status_detail': payment.get('status_detail'),
+        'cause': [
+            {
+                'code': cause.get('code'),
+                'description': cause.get('description'),
+            }
+            for cause in causes[:3]
+            if isinstance(cause, dict)
+        ],
+    }
+
+
+def baixar_estoque_pedido(pedido):
+    """Baixa o estoque uma unica vez quando o pagamento e confirmado."""
+    with transaction.atomic():
+        pedido_lock = Pedido.objects.select_for_update().get(pk=pedido.pk)
+        if pedido_lock.estoque_baixado:
+            logger.info('[ESTOQUE] Pedido %s ja teve estoque baixado. Ignorando duplicidade.', pedido_lock.id)
+            return False
+
+        for item in pedido_lock.itens.select_related('produto').all():
+            produto = item.produto
+            if not produto:
+                continue
+
             if item.tamanho:
-                TamanhoAnel.objects.filter(
-                    produto=item.produto, numero=item.tamanho
-                ).update(estoque=F('estoque') - item.quantidade)
-            Produto.objects.filter(id=item.produto.id).update(
-                estoque=F('estoque') - item.quantidade
+                tamanho = TamanhoAnel.objects.select_for_update().filter(
+                    produto=produto,
+                    numero=item.tamanho,
+                ).first()
+                if tamanho:
+                    tamanho.estoque = max((tamanho.estoque or 0) - item.quantidade, 0)
+                    tamanho.save(update_fields=['estoque'])
+
+            produto_lock = Produto.objects.select_for_update().get(pk=produto.pk)
+            produto_lock.estoque = max((produto_lock.estoque or 0) - item.quantidade, 0)
+            if produto_lock.estoque <= 0:
+                produto_lock.visivel = False
+            produto_lock.save(update_fields=['estoque', 'visivel'])
+            logger.info(
+                '[ESTOQUE] Pedido %s baixou %s un. do produto %s. estoque_atual=%s visivel=%s',
+                pedido_lock.id,
+                item.quantidade,
+                produto_lock.id,
+                produto_lock.estoque,
+                produto_lock.visivel,
             )
+
+        pedido_lock.estoque_baixado = True
+        pedido_lock.save(update_fields=['estoque_baixado'])
+        pedido.estoque_baixado = True
+        return True
 
 
 def confirmar_pedido_pago(pedido):
@@ -86,7 +170,7 @@ def confirmar_pedido_pago(pedido):
         atualizou = True
         if pedido.cupom_codigo:
             Cupom.objects.filter(codigo__iexact=pedido.cupom_codigo).update(usado=F('usado') + 1)
-        _decrementar_estoque(pedido)
+    baixar_estoque_pedido(pedido)
 
     if not pedido.email_confirmacao_enviado:
         enviado = enviar_email_confirmacao(pedido)
@@ -96,7 +180,7 @@ def confirmar_pedido_pago(pedido):
             atualizou = True
 
     if atualizou:
-        pedido.save(update_fields=['status', 'email_confirmacao_enviado'])
+        pedido.save(update_fields=['status', 'email_confirmacao_enviado', 'estoque_baixado'])
         logger.info('[PAGAMENTO] Pedido %s salvo como confirmado.', pedido.id)
 
     envio_criado = criar_envio_melhor_envio(pedido)
@@ -910,12 +994,62 @@ def get_carrinho_info(request):
 
 
 # ── HOME ───────────────────────────────────────────────────────────
+def salvar_lead_na_sessao(request, nome, telefone):
+    nome = (nome or '').strip()
+    telefone = apenas_digitos(telefone)
+    if nome:
+        request.session['lead_nome'] = nome
+    if telefone:
+        request.session['lead_telefone'] = telefone
+    if nome and len(telefone) >= 10:
+        request.session['lead_capturado'] = True
+    request.session.modified = True
+
+
+def aplicar_lead_no_carrinho(request, carrinho):
+    nome = request.session.get('lead_nome', '').strip()
+    telefone = request.session.get('lead_telefone', '').strip()
+    campos = []
+    if nome and carrinho.nome_cliente != nome:
+        carrinho.nome_cliente = nome
+        campos.append('nome_cliente')
+    if telefone and carrinho.telefone_cliente != telefone:
+        carrinho.telefone_cliente = telefone
+        carrinho.aceita_whatsapp = True
+        campos.extend(['telefone_cliente', 'aceita_whatsapp'])
+    if campos:
+        campos.append('atualizado_em')
+        carrinho.save(update_fields=campos)
+
+
+@require_POST
+def salvar_lead_cliente(request):
+    nome = request.POST.get('nome', '').strip()
+    telefone = apenas_digitos(request.POST.get('telefone', ''))
+
+    if len(nome) < 2:
+        return JsonResponse({'ok': False, 'erro': 'Informe seu nome.'}, status=400)
+    if len(telefone) < 10:
+        return JsonResponse({'ok': False, 'erro': 'Informe um WhatsApp valido.'}, status=400)
+
+    salvar_lead_na_sessao(request, nome, telefone)
+    carrinho_id = request.session.get('carrinho_id')
+    if carrinho_id:
+        try:
+            aplicar_lead_no_carrinho(request, Carrinho.objects.get(id=carrinho_id))
+        except Carrinho.DoesNotExist:
+            request.session.pop('carrinho_id', None)
+
+    logger.info('[LEAD] Nome e telefone capturados para atendimento via WhatsApp.')
+    return JsonResponse({'ok': True, 'nome': nome, 'telefone': telefone})
+
+
 def home(request):
     busca = request.GET.get('q', '').strip()
     ordem = request.GET.get('ordem', '')
     categoria_slug = request.GET.get('categoria', '')
 
-    produtos = Produto.objects.filter(visivel=True)
+    produtos = Produto.objects.filter(visivel=True, estoque__gt=0)
 
     if busca:
         produtos = produtos.filter(
@@ -957,12 +1091,12 @@ def home(request):
 
 # ── DETALHE DO PRODUTO ─────────────────────────────────────────────
 def detalhe_produto(request, slug):
-    produto = get_object_or_404(Produto, slug=slug)
+    produto = get_object_or_404(Produto, slug=slug, visivel=True, estoque__gt=0)
     if not request.user.is_staff:
         Produto.objects.filter(pk=produto.pk).update(cliques=F('cliques') + 1)
-    relacionados = Produto.objects.filter(visivel=True, categoria=produto.categoria).exclude(id=produto.id)[:4]
+    relacionados = Produto.objects.filter(visivel=True, estoque__gt=0, categoria=produto.categoria).exclude(id=produto.id)[:4]
     if not relacionados:
-        relacionados = Produto.objects.filter(visivel=True).exclude(id=produto.id)[:4]
+        relacionados = Produto.objects.filter(visivel=True, estoque__gt=0).exclude(id=produto.id)[:4]
     image_url = produto.imagem.url if produto.imagem else ''
     seo = seo_context(
         request,
@@ -1143,6 +1277,10 @@ def calcular_frete_melhor_envio(request):
 @require_POST
 def adicionar_carrinho(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
+    if not produto.visivel or produto.estoque <= 0:
+        messages.error(request, 'Este produto esta indisponivel no momento.')
+        return redirect('home')
+
     carrinho_id = request.session.get('carrinho_id')
 
     if carrinho_id:
@@ -1160,6 +1298,13 @@ def adicionar_carrinho(request, produto_id):
     except (TypeError, ValueError):
         quantidade = 1
     tamanho = request.POST.get('tamanho', '').strip()
+    estoque_disponivel = produto.estoque
+    if tamanho:
+        tamanho_obj = TamanhoAnel.objects.filter(produto=produto, numero=tamanho).first()
+        if not tamanho_obj or tamanho_obj.estoque <= 0:
+            messages.error(request, 'Este tamanho esta indisponivel no momento.')
+            return redirect(produto.get_absolute_url())
+        estoque_disponivel = min(estoque_disponivel, tamanho_obj.estoque)
 
     item, criado = ItemCarrinho.objects.get_or_create(
         carrinho=carrinho,
@@ -1167,11 +1312,19 @@ def adicionar_carrinho(request, produto_id):
         tamanho=tamanho,
     )
 
+    quantidade_atual = 0 if criado else item.quantidade
+    quantidade_permitida = max(estoque_disponivel - quantidade_atual, 0)
+    if quantidade_permitida <= 0:
+        messages.error(request, 'Voce ja adicionou todo o estoque disponivel deste produto.')
+        return redirect('carrinho')
+    quantidade = min(quantidade, quantidade_permitida)
+
     if criado:
         item.quantidade = quantidade
     else:
         item.quantidade += quantidade
     item.save()
+    aplicar_lead_no_carrinho(request, carrinho)
     carrinho.save(update_fields=['atualizado_em'])
 
     next_url = request.POST.get('next', 'carrinho')
@@ -1214,13 +1367,17 @@ def salvar_contato_carrinho(request):
         return JsonResponse({'ok': False, 'erro': 'Carrinho nao encontrado.'}, status=404)
 
     carrinho = get_object_or_404(Carrinho, id=carrinho_id)
-    telefone = request.POST.get('telefone', '').strip()
+    nome = request.POST.get('nome', '').strip()
+    telefone = apenas_digitos(request.POST.get('telefone', ''))
     email = request.POST.get('email', '').strip().lower()
+    if nome:
+        carrinho.nome_cliente = nome
     carrinho.telefone_cliente = telefone
     carrinho.aceita_whatsapp = bool(telefone)
     if email and '@' in email:
         carrinho.email_cliente = email
-    carrinho.save(update_fields=['telefone_cliente', 'aceita_whatsapp', 'email_cliente', 'atualizado_em'])
+    salvar_lead_na_sessao(request, nome or carrinho.nome_cliente, telefone)
+    carrinho.save(update_fields=['nome_cliente', 'telefone_cliente', 'aceita_whatsapp', 'email_cliente', 'atualizado_em'])
 
     logger.info(
         '[CARRINHO] Contato salvo no carrinho %s. WhatsApp=%s email=%s',
@@ -1285,6 +1442,8 @@ def checkout(request):
             'qtd_carrinho': get_carrinho_info(request),
             'perfil': perfil,
             'carrinho': carrinho,
+            'lead_nome': request.session.get('lead_nome', ''),
+            'lead_telefone': request.session.get('lead_telefone', ''),
             # Mantem o frete selecionado quando o checkout volta com erro de validacao.
             'frete_valor_selecionado': frete_valor,
             'frete_nome_selecionado': frete_nome,
@@ -1295,6 +1454,13 @@ def checkout(request):
 
     if request.method == 'POST':
         cliente = request.user if request.user.is_authenticated else None
+        salvar_lead_na_sessao(
+            request,
+            request.POST.get('nome', ''),
+            request.POST.get('telefone', ''),
+        )
+        aplicar_lead_no_carrinho(request, carrinho)
+
         campos_obrigatorios = {
             'nome': 'Nome completo',
             'email': 'E-mail',
@@ -1319,6 +1485,16 @@ def checkout(request):
         if not cpf_valido(cpf_pedido):
             messages.error(request, 'Informe um CPF valido.')
             return render_checkout()
+
+        for item in itens.select_related('produto'):
+            if not item.produto or not item.produto.visivel or item.produto.estoque < item.quantidade:
+                messages.error(request, f'O produto {item.produto.nome if item.produto else item.nome_produto} nao tem estoque suficiente.')
+                return redirect('carrinho')
+            if item.tamanho:
+                tamanho = TamanhoAnel.objects.filter(produto=item.produto, numero=item.tamanho).first()
+                if not tamanho or tamanho.estoque < item.quantidade:
+                    messages.error(request, f'O tamanho {item.tamanho} de {item.produto.nome} nao tem estoque suficiente.')
+                    return redirect('carrinho')
 
         if not request.user.is_authenticated:
             email_pedido = request.POST.get('email', '').strip().lower()
@@ -1497,29 +1673,7 @@ def criar_preferencia(request, pedido_id, token):
             })
 
     # Limpa telefone — MP só aceita números
-    telefone_limpo = "".join(filter(str.isdigit, pedido.telefone or ""))
-    cpf_limpo = apenas_digitos(pedido.cpf)
-
-    payer = {
-        "name": pedido.nome,
-        "email": pedido.email or os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com'),
-    }
-    if len(cpf_limpo) == 11:
-        payer["identification"] = {
-            "type": "CPF",
-            "number": cpf_limpo,
-        }
-    if len(telefone_limpo) >= 10:
-        payer["phone"] = {
-            "area_code": telefone_limpo[:2],
-            "number": telefone_limpo[2:],
-        }
-    if pedido.cep and pedido.rua and pedido.numero:
-        payer["address"] = {
-            "zip_code": apenas_digitos(pedido.cep),
-            "street_name": pedido.rua,
-            "street_number": pedido.numero,
-        }
+    payer = dados_pagador_mercadopago(pedido)
 
     preference_data = {
         "items": items,
@@ -1552,6 +1706,121 @@ def criar_preferencia(request, pedido_id, token):
     return JsonResponse({
         "preference_id": preference["id"],
         "init_point": preference["init_point"],
+    })
+
+
+@require_POST
+def processar_pagamento_brick(request, pedido_id, token):
+    pedido = get_pedido_por_token(pedido_id, token)
+    if pedido.status == 'confirmado':
+        return JsonResponse({
+            'status': 'approved',
+            'pedido_status': pedido.status,
+            'redirect_url': reverse('pagamento_sucesso', kwargs={
+                'pedido_id': pedido.id,
+                'token': pedido.access_token,
+            }),
+        })
+    if not settings.MERCADOPAGO_ACCESS_TOKEN:
+        return JsonResponse({'erro': 'Mercado Pago nao configurado.'}, status=503)
+
+    try:
+        form_data = json.loads(request.body.decode('utf-8') or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'erro': 'Dados de pagamento invalidos.'}, status=400)
+
+    payer_front = form_data.get('payer') or {}
+    payer = dados_pagador_mercadopago(pedido)
+    # A API de pagamento direto do Brick rejeita payer.name; usa first_name/last_name.
+    payer.pop('name', None)
+    payer['email'] = payer_front.get('email') or payer.get('email')
+    if not payer.get('identification') and isinstance(payer_front.get('identification'), dict):
+        payer['identification'] = payer_front['identification']
+
+    payment_data = {
+        'transaction_amount': float(pedido.total),
+        'description': f'Pedido #{pedido.id} - Barrs Store',
+        'payment_method_id': form_data.get('payment_method_id'),
+        'payer': payer,
+        'external_reference': str(pedido.id),
+        'notification_url': site_url(reverse('webhook_mp')),
+        'metadata': {
+            'pedido_id': pedido.id,
+        },
+        'statement_descriptor': 'BARRS STORE',
+    }
+
+    # Cartao usa token/parcelas/emissor. Pix nao precisa desses campos.
+    if form_data.get('token'):
+        payment_data['token'] = form_data.get('token')
+    if form_data.get('installments'):
+        try:
+            payment_data['installments'] = int(form_data.get('installments'))
+        except (TypeError, ValueError):
+            payment_data['installments'] = 1
+    if form_data.get('issuer_id'):
+        payment_data['issuer_id'] = form_data.get('issuer_id')
+
+    if not payment_data.get('payment_method_id'):
+        logger.warning('[MP-BRICK] Metodo de pagamento ausente no pedido %s.', pedido.id)
+        return JsonResponse({'erro': 'Selecione uma forma de pagamento.'}, status=400)
+
+    logger.info(
+        '[MP-BRICK] Criando pagamento pedido=%s metodo=%s total=%s',
+        pedido.id,
+        payment_data.get('payment_method_id'),
+        pedido.total,
+    )
+    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    request_options = mercadopago.config.RequestOptions()
+    request_options.custom_headers = {
+        'X-Idempotency-Key': str(uuid.uuid4()),
+    }
+    payment_response = sdk.payment().create(payment_data, request_options)
+    payment = payment_response.get('response', {})
+    status_code = payment_response.get('status', 500)
+
+    if status_code >= 400:
+        logger.warning(
+            '[MP-BRICK] Falha ao criar pagamento pedido=%s status=%s resposta=%s',
+            pedido.id,
+            status_code,
+            resumir_erro_mercadopago(payment),
+        )
+        return JsonResponse({
+            'erro': payment.get('message') or 'Pagamento nao aprovado. Confira os dados e tente novamente.',
+            'detalhe': payment.get('status_detail', ''),
+        }, status=400)
+
+    payment_id = payment.get('id')
+    status = payment.get('status')
+    status_detail = payment.get('status_detail')
+    logger.info(
+        '[MP-BRICK] Pagamento criado pedido=%s payment_id=%s status=%s detail=%s',
+        pedido.id,
+        payment_id,
+        status,
+        status_detail,
+    )
+
+    if payment_id:
+        confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=str(pedido.id))
+        pedido.refresh_from_db()
+
+    if status == 'approved' or pedido.status == 'confirmado':
+        redirect_url = reverse('pagamento_sucesso', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})
+    elif status in ('pending', 'in_process'):
+        redirect_url = reverse('pagamento_pendente', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})
+    else:
+        redirect_url = reverse('pagamento_falha', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})
+
+    return JsonResponse({
+        'id': payment_id,
+        'status': status,
+        'status_detail': status_detail,
+        'pedido_status': pedido.status,
+        'redirect_url': redirect_url,
+        'point_of_interaction': payment.get('point_of_interaction') or {},
     })
 
 

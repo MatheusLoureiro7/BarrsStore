@@ -35,9 +35,11 @@ def _timestamp_fresco(ts):
 def validar_assinatura_mercadopago(request, data):
     secret = getattr(settings, 'MERCADOPAGO_WEBHOOK_SECRET', '')
     if not secret:
-        # O webhook apenas dispara uma consulta autenticada na API do Mercado Pago usando nosso access token.
-        # Se o segredo ainda nao foi configurado no Railway, aceitamos o aviso para nao travar confirmacoes reais.
-        # Em producao, configure MP_WEBHOOK_SECRET para ativar a validacao HMAC estrita.
+        if getattr(settings, 'MERCADOPAGO_WEBHOOK_STRICT', False):
+            logger.error('MERCADOPAGO_WEBHOOK_SECRET ausente em modo estrito. Webhook recusado.')
+            return False, 'secret_ausente'
+
+        # Compatibilidade apenas para desenvolvimento/testes locais.
         logger.warning('MERCADOPAGO_WEBHOOK_SECRET ausente. Webhook aceito em modo compatibilidade.')
         return True, 'sem_secret_modo_compatibilidade'
 

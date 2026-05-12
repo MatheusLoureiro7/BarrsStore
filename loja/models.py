@@ -126,6 +126,7 @@ class TamanhoAnel(models.Model):
 # ── CARRINHO ──────────────────────────────────────────────────────
 class Carrinho(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
+    nome_cliente = models.CharField(max_length=100, blank=True, default='')
     telefone_cliente = models.CharField(max_length=20, blank=True, default='')
     email_cliente = models.EmailField(blank=True, default='')
     aceita_whatsapp = models.BooleanField(default=False)
@@ -228,6 +229,7 @@ class Pedido(models.Model):
     email_poscompra_3_enviado = models.BooleanField(default=False)
     email_poscompra_4_enviado = models.BooleanField(default=False)
     email_poscompra_5_enviado = models.BooleanField(default=False)
+    estoque_baixado = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'

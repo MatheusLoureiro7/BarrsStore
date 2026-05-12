@@ -231,7 +231,9 @@ MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
 MERCADOPAGO_PUBLIC_KEY = os.environ.get('MP_PUBLIC_KEY')
 MERCADOPAGO_WEBHOOK_SECRET = os.environ.get('MP_WEBHOOK_SECRET', '').strip()
 MERCADOPAGO_WEBHOOK_TOLERANCE_SECONDS = int(os.environ.get('MP_WEBHOOK_TOLERANCE_SECONDS', '600'))
-MERCADOPAGO_WEBHOOK_STRICT = os.environ.get('MP_WEBHOOK_STRICT', 'False') == 'True'
+MERCADOPAGO_WEBHOOK_STRICT = (
+    os.environ.get('MP_WEBHOOK_STRICT', 'False' if DEBUG else 'True') == 'True'
+)
 
 LOGGING = {
     'version': 1,

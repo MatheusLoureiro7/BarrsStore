@@ -18,6 +18,7 @@ urlpatterns = [
     path('produto/<slug:slug>/', views.detalhe_produto, name='detalhe_produto'),
     path('add/<int:produto_id>/', views.adicionar_carrinho, name='add_carrinho'),
     path('carrinho/', views.ver_carrinho, name='carrinho'),
+    path('lead/salvar/', views.salvar_lead_cliente, name='salvar_lead_cliente'),
     path('remover/<int:item_id>/', views.remover_item, name='remover_item'),
     path('deletar/<int:item_id>/', views.deletar_item, name='deletar_item'),
     path('carrinho/salvar-contato/', views.salvar_contato_carrinho, name='salvar_contato_carrinho'),
@@ -36,6 +37,7 @@ urlpatterns = [
 
     # Mercado Pago
     path('pagamento/preferencia/<int:pedido_id>/<uuid:token>/', views.criar_preferencia, name='criar_preferencia'),
+    path('pagamento/processar/<int:pedido_id>/<uuid:token>/', views.processar_pagamento_brick, name='processar_pagamento_brick'),
     path('pagamento/sucesso/<int:pedido_id>/<uuid:token>/', views.pagamento_sucesso, name='pagamento_sucesso'),
     path('pagamento/falha/<int:pedido_id>/<uuid:token>/', views.pagamento_falha, name='pagamento_falha'),
     path('pagamento/pendente/<int:pedido_id>/<uuid:token>/', views.pagamento_pendente, name='pagamento_pendente'),

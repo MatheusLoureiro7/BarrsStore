@@ -4,147 +4,1048 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pagamento em análise — Barrs Store</title>
+<title>Aguardando confirmação do pagamento — Barrs Store</title>
 {% include "partials/seo_head.html" %}
 {% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <style>
+/* ═══════════════════════════════════════════════════════════════
+   PÁGINA DE PAGAMENTO PENDENTE — BARRS STORE
+   Mesma linguagem da página de sucesso, mas para estado "em análise"
+═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --pe-h: 66px;
+  --pe-amber: #C19553;
+  --pe-amber-deep: #A87E3F;
+  --pe-amber-bg: #FAF3E5;
+  --pe-amber-ring: rgba(193, 149, 83, 0.22);
+}
+
 body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-7) var(--space-5);
+  background: #F6F3ED;
   min-height: 100vh;
 }
 
-.status-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-7) var(--space-6);
-  max-width: 480px;
-  width: 100%;
-  box-shadow: var(--shadow-md);
-  text-align: center;
+/* ── HEADER ──────────────────────────────────────────────────── */
+.pe-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  height: var(--pe-h);
+  background: rgba(246, 243, 237, 0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-bottom: 1px solid rgba(228, 221, 208, 0.65);
 }
-
-.status-card__icon {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto var(--space-5);
-  background: var(--color-warn-bg);
-  border-radius: 50%;
+.pe-header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 2rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--color-warn);
-  animation: pop 400ms var(--ease) both;
+  justify-content: space-between;
+  gap: 1.5rem;
 }
-@keyframes pop {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+.pe-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  flex-shrink: 0;
 }
-
-.status-card__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-warn);
-  margin-bottom: var(--space-3);
+.pe-brand__img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
 }
-
-.status-card__title {
+.pe-brand__name {
   font-family: var(--font-display);
-  font-size: clamp(1.625rem, 3vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-ink-soft);
-  margin-bottom: var(--space-3);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.015em;
 }
-
-.status-card__sub {
-  font-size: var(--text-sm);
+.pe-header__safe {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: var(--color-ink-muted);
-  line-height: var(--leading-relaxed);
-  margin-bottom: var(--space-6);
 }
-.status-card__sub strong { color: var(--color-ink-soft); }
+.pe-header__safe .icon { width: 13px; height: 13px; color: var(--pe-amber); }
 
-.status-card__notice {
-  background: var(--color-warn-bg);
-  border: 1px solid var(--color-warn);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
+/* ── PÁGINA ──────────────────────────────────────────────────── */
+.pe-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+}
+
+/* ── HERO COM SELO PULSANTE ──────────────────────────────────── */
+.pe-hero {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: peFade 0.5s var(--ease) both;
+}
+.pe-hero__seal {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 2rem;
+  background: linear-gradient(155deg, var(--pe-amber) 0%, var(--pe-amber-deep) 100%);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  position: relative;
+  animation: peSeal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  box-shadow:
+    0 1px 3px rgba(168, 126, 63, 0.22),
+    0 8px 24px rgba(168, 126, 63, 0.24);
+}
+.pe-hero__seal::before,
+.pe-hero__seal::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--pe-amber-ring);
+  pointer-events: none;
+}
+.pe-hero__seal::before {
+  width: 108px;
+  height: 108px;
+  animation: peRingPulse 2.4s ease-in-out infinite;
+}
+.pe-hero__seal::after {
+  width: 132px;
+  height: 132px;
+  border-color: rgba(193, 149, 83, 0.12);
+  animation: peRingPulse 2.4s 0.4s ease-in-out infinite;
+}
+.pe-hero__seal .icon {
+  width: 38px;
+  height: 38px;
+  stroke-width: 2.2;
+  animation: peClockTick 0.5s 0.4s var(--ease) both;
+}
+@keyframes peSeal {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+@keyframes peRingPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.06); }
+}
+@keyframes peClockTick {
+  from { opacity: 0; transform: rotate(-10deg); }
+  to   { opacity: 1; transform: rotate(0); }
+}
+
+.pe-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pe-amber-deep);
+  margin-bottom: 1.125rem;
+}
+.pe-hero__eyebrow::before,
+.pe-hero__eyebrow::after {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+}
+.pe-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+  margin-bottom: 1rem;
+}
+.pe-hero__sub {
+  font-size: 1rem;
+  color: var(--color-ink-muted);
+  line-height: 1.7;
+  max-width: 580px;
+  margin: 0 auto 1.75rem;
+}
+.pe-hero__sub strong { color: var(--color-ink-soft); font-weight: 600; }
+
+.pe-hero__order {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.02em;
+}
+.pe-hero__order strong {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+.pe-hero__order .icon { width: 14px; height: 14px; color: var(--pe-amber); }
+
+/* ── TIMELINE ────────────────────────────────────────────────── */
+.pe-timeline {
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  padding: 2.25rem 2.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: peFadeUp 0.5s 0.1s var(--ease) both;
+}
+.pe-timeline__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  position: relative;
+}
+.pe-step {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  position: relative;
+  text-align: center;
+  min-width: 0;
+}
+.pe-step::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: calc(50% + 20px);
+  right: calc(-50% + 20px);
+  height: 1.5px;
+  background: var(--color-border);
+  z-index: 0;
+}
+.pe-step:last-child::after { display: none; }
+.pe-step--done::after {
+  background: var(--pe-amber);
+}
+.pe-step--current::after {
+  background: linear-gradient(to right, var(--pe-amber), var(--color-border));
+}
+.pe-step__dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--color-border);
+  display: grid;
+  place-items: center;
+  color: var(--color-ink-muted);
+  position: relative;
+  z-index: 1;
+  transition: all 220ms var(--ease);
+}
+.pe-step__dot .icon { width: 16px; height: 16px; stroke-width: 1.8; }
+.pe-step--done .pe-step__dot {
+  background: var(--pe-amber);
+  border-color: var(--pe-amber);
+  color: #fff;
+}
+.pe-step--current .pe-step__dot {
+  background: var(--pe-amber-bg);
+  border-color: var(--pe-amber);
+  color: var(--pe-amber-deep);
+  box-shadow: 0 0 0 4px rgba(193, 149, 83, 0.14);
+  animation: peDotPulse 2s ease-in-out infinite;
+}
+@keyframes peDotPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(193, 149, 83, 0.14); }
+  50%      { box-shadow: 0 0 0 8px rgba(193, 149, 83, 0.08); }
+}
+.pe-step__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.005em;
+}
+.pe-step--done .pe-step__label,
+.pe-step--current .pe-step__label {
+  color: var(--color-ink);
+}
+.pe-step__note {
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+.pe-step--current .pe-step__note {
+  color: var(--pe-amber-deep);
+  font-weight: 600;
+}
+
+/* ── LAYOUT 2 COLUNAS ────────────────────────────────────────── */
+.pe-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── DETALHES ────────────────────────────────────────────────── */
+.pe-details {
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: peFadeUp 0.5s 0.18s var(--ease) both;
+}
+.pe-section {
+  padding: 1.75rem 2rem;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.pe-section:last-child { border-bottom: none; }
+.pe-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+}
+.pe-section__title {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.012em;
+}
+.pe-section__count {
   font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  padding: 0.25rem 0.625rem;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-soft);
+}
+
+/* Itens */
+.pe-items {
+  display: grid;
+  gap: 1.25rem;
+}
+.pe-item {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.pe-item__img {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-soft);
+}
+.pe-item__placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: var(--color-brand-bg);
+  border: 1px solid rgba(107, 122, 100, 0.14);
+  display: grid;
+  place-items: center;
+  color: var(--color-brand);
+}
+.pe-item__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.35;
+}
+.pe-item__meta {
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  margin-top: 0.1875rem;
+}
+.pe-item__price {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Entrega */
+.pe-delivery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+}
+.pe-delivery__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: 0.5rem;
+}
+.pe-delivery__value {
+  font-size: 0.875rem;
   color: var(--color-ink-soft);
   line-height: 1.6;
-  margin-bottom: var(--space-5);
-  text-align: left;
+}
+.pe-delivery__value a {
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border);
+  transition: border-color 200ms ease;
+}
+.pe-delivery__value a:hover { border-color: var(--color-ink); }
+
+/* Aviso PIX */
+.pe-notice {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1.125rem 1.25rem;
+  background: var(--pe-amber-bg);
+  border: 1px solid rgba(193, 149, 83, 0.25);
+  border-radius: 14px;
+}
+.pe-notice__icon {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--pe-amber-deep);
+  flex-shrink: 0;
+  border: 1px solid rgba(193, 149, 83, 0.2);
+}
+.pe-notice__icon .icon { width: 20px; height: 20px; }
+.pe-notice__title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.005em;
+}
+.pe-notice__sub {
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+  margin-top: 0.125rem;
+  line-height: 1.55;
 }
 
-.status-card__btn {
-  display: block;
-  width: 100%;
-  padding: 0.875rem;
-  background: var(--color-brand);
-  color: #fff;
-  border: 1px solid var(--color-brand);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+/* ── SUMMARY ─────────────────────────────────────────────────── */
+.pe-summary {
+  position: sticky;
+  top: calc(var(--pe-h) + 1.25rem);
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: peFadeUp 0.5s 0.24s var(--ease) both;
+}
+.pe-summary__head {
+  padding: 1.75rem 1.875rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  background: linear-gradient(180deg, rgba(250, 243, 229, 0.55), transparent);
+}
+.pe-summary__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pe-amber-deep);
+  margin-bottom: 0.5rem;
+}
+.pe-summary__total {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
   font-weight: 600;
-  text-align: center;
+  color: var(--color-ink);
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.pe-summary__total-sub {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  margin-top: 0.5rem;
+}
+.pe-summary__rows {
+  padding: 1.25rem 1.875rem;
+  display: grid;
+  gap: 0.625rem;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.pe-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+.pe-row__label { color: var(--color-ink-muted); font-weight: 500; }
+.pe-row__value {
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pe-row__value--off { color: #5a8f6b; }
+
+.pe-summary__meta {
+  padding: 1.125rem 1.875rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: grid;
+  gap: 0.5rem;
+}
+.pe-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.pe-meta__label {
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pe-meta__value {
+  color: var(--color-ink-soft);
+  font-weight: 600;
+}
+.pe-meta__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background: var(--pe-amber-bg);
+  color: var(--pe-amber-deep);
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(193, 149, 83, 0.28);
+}
+.pe-meta__pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--pe-amber);
+  border-radius: 50%;
+  animation: pePulse 1.6s ease-in-out infinite;
+}
+@keyframes pePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(1.35); }
+}
+
+.pe-summary__cta {
+  padding: 1.375rem 1.875rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.pe-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.125rem;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
   text-decoration: none;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
-  margin-bottom: var(--space-2);
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  letter-spacing: 0.01em;
 }
-.status-card__btn:hover {
-  background: var(--color-ink-soft);
-  border-color: var(--color-ink-soft);
+.pe-btn .icon { width: 14px; height: 14px; stroke-width: 1.8; }
+
+.pe-btn--primary {
+  background: linear-gradient(155deg, #738269 0%, #5C6B55 100%);
+  color: #fff;
+  box-shadow:
+    0 1px 3px rgba(80, 96, 76, 0.18),
+    0 4px 14px rgba(80, 96, 76, 0.16);
 }
-.status-card__btn--ghost {
-  background: var(--color-surface);
+.pe-btn--primary:hover {
+  background: linear-gradient(155deg, #697860 0%, #54624D 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 3px rgba(80, 96, 76, 0.22),
+    0 6px 20px rgba(80, 96, 76, 0.26);
+}
+.pe-btn--primary:hover .icon { transform: translateX(2px); }
+.pe-btn--primary .icon { transition: transform 220ms var(--ease); }
+
+.pe-btn--ghost {
+  background: #fff;
   color: var(--color-ink-soft);
   border-color: var(--color-border);
 }
-.status-card__btn--ghost:hover {
-  background: var(--color-bg);
-  border-color: var(--color-ink-soft);
+.pe-btn--ghost:hover {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  background: var(--color-surface-alt);
+}
+
+/* ── SUPORTE ─────────────────────────────────────────────────── */
+.pe-support {
+  margin-top: 1.5rem;
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  padding: 2rem 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 4px 14px rgba(43, 37, 32, 0.04);
+  animation: peFadeUp 0.5s 0.3s var(--ease) both;
+}
+.pe-support__icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow:
+    0 1px 3px rgba(18, 140, 126, 0.25),
+    0 6px 16px rgba(18, 140, 126, 0.22);
+}
+.pe-support__icon .icon { width: 26px; height: 26px; fill: currentColor; stroke: none; }
+.pe-support__text { flex: 1; min-width: 0; }
+.pe-support__title {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.012em;
+  margin-bottom: 0.375rem;
+}
+.pe-support__sub {
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+  line-height: 1.55;
+  max-width: 480px;
+}
+
+/* ── ANIMAÇÕES ───────────────────────────────────────────────── */
+@keyframes peFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes peFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pe-hero, .pe-timeline, .pe-details, .pe-summary, .pe-support,
+  .pe-hero__seal, .pe-hero__seal::before, .pe-hero__seal::after,
+  .pe-hero__seal .icon, .pe-meta__pill::before, .pe-step--current .pe-step__dot {
+    animation: none !important;
+  }
+}
+
+/* ── RESPONSIVO ──────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .pe-page { padding: 2rem 1.25rem 4rem; }
+  .pe-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .pe-summary {
+    position: static;
+    order: -1;
+  }
+  .pe-timeline { padding: 1.75rem 1.5rem; }
+  .pe-delivery-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .pe-header__inner { padding: 0 1.25rem; }
+  .pe-header__safe { display: none; }
+  .pe-page { padding: 1.5rem 1rem 3.5rem; }
+
+  .pe-hero { margin-bottom: 2.25rem; }
+  .pe-hero__seal {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 1.5rem;
+  }
+  .pe-hero__seal::before { width: 92px; height: 92px; }
+  .pe-hero__seal::after  { width: 110px; height: 110px; }
+  .pe-hero__seal .icon { width: 32px; height: 32px; }
+  .pe-hero__title { font-size: 2rem; }
+  .pe-hero__sub { font-size: 0.9375rem; }
+
+  .pe-timeline { padding: 1.25rem 0.75rem; }
+  .pe-step__dot { width: 32px; height: 32px; }
+  .pe-step::after { top: 16px; left: calc(50% + 18px); right: calc(-50% + 18px); }
+  .pe-step__label { font-size: 0.6875rem; }
+  .pe-step__note { display: none; }
+
+  .pe-section { padding: 1.375rem 1.25rem; }
+  .pe-section__title { font-size: 1.0625rem; }
+
+  .pe-item {
+    grid-template-columns: 56px 1fr auto;
+    gap: 0.875rem;
+  }
+  .pe-item__img, .pe-item__placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 11px;
+  }
+  .pe-item__name { font-size: 0.875rem; }
+
+  .pe-summary__head,
+  .pe-summary__rows,
+  .pe-summary__meta,
+  .pe-summary__cta {
+    padding-left: 1.375rem;
+    padding-right: 1.375rem;
+  }
+  .pe-summary__total { font-size: 2rem; }
+
+  .pe-support {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 1.5rem 1.375rem;
+  }
+  .pe-support__icon { width: 48px; height: 48px; }
 }
 </style>
 </head>
 <body>
 
-<div class="status-card">
+<!-- ═══════════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════════ -->
+<header class="pe-header">
+  <div class="pe-header__inner">
+    <a class="pe-brand" href="/">
+      <img class="pe-brand__img"
+           src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png"
+           alt="Barrs Store" decoding="async">
+      <span class="pe-brand__name">Barrs Store</span>
+    </a>
+    <div class="pe-header__safe">
+      <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
+      Aguardando confirmação do pagamento
+    </div>
+  </div>
+</header>
 
-  <div class="status-card__icon">
-    <svg class="icon" style="width:32px;height:32px" aria-hidden="true">
-      <use href="#i-clock"/>
-    </svg>
+<main class="pe-page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="pe-hero" aria-labelledby="hero-title">
+    <div class="pe-hero__seal" aria-hidden="true">
+      <svg class="icon"><use href="#i-clock"/></svg>
+    </div>
+
+    <div class="pe-hero__eyebrow">Aguardando confirmação</div>
+
+    <h1 class="pe-hero__title" id="hero-title">Pagamento em análise</h1>
+
+    <p class="pe-hero__sub">
+      Recebemos seu pedido e estamos aguardando a confirmação do pagamento.
+      Assim que o pagamento for aprovado, seu pedido será atualizado automaticamente
+      {% if pedido.email %}e você receberá um e-mail em <strong>{{ pedido.email }}</strong>{% endif %}.
+    </p>
+
+    <div class="pe-hero__order">
+      <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
+      Pedido <strong>#{{ pedido.id }}</strong>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TIMELINE
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="pe-timeline" aria-label="Status do pedido">
+    <div class="pe-timeline__inner">
+
+      <div class="pe-step pe-step--done">
+        <span class="pe-step__dot">
+          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+        </span>
+        <span class="pe-step__label">Pedido recebido</span>
+        <span class="pe-step__note">Concluído</span>
+      </div>
+
+      <div class="pe-step pe-step--current">
+        <span class="pe-step__dot">
+          <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
+        </span>
+        <span class="pe-step__label">Aguardando confirmação</span>
+        <span class="pe-step__note">Em andamento</span>
+      </div>
+
+      <div class="pe-step">
+        <span class="pe-step__dot">
+          <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
+        </span>
+        <span class="pe-step__label">Preparação para envio</span>
+        <span class="pe-step__note">Próxima etapa</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LAYOUT 2 COLUNAS
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="pe-layout">
+
+    <!-- ──── COLUNA ESQUERDA: DETALHES ──── -->
+    <section class="pe-details">
+
+      <!-- Itens -->
+      <div class="pe-section">
+        <div class="pe-section__head">
+          <h2 class="pe-section__title">Itens do pedido</h2>
+          <span class="pe-section__count">
+            {{ pedido.itens.count }} {% if pedido.itens.count == 1 %}item{% else %}itens{% endif %}
+          </span>
+        </div>
+
+        <div class="pe-items">
+          {% for item in pedido.itens.all %}
+            <div class="pe-item">
+              {% if item.produto and item.produto.imagem %}
+                <img class="pe-item__img"
+                     src="{{ item.produto.imagem.url }}"
+                     alt="{{ item.nome_produto }}"
+                     loading="lazy">
+              {% else %}
+                <div class="pe-item__placeholder">
+                  <svg class="icon" style="width:24px;height:24px" aria-hidden="true"><use href="#i-gem"/></svg>
+                </div>
+              {% endif %}
+              <div>
+                <div class="pe-item__name">{{ item.nome_produto }}</div>
+                <div class="pe-item__meta">
+                  Qtd: {{ item.quantidade }}{% if item.tamanho %} · Tamanho: {{ item.tamanho }}{% endif %}
+                </div>
+              </div>
+              <div class="pe-item__price">R$ {{ item.subtotal }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Entrega -->
+      <div class="pe-section">
+        <div class="pe-section__head">
+          <h2 class="pe-section__title">Entrega e contato</h2>
+        </div>
+
+        <div class="pe-delivery-grid">
+          <div>
+            <div class="pe-delivery__label">Endereço de entrega</div>
+            <div class="pe-delivery__value">
+              {{ pedido.rua }}, {{ pedido.numero }}<br>
+              {% if pedido.bairro %}{{ pedido.bairro }}<br>{% endif %}
+              {{ pedido.cidade }}/{{ pedido.estado }}{% if pedido.cep %} · CEP {{ pedido.cep }}{% endif %}
+            </div>
+          </div>
+
+          <div>
+            <div class="pe-delivery__label">Dados de contato</div>
+            <div class="pe-delivery__value">
+              {% if pedido.email %}<a href="mailto:{{ pedido.email }}">{{ pedido.email }}</a>{% endif %}
+              {% if pedido.telefone %}<br>{{ pedido.telefone }}{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="pe-notice">
+          <div class="pe-notice__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
+          </div>
+          <div>
+            <div class="pe-notice__title">Pagou via Pix?</div>
+            <div class="pe-notice__sub">
+              A confirmação costuma acontecer em poucos minutos. Boletos podem levar até 2 dias úteis para compensar — esta página atualiza sozinha assim que recebermos o pagamento.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ──── COLUNA DIREITA: RESUMO ──── -->
+    <aside class="pe-summary" aria-label="Resumo financeiro do pedido">
+
+      <div class="pe-summary__head">
+        <div class="pe-summary__label">Total do pedido</div>
+        <div class="pe-summary__total">R$ {{ pedido.total }}</div>
+        <div class="pe-summary__total-sub">Aguardando confirmação do Mercado Pago</div>
+      </div>
+
+      <div class="pe-summary__rows">
+        <div class="pe-row">
+          <span class="pe-row__label">Subtotal</span>
+          <span class="pe-row__value">R$ {{ pedido.subtotal }}</span>
+        </div>
+        {% if pedido.desconto > 0 %}
+          <div class="pe-row">
+            <span class="pe-row__label">Desconto</span>
+            <span class="pe-row__value pe-row__value--off">− R$ {{ pedido.desconto }}</span>
+          </div>
+        {% endif %}
+        <div class="pe-row">
+          <span class="pe-row__label">Frete</span>
+          <span class="pe-row__value">R$ {{ pedido.frete }}</span>
+        </div>
+      </div>
+
+      <div class="pe-summary__meta">
+        <div class="pe-meta">
+          <span class="pe-meta__label">Pedido</span>
+          <span class="pe-meta__value">#{{ pedido.id }}</span>
+        </div>
+        <div class="pe-meta">
+          <span class="pe-meta__label">Status</span>
+          <span class="pe-meta__pill">Aguardando pagamento</span>
+        </div>
+      </div>
+
+      <div class="pe-summary__cta">
+        {% if user.is_authenticated %}
+          <a href="{% url 'minha_conta' %}" class="pe-btn pe-btn--primary">
+            Ver status do pedido
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </a>
+        {% endif %}
+        <a href="/" class="pe-btn pe-btn--ghost">Continuar comprando</a>
+      </div>
+
+    </aside>
+
   </div>
 
-  <div class="status-card__eyebrow">Aguardando confirmação</div>
+  <!-- ═══════════════════════════════════════════════════════════
+       SUPORTE
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="pe-support">
+    <div class="pe-support__icon" aria-hidden="true">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M20 12a8 8 0 1 0-3.5 6.6L20 20l-1.4-3.5A8 8 0 0 0 20 12z"
+              fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M9 9c0 4 2 6 6 6l1.5-1.5-2-1-1.5 1c-1-.5-2-1.5-2.5-2.5l1-1.5-1-2L9 9z"
+              fill="currentColor"/>
+      </svg>
+    </div>
 
-  <h1 class="status-card__title">Pagamento em análise</h1>
-  <p class="status-card__sub">
-    Estamos aguardando a confirmação do seu pagamento.{% if pedido %} Seu pedido <strong>#{{ pedido.id }}</strong> será liberado automaticamente assim que recebermos a aprovação do Mercado Pago.{% endif %}
-  </p>
+    <div class="pe-support__text">
+      <h3 class="pe-support__title">Alguma dúvida sobre o pagamento?</h3>
+      <p class="pe-support__sub">
+        Se já efetuou o pagamento e ele ainda não foi reconhecido em alguns minutos,
+        fale com a gente pelo WhatsApp. Estamos aqui para ajudar.
+      </p>
+    </div>
 
-  <div class="status-card__notice">
-    Pagamentos com Pix costumam confirmar em poucos minutos. Boletos podem levar até 2 dias úteis para compensar. Você receberá um e-mail assim que o pagamento for aprovado.
-  </div>
+    <a class="pe-btn pe-btn--primary"
+       href="https://wa.me/5511913225256?text=Ol%C3%A1!%20Meu%20pedido%20%23{{ pedido.id }}%20est%C3%A1%20aguardando%20confirma%C3%A7%C3%A3o%20do%20pagamento%20e%20gostaria%20de%20uma%20ajuda."
+       target="_blank" rel="noopener">
+      Falar pelo WhatsApp
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+    </a>
+  </section>
 
-  {% if user.is_authenticated %}
-    <a href="{% url 'minha_conta' %}" class="status-card__btn">Acompanhar meu pedido</a>
-  {% else %}
-    <a href="/" class="status-card__btn">Voltar para a loja</a>
-  {% endif %}
-  <a href="/" class="status-card__btn status-card__btn--ghost">Continuar comprando</a>
+</main>
 
-</div>
+<script>
+(function () {
+  'use strict';
+
+  // Polling automático: verifica o status do pagamento e redireciona
+  // para a página de sucesso assim que o Mercado Pago aprovar.
+  var STATUS_URL = "{% url 'status_pagamento' pedido.id pedido.access_token %}";
+  var INTERVAL_MS = 8000;   // 8s entre checagens
+  var MAX_DURATION_MS = 30 * 60 * 1000; // pára após 30 min
+
+  var startedAt = Date.now();
+  var inFlight = false;
+
+  function checkStatus() {
+    if (inFlight) return;
+    if (Date.now() - startedAt > MAX_DURATION_MS) {
+      clearInterval(timerId);
+      return;
+    }
+    inFlight = true;
+    fetch(STATUS_URL, {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'same-origin',
+      cache: 'no-store'
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && data.confirmado && data.sucesso_url) {
+          clearInterval(timerId);
+          window.location.href = data.sucesso_url;
+        }
+      })
+      .catch(function () { /* silencioso — tenta de novo no próximo tick */ })
+      .finally(function () { inFlight = false; });
+  }
+
+  var timerId = setInterval(checkStatus, INTERVAL_MS);
+
+  // Checa também quando a aba volta a ficar visível (ex.: cliente
+  // alterna para o app do banco e retorna).
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') checkStatus();
+  });
+})();
+</script>
 
 </body>
 </html>

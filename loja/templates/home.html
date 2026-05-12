@@ -17,83 +17,113 @@
 .hero {
   position: relative;
   overflow: hidden;
-  min-height: 460px;
+  min-height: clamp(550px, 78vh, 760px);
   display: flex;
   align-items: center;
-  background: url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777400920/ChatGPT_Image_28_de_abr._de_2026_15_10_12_eycg4w.png') center center/cover no-repeat;
+  background:
+    linear-gradient(90deg,
+      rgba(42, 32, 24, 0.34) 0%,
+      rgba(74, 54, 38, 0.18) 28%,
+      rgba(255, 255, 255, 0) 56%),
+    url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778588404/ChatGPT_Image_12_05_2026_09_19_44_ntbqwn.png') center right/cover no-repeat;
 }
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg,
-    rgba(245, 242, 236, 0.95) 0%,
-    rgba(245, 242, 236, 0.82) 38%,
-    rgba(245, 242, 236, 0.25) 68%,
-    rgba(245, 242, 236, 0) 100%);
+  background:
+    radial-gradient(circle at 18% 48%, rgba(255, 249, 239, 0.45), rgba(255, 249, 239, 0) 36%),
+    linear-gradient(100deg,
+      rgba(42, 34, 27, 0.62) 0%,
+      rgba(82, 61, 43, 0.44) 27%,
+      rgba(214, 190, 151, 0.12) 52%,
+      rgba(255, 255, 255, 0) 74%);
   z-index: 0;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(24, 18, 14, 0.08) 0%,
+    rgba(24, 18, 14, 0) 42%,
+    rgba(24, 18, 14, 0.12) 100%);
+  z-index: 0;
+  pointer-events: none;
 }
 .hero__inner {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 580px;
-  padding: var(--space-8) var(--space-7) var(--space-8) var(--space-8);
+  max-width: 640px;
+  padding: var(--space-6) var(--space-7) var(--space-6) clamp(2rem, 7vw, 6.75rem);
 }
 .hero__eyebrow {
   font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-wide);
+  font-weight: 500;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-brand);
+  color: #F4E8D1;
   margin-bottom: var(--space-4);
   display: inline-flex;
   align-items: center;
   gap: var(--space-3);
+  text-shadow: 0 2px 18px rgba(37, 25, 17, 0.36);
 }
 .hero__eyebrow::before {
   content: '';
-  width: 28px;
+  width: 44px;
   height: 1px;
   background: currentColor;
-  opacity: 0.5;
+  opacity: 0.72;
 }
 .hero h1 {
-  font-size: var(--text-2xl);
-  line-height: 1.05;
-  letter-spacing: -0.025em;
-  color: var(--color-ink);
-  margin-bottom: var(--space-4);
+  font-size: clamp(3rem, 6vw, 5.8rem);
+  line-height: 0.88;
+  letter-spacing: 0;
+  color: #FFF8EA;
+  margin-bottom: var(--space-5);
   max-width: 680px;
+  text-transform: uppercase;
+  text-shadow: 0 10px 34px rgba(33, 23, 16, 0.38);
 }
 
-.hero h1 em {
+.hero h1 span {
   display: block;
-  margin-top: 10px;
-  color: var(--color-brand);
-  font-style: italic;
+}
+.hero h1 span:first-child {
+  white-space: nowrap;
 }
 .hero__lead {
-  font-size: var(--text-base);
-  color: var(--color-ink-soft);
-  line-height: var(--leading-relaxed);
-  max-width: 440px;
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  color: #F8EFDf;
+  line-height: 1.75;
+  max-width: 430px;
   margin-bottom: var(--space-5);
+  text-shadow: 0 3px 18px rgba(37, 25, 17, 0.42);
 }
 .hero__cta {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0.875rem 1.75rem;
-  background: var(--color-brand);
-  color: #fff;
-  border-radius: var(--radius-sm);
+  padding: 0.95rem 1.85rem;
+  background: linear-gradient(135deg, #F7E6BF 0%, #D7B46F 100%);
+  color: #3A2D21;
+  border: 1px solid rgba(255, 246, 224, 0.68);
+  border-radius: var(--radius-full);
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-decoration: none;
-  transition: background var(--duration) var(--ease), transform var(--duration) var(--ease);
+  box-shadow: 0 16px 34px rgba(56, 39, 24, 0.22);
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease), filter var(--duration) var(--ease);
 }
-.hero__cta:hover { background: var(--color-ink-soft); transform: translateY(-1px); }
+.hero__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 42px rgba(56, 39, 24, 0.28);
+  filter: brightness(1.03);
+}
 
 .hero__signals {
   display: flex;
@@ -117,17 +147,18 @@
   background: var(--color-surface);
 }
 .proof-strip__inner {
-  max-width: var(--container);
+  max-width: 1420px;
   margin: 0 auto;
   padding: var(--space-5) var(--space-6);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-5);
+  grid-template-columns: 1.2fr 1.35fr 0.95fr 1.05fr 1.18fr;
+  gap: var(--space-4);
 }
 .proof-item {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  min-width: 0;
 }
 .proof-item svg {
   color: var(--color-brand);
@@ -139,17 +170,20 @@
   color: var(--color-ink);
   letter-spacing: -0.01em;
   margin-bottom: 2px;
+  white-space: nowrap;
 }
 .proof-item__sub {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--color-ink-muted);
   line-height: 1.4;
+  max-width: none;
+  white-space: nowrap;
 }
 
 /* CONTROLES DE BUSCA E ORDEM */
 .controls {
   max-width: var(--container);
-  margin: var(--space-7) auto 0;
+  margin: var(--space-8) auto 0;
   padding: 0 var(--space-6);
   display: flex;
   align-items: center;
@@ -161,7 +195,7 @@
   gap: var(--space-2);
   flex: 1;
   min-width: 240px;
-  max-width: 480px;
+  max-width: none;
   position: relative;
 }
 .controls__search-input {
@@ -197,6 +231,15 @@
   transition: border-color var(--duration) var(--ease);
 }
 .controls__sort:hover { border-color: var(--color-ink); }
+.controls__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+}
+.controls__row form {
+  flex: 0 0 180px;
+}
 
 .search-result {
   max-width: var(--container);
@@ -433,17 +476,50 @@
 
 /* RESPONSIVO MOBILE */
 @media (max-width: 640px) {
-  .hero { min-height: 220px; align-items: flex-end; }
+  .hero {
+    min-height: 460px;
+    align-items: flex-end;
+    background:
+      linear-gradient(to top,
+        rgba(42, 32, 24, 0.82) 0%,
+        rgba(42, 32, 24, 0.44) 39%,
+        rgba(255, 255, 255, 0) 66%),
+      url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778588404/ChatGPT_Image_12_05_2026_09_19_44_ntbqwn.png') 68% center/cover no-repeat;
+  }
   .hero::before {
     background: linear-gradient(to top,
-      rgba(245, 242, 236, 0.96) 0%,
-      rgba(245, 242, 236, 0.7) 50%,
-      rgba(245, 242, 236, 0.2) 100%);
+      rgba(42, 32, 24, 0.9) 0%,
+      rgba(42, 32, 24, 0.56) 38%,
+      rgba(42, 32, 24, 0.12) 72%,
+      rgba(42, 32, 24, 0) 100%);
   }
-  .hero__inner { padding: var(--space-4) var(--space-4) var(--space-4); max-width: 100%; }
-  .hero h1 { font-size: 1.5rem; line-height: 1.1; margin-bottom: var(--space-3); }
-  .hero__lead { display: none; }
-  .hero__cta { padding: 0.6875rem 1.25rem; font-size: 0.8125rem; margin-top: var(--space-3); }
+  .hero__inner {
+    padding: 0 var(--space-4) var(--space-6);
+    max-width: 100%;
+  }
+  .hero__eyebrow {
+    font-size: 0.625rem;
+    letter-spacing: 0.17em;
+    margin-bottom: var(--space-3);
+  }
+  .hero__eyebrow::before { width: 28px; }
+  .hero h1 {
+    font-size: clamp(2.15rem, 11vw, 3.35rem);
+    line-height: 0.9;
+    margin-bottom: var(--space-3);
+  }
+  .hero__lead {
+    display: block;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-width: 320px;
+    margin-bottom: var(--space-4);
+  }
+  .hero__cta {
+    padding: 0.75rem 1.2rem;
+    font-size: 0.6875rem;
+    margin-top: 0;
+  }
   .hero__signals { display: none; }
 
   .proof-strip__inner {
@@ -451,9 +527,14 @@
     gap: var(--space-4);
     padding: var(--space-4);
   }
+  .proof-item__title,
+  .proof-item__sub {
+    white-space: normal;
+  }
   .proof-item__sub { display: none; }
 
   .controls {
+    margin-top: var(--space-5);
     padding: var(--space-4) var(--space-4) 0;
     gap: var(--space-2);
     flex-direction: column;
@@ -464,6 +545,10 @@
     display: flex;
     gap: var(--space-2);
     width: 100%;
+  }
+  .controls__row form {
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .controls__row .btn { flex: 0 0 auto; padding: 0.625rem 1.125rem; }
   .controls__row .controls__sort { flex: 1; }
@@ -526,26 +611,13 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero__inner">
-    <div class="hero__eyebrow">Coleção 2026</div>
-    <h1>Detalhes não completam o visual. <em>Eles definem.</em></h1>
+    <div class="hero__eyebrow">COLEÇÃO ETERNO AMOR</div>
+    <h1><span>DIA DOS</span><span>NAMORADOS</span></h1>
+    <p class="hero__lead">Mais do que um presente,<br>um brilho que eterniza momentos.</p>
     <a href="#produtos" class="hero__cta">
-      Explorar coleção
+      CONFIRA A COLEÇÃO
       <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-arrow-right"/></svg>
     </a>
-    <div class="hero__signals">
-      <span class="hero__signal">
-        <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-shield"/></svg>
-        Garantia de 1 ano
-      </span>
-      <span class="hero__signal">
-        <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-leaf"/></svg>
-        Antialérgica
-      </span>
-      <span class="hero__signal">
-        <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-truck"/></svg>
-        Entrega para todo o Brasil
-      </span>
-    </div>
   </div>
 </section>
 
@@ -555,7 +627,14 @@
     <div class="proof-item">
       <svg class="icon" style="width:22px;height:22px" aria-hidden="true"><use href="#i-gem"/></svg>
       <div>
-        <div class="proof-item__title">Banho de prata 1.000</div>
+        <div class="proof-item__title">Ouro 18K Premium</div>
+        <div class="proof-item__sub">Verniz protetor e brilho intenso</div>
+      </div>
+    </div>
+    <div class="proof-item">
+      <svg class="icon" style="width:22px;height:22px" aria-hidden="true"><use href="#i-gem"/></svg>
+      <div>
+        <div class="proof-item__title">Banho Premium em Prata</div>
         <div class="proof-item__sub">Verniz importado para mais brilho</div>
       </div>
     </div>
@@ -703,5 +782,6 @@
   </svg>
 </a>
 
+{% include "partials/lead_capture.html" %}
 </body>
 </html>

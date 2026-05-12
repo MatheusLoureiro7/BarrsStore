@@ -9,163 +9,1007 @@
 {% include "partials/base_styles.html" %}
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <style>
+/* ═══════════════════════════════════════════════════════════════
+   PÁGINA DE FALHA NO PAGAMENTO — BARRS STORE
+   Premium, calma, sem alarde. Mesma linguagem do sucesso.
+═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --fa-h: 66px;
+  --fa-clay: #B27265;
+  --fa-clay-deep: #8E574C;
+  --fa-clay-bg: #F7ECE8;
+  --fa-clay-ring: rgba(178, 114, 101, 0.22);
+}
+
 body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-7) var(--space-5);
+  background: #F6F3ED;
   min-height: 100vh;
 }
 
-.status-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-7) var(--space-6);
-  max-width: 480px;
-  width: 100%;
-  box-shadow: var(--shadow-md);
-  text-align: center;
+/* ── HEADER ──────────────────────────────────────────────────── */
+.fa-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  height: var(--fa-h);
+  background: rgba(246, 243, 237, 0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-bottom: 1px solid rgba(228, 221, 208, 0.65);
 }
-
-.status-card__icon {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto var(--space-5);
-  background: var(--color-error-bg);
-  border-radius: 50%;
+.fa-header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 2rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--color-error);
-  animation: pop 400ms var(--ease) both;
+  justify-content: space-between;
+  gap: 1.5rem;
 }
-@keyframes pop {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+.fa-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  flex-shrink: 0;
 }
-
-.status-card__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-error);
-  margin-bottom: var(--space-3);
+.fa-brand__img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
 }
-
-.status-card__title {
+.fa-brand__name {
   font-family: var(--font-display);
-  font-size: clamp(1.625rem, 3vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-ink-soft);
-  margin-bottom: var(--space-3);
-}
-
-.status-card__sub {
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-  line-height: var(--leading-relaxed);
-  margin-bottom: var(--space-6);
-}
-
-.status-card__reasons {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-4);
-  text-align: left;
-  margin-bottom: var(--space-5);
-}
-.status-card__reasons-title {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-ink-muted);
-  margin-bottom: var(--space-3);
+  color: var(--color-ink);
+  letter-spacing: -0.015em;
 }
-.reason-item {
+.fa-header__safe {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+}
+.fa-header__safe .icon { width: 13px; height: 13px; color: var(--fa-clay); }
+
+/* ── PÁGINA ──────────────────────────────────────────────────── */
+.fa-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+}
+
+/* ── HERO COM SELO ───────────────────────────────────────────── */
+.fa-hero {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: faFade 0.5s var(--ease) both;
+}
+.fa-hero__seal {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 2rem;
+  background: linear-gradient(155deg, var(--fa-clay) 0%, var(--fa-clay-deep) 100%);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  position: relative;
+  animation: faSeal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  box-shadow:
+    0 1px 3px rgba(142, 87, 76, 0.22),
+    0 8px 24px rgba(142, 87, 76, 0.22);
+}
+.fa-hero__seal::before,
+.fa-hero__seal::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--fa-clay-ring);
+  pointer-events: none;
+  animation: faRing 0.9s 0.2s var(--ease) both;
+}
+.fa-hero__seal::before { width: 108px; height: 108px; }
+.fa-hero__seal::after  { width: 132px; height: 132px; border-color: rgba(178, 114, 101, 0.12); }
+.fa-hero__seal__icon {
+  width: 36px;
+  height: 36px;
+  animation: faIcon 0.5s 0.35s var(--ease) both;
+}
+@keyframes faSeal {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+@keyframes faRing {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes faIcon {
+  from { opacity: 0; transform: rotate(-90deg) scale(0.7); }
+  to   { opacity: 1; transform: rotate(0)     scale(1); }
+}
+
+.fa-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fa-clay-deep);
+  margin-bottom: 1.125rem;
+}
+.fa-hero__eyebrow::before,
+.fa-hero__eyebrow::after {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+}
+.fa-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+  margin-bottom: 1rem;
+}
+.fa-hero__sub {
+  font-size: 1rem;
+  color: var(--color-ink-muted);
+  line-height: 1.7;
+  max-width: 580px;
+  margin: 0 auto 1.75rem;
+}
+.fa-hero__sub strong { color: var(--color-ink-soft); font-weight: 600; }
+
+.fa-hero__order {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
   font-size: 0.8125rem;
-  color: var(--color-ink-soft);
-  line-height: 1.6;
-  padding: var(--space-1) 0 var(--space-1) var(--space-4);
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.02em;
+}
+.fa-hero__order strong {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+.fa-hero__order .icon { width: 14px; height: 14px; color: var(--fa-clay); }
+
+/* ── TIMELINE ────────────────────────────────────────────────── */
+.fa-timeline {
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  padding: 2.25rem 2.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: faFadeUp 0.5s 0.1s var(--ease) both;
+}
+.fa-timeline__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
   position: relative;
 }
-.reason-item::before {
+.fa-step {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  position: relative;
+  text-align: center;
+  min-width: 0;
+}
+.fa-step::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: calc(50% + 20px);
+  right: calc(-50% + 20px);
+  height: 1.5px;
+  background: var(--color-border);
+  z-index: 0;
+}
+.fa-step:last-child::after { display: none; }
+.fa-step--done::after { background: var(--color-brand); }
+.fa-step--current::after {
+  background: linear-gradient(to right, var(--fa-clay), var(--color-border));
+}
+.fa-step__dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--color-border);
+  display: grid;
+  place-items: center;
+  color: var(--color-ink-muted);
+  position: relative;
+  z-index: 1;
+  transition: all 220ms var(--ease);
+}
+.fa-step__dot .icon { width: 16px; height: 16px; stroke-width: 1.8; }
+.fa-step--done .fa-step__dot {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+}
+.fa-step--current .fa-step__dot {
+  background: var(--fa-clay-bg);
+  border-color: var(--fa-clay);
+  color: var(--fa-clay-deep);
+  box-shadow: 0 0 0 4px rgba(178, 114, 101, 0.14);
+}
+.fa-step__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.005em;
+}
+.fa-step--done .fa-step__label,
+.fa-step--current .fa-step__label { color: var(--color-ink); }
+.fa-step__note {
+  font-size: 0.6875rem;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+.fa-step--current .fa-step__note {
+  color: var(--fa-clay-deep);
+  font-weight: 600;
+}
+
+/* ── LAYOUT 2 COLUNAS ────────────────────────────────────────── */
+.fa-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── DETALHES ────────────────────────────────────────────────── */
+.fa-details {
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: faFadeUp 0.5s 0.18s var(--ease) both;
+}
+.fa-section {
+  padding: 1.75rem 2rem;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.fa-section:last-child { border-bottom: none; }
+.fa-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+}
+.fa-section__title {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.012em;
+}
+.fa-section__count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  padding: 0.25rem 0.625rem;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-soft);
+}
+
+/* Itens */
+.fa-items { display: grid; gap: 1.25rem; }
+.fa-item {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.fa-item__img {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-soft);
+}
+.fa-item__placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: var(--color-brand-bg);
+  border: 1px solid rgba(107, 122, 100, 0.14);
+  display: grid;
+  place-items: center;
+  color: var(--color-brand);
+}
+.fa-item__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.35;
+}
+.fa-item__meta {
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  margin-top: 0.1875rem;
+}
+.fa-item__price {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Causas comuns */
+.fa-reasons {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.25rem 1.125rem;
+  background: var(--fa-clay-bg);
+  border: 1px solid rgba(178, 114, 101, 0.22);
+  border-radius: 14px;
+}
+.fa-reasons__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fa-clay-deep);
+  margin-bottom: 0.875rem;
+}
+.fa-reasons__title .icon { width: 14px; height: 14px; }
+.fa-reasons__list {
+  display: grid;
+  gap: 0.5rem;
+}
+.fa-reason {
+  font-size: 0.8125rem;
+  color: var(--color-ink-soft);
+  line-height: 1.55;
+  padding-left: 1.125rem;
+  position: relative;
+}
+.fa-reason::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0.875rem;
-  width: 4px;
-  height: 4px;
+  top: 0.5rem;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: var(--color-ink-muted);
+  background: var(--fa-clay);
 }
 
-.status-card__btn {
-  display: block;
-  width: 100%;
-  padding: 0.875rem;
-  background: var(--color-brand);
-  color: #fff;
-  border: 1px solid var(--color-brand);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+/* Aviso tranquilizador */
+.fa-keep {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  padding: 1rem 1.125rem;
+  background: var(--color-brand-bg);
+  border: 1px solid rgba(107, 122, 100, 0.18);
+  border-radius: 12px;
+}
+.fa-keep__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  color: var(--color-brand);
+  border: 1px solid rgba(107, 122, 100, 0.18);
+  flex-shrink: 0;
+}
+.fa-keep__icon .icon { width: 16px; height: 16px; }
+.fa-keep__text {
+  font-size: 0.8125rem;
+  color: var(--color-ink-soft);
+  line-height: 1.55;
+}
+.fa-keep__text strong { color: var(--color-ink); font-weight: 600; }
+
+/* ── SUMMARY ─────────────────────────────────────────────────── */
+.fa-summary {
+  position: sticky;
+  top: calc(var(--fa-h) + 1.25rem);
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: faFadeUp 0.5s 0.24s var(--ease) both;
+}
+.fa-summary__head {
+  padding: 1.75rem 1.875rem 1.5rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  background: linear-gradient(180deg, rgba(247, 236, 232, 0.55), transparent);
+}
+.fa-summary__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fa-clay-deep);
+  margin-bottom: 0.5rem;
+}
+.fa-summary__total {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
   font-weight: 600;
-  text-align: center;
+  color: var(--color-ink);
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.fa-summary__total-sub {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  margin-top: 0.5rem;
+}
+.fa-summary__rows {
+  padding: 1.25rem 1.875rem;
+  display: grid;
+  gap: 0.625rem;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.fa-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+.fa-row__label { color: var(--color-ink-muted); font-weight: 500; }
+.fa-row__value {
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.fa-row__value--off { color: #5a8f6b; }
+
+.fa-summary__meta {
+  padding: 1.125rem 1.875rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: grid;
+  gap: 0.5rem;
+}
+.fa-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.fa-meta__label {
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.fa-meta__value {
+  color: var(--color-ink-soft);
+  font-weight: 600;
+}
+.fa-meta__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background: var(--fa-clay-bg);
+  color: var(--fa-clay-deep);
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(178, 114, 101, 0.28);
+}
+.fa-meta__pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--fa-clay);
+  border-radius: 50%;
+}
+
+.fa-summary__cta {
+  padding: 1.375rem 1.875rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.fa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.125rem;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
   text-decoration: none;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
-  margin-bottom: var(--space-2);
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  letter-spacing: 0.01em;
 }
-.status-card__btn:hover {
-  background: var(--color-ink-soft);
-  border-color: var(--color-ink-soft);
+.fa-btn .icon { width: 14px; height: 14px; stroke-width: 1.8; }
+
+.fa-btn--primary {
+  background: linear-gradient(155deg, #738269 0%, #5C6B55 100%);
+  color: #fff;
+  box-shadow:
+    0 1px 3px rgba(80, 96, 76, 0.18),
+    0 4px 14px rgba(80, 96, 76, 0.16);
 }
-.status-card__btn--ghost {
-  background: var(--color-surface);
+.fa-btn--primary:hover {
+  background: linear-gradient(155deg, #697860 0%, #54624D 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 3px rgba(80, 96, 76, 0.22),
+    0 6px 20px rgba(80, 96, 76, 0.26);
+}
+.fa-btn--primary:hover .fa-btn__refresh { transform: rotate(-90deg); }
+.fa-btn__refresh { transition: transform 320ms var(--ease); }
+
+.fa-btn--ghost {
+  background: #fff;
   color: var(--color-ink-soft);
   border-color: var(--color-border);
 }
-.status-card__btn--ghost:hover {
-  background: var(--color-bg);
-  border-color: var(--color-ink-soft);
+.fa-btn--ghost:hover {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  background: var(--color-surface-alt);
+}
+
+/* ── SUPORTE ─────────────────────────────────────────────────── */
+.fa-support {
+  margin-top: 1.5rem;
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  padding: 2rem 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 4px 14px rgba(43, 37, 32, 0.04);
+  animation: faFadeUp 0.5s 0.3s var(--ease) both;
+}
+.fa-support__icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow:
+    0 1px 3px rgba(18, 140, 126, 0.25),
+    0 6px 16px rgba(18, 140, 126, 0.22);
+}
+.fa-support__icon .icon { width: 26px; height: 26px; fill: currentColor; stroke: none; }
+.fa-support__text { flex: 1; min-width: 0; }
+.fa-support__title {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.012em;
+  margin-bottom: 0.375rem;
+}
+.fa-support__sub {
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+  line-height: 1.55;
+  max-width: 480px;
+}
+
+/* ── ANIMAÇÕES ───────────────────────────────────────────────── */
+@keyframes faFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes faFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fa-hero, .fa-timeline, .fa-details, .fa-summary, .fa-support,
+  .fa-hero__seal, .fa-hero__seal::before, .fa-hero__seal::after,
+  .fa-hero__seal__icon { animation: none !important; }
+  .fa-btn--primary:hover .fa-btn__refresh { transform: none; }
+}
+
+/* ── RESPONSIVO ──────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .fa-page { padding: 2rem 1.25rem 4rem; }
+  .fa-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .fa-summary {
+    position: static;
+    order: -1;
+  }
+  .fa-timeline { padding: 1.75rem 1.5rem; }
+}
+
+@media (max-width: 640px) {
+  .fa-header__inner { padding: 0 1.25rem; }
+  .fa-header__safe { display: none; }
+  .fa-page { padding: 1.5rem 1rem 3.5rem; }
+
+  .fa-hero { margin-bottom: 2.25rem; }
+  .fa-hero__seal {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 1.5rem;
+  }
+  .fa-hero__seal::before { width: 92px; height: 92px; }
+  .fa-hero__seal::after  { width: 110px; height: 110px; }
+  .fa-hero__seal__icon { width: 30px; height: 30px; }
+  .fa-hero__title { font-size: 2rem; }
+  .fa-hero__sub { font-size: 0.9375rem; }
+
+  .fa-timeline { padding: 1.25rem 0.75rem; }
+  .fa-step__dot { width: 32px; height: 32px; }
+  .fa-step::after { top: 16px; left: calc(50% + 18px); right: calc(-50% + 18px); }
+  .fa-step__label { font-size: 0.6875rem; }
+  .fa-step__note { display: none; }
+
+  .fa-section { padding: 1.375rem 1.25rem; }
+  .fa-section__title { font-size: 1.0625rem; }
+
+  .fa-item {
+    grid-template-columns: 56px 1fr auto;
+    gap: 0.875rem;
+  }
+  .fa-item__img, .fa-item__placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 11px;
+  }
+  .fa-item__name { font-size: 0.875rem; }
+
+  .fa-summary__head,
+  .fa-summary__rows,
+  .fa-summary__meta,
+  .fa-summary__cta {
+    padding-left: 1.375rem;
+    padding-right: 1.375rem;
+  }
+  .fa-summary__total { font-size: 2rem; }
+
+  .fa-support {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 1.5rem 1.375rem;
+  }
+  .fa-support__icon { width: 48px; height: 48px; }
 }
 </style>
 </head>
 <body>
 
-<div class="status-card">
-
-  <div class="status-card__icon">
-    <svg class="icon" style="width:32px;height:32px;stroke-width:2.5" aria-hidden="true">
-      <use href="#i-close"/>
-    </svg>
+<!-- ═══════════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════════ -->
+<header class="fa-header">
+  <div class="fa-header__inner">
+    <a class="fa-brand" href="/">
+      <img class="fa-brand__img"
+           src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png"
+           alt="Barrs Store" decoding="async">
+      <span class="fa-brand__name">Barrs Store</span>
+    </a>
+    <div class="fa-header__safe">
+      <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+      Seu pedido está salvo e seguro
+    </div>
   </div>
+</header>
 
-  <div class="status-card__eyebrow">Pagamento recusado</div>
+<main class="fa-page">
 
-  <h1 class="status-card__title">Não foi possível concluir</h1>
-  <p class="status-card__sub">
-    Seu pagamento não foi aprovado.{% if pedido %} O pedido <strong>#{{ pedido.id }}</strong> está aguardando uma nova tentativa.{% endif %}
-  </p>
+  <!-- ═══════════════════════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="fa-hero" aria-labelledby="hero-title">
+    <div class="fa-hero__seal" aria-hidden="true">
+      <svg class="fa-hero__seal__icon" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/>
+        <path d="M21 3v5h-5"/>
+        <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/>
+        <path d="M3 21v-5h5"/>
+      </svg>
+    </div>
 
-  <div class="status-card__reasons">
-    <div class="status-card__reasons-title">Motivos comuns</div>
-    <div class="reason-item">Saldo ou limite insuficiente no cartão</div>
-    <div class="reason-item">Dados do cartão digitados incorretamente</div>
-    <div class="reason-item">Pagamento cancelado antes da confirmação</div>
-    <div class="reason-item">Operadora bloqueou a transação por segurança</div>
+    <div class="fa-hero__eyebrow">Pagamento não concluído</div>
+
+    <h1 class="fa-hero__title" id="hero-title">Vamos tentar de novo?</h1>
+
+    <p class="fa-hero__sub">
+      Não conseguimos confirmar o pagamento desta vez — mas{% if pedido %} seu pedido <strong>#{{ pedido.id }}</strong> continua salvo e nada foi cobrado.{% else %} seu pedido continua salvo e nada foi cobrado.{% endif %}
+      Você pode tentar novamente quando quiser, com o mesmo ou outro método de pagamento.
+    </p>
+
+    {% if pedido %}
+    <div class="fa-hero__order">
+      <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
+      Pedido <strong>#{{ pedido.id }}</strong>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TIMELINE
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="fa-timeline" aria-label="Status do pedido">
+    <div class="fa-timeline__inner">
+
+      <div class="fa-step fa-step--done">
+        <span class="fa-step__dot">
+          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+        </span>
+        <span class="fa-step__label">Pedido recebido</span>
+        <span class="fa-step__note">Concluído</span>
+      </div>
+
+      <div class="fa-step fa-step--current">
+        <span class="fa-step__dot">
+          <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+        </span>
+        <span class="fa-step__label">Pagamento</span>
+        <span class="fa-step__note">Aguardando nova tentativa</span>
+      </div>
+
+      <div class="fa-step">
+        <span class="fa-step__dot">
+          <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
+        </span>
+        <span class="fa-step__label">Preparação para envio</span>
+        <span class="fa-step__note">Próxima etapa</span>
+      </div>
+
+    </div>
+  </section>
+
+  {% if pedido %}
+  <!-- ═══════════════════════════════════════════════════════════
+       LAYOUT 2 COLUNAS
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="fa-layout">
+
+    <!-- ──── COLUNA ESQUERDA: DETALHES ──── -->
+    <section class="fa-details">
+
+      <!-- Itens -->
+      <div class="fa-section">
+        <div class="fa-section__head">
+          <h2 class="fa-section__title">Seu pedido</h2>
+          <span class="fa-section__count">
+            {{ pedido.itens.count }} {% if pedido.itens.count == 1 %}item{% else %}itens{% endif %}
+          </span>
+        </div>
+
+        <div class="fa-items">
+          {% for item in pedido.itens.all %}
+            <div class="fa-item">
+              {% if item.produto and item.produto.imagem %}
+                <img class="fa-item__img"
+                     src="{{ item.produto.imagem.url }}"
+                     alt="{{ item.nome_produto }}"
+                     loading="lazy">
+              {% else %}
+                <div class="fa-item__placeholder">
+                  <svg class="icon" style="width:24px;height:24px" aria-hidden="true"><use href="#i-gem"/></svg>
+                </div>
+              {% endif %}
+              <div>
+                <div class="fa-item__name">{{ item.nome_produto }}</div>
+                <div class="fa-item__meta">
+                  Qtd: {{ item.quantidade }}{% if item.tamanho %} · Tamanho: {{ item.tamanho }}{% endif %}
+                </div>
+              </div>
+              <div class="fa-item__price">R$ {{ item.subtotal }}</div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="fa-keep">
+          <div class="fa-keep__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+          </div>
+          <div class="fa-keep__text">
+            <strong>Nada foi cobrado.</strong> Seu pedido continua reservado por algumas horas — basta finalizar o pagamento quando puder.
+          </div>
+        </div>
+      </div>
+
+      <!-- Causas comuns -->
+      <div class="fa-section">
+        <div class="fa-section__head">
+          <h2 class="fa-section__title">O que pode ter acontecido</h2>
+        </div>
+
+        <div class="fa-reasons">
+          <div class="fa-reasons__title">
+            <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+            Causas mais comuns
+          </div>
+          <div class="fa-reasons__list">
+            <div class="fa-reason">Saldo ou limite insuficiente no cartão</div>
+            <div class="fa-reason">Algum dado digitado incorretamente</div>
+            <div class="fa-reason">Operadora bloqueou a transação por segurança</div>
+            <div class="fa-reason">Pagamento cancelado antes da confirmação</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ──── COLUNA DIREITA: RESUMO + CTA ──── -->
+    <aside class="fa-summary" aria-label="Resumo financeiro do pedido">
+
+      <div class="fa-summary__head">
+        <div class="fa-summary__label">Total do pedido</div>
+        <div class="fa-summary__total">R$ {{ pedido.total }}</div>
+        <div class="fa-summary__total-sub">Nada foi cobrado — pronto para tentar novamente</div>
+      </div>
+
+      <div class="fa-summary__rows">
+        <div class="fa-row">
+          <span class="fa-row__label">Subtotal</span>
+          <span class="fa-row__value">R$ {{ pedido.subtotal }}</span>
+        </div>
+        {% if pedido.desconto > 0 %}
+          <div class="fa-row">
+            <span class="fa-row__label">Desconto</span>
+            <span class="fa-row__value fa-row__value--off">− R$ {{ pedido.desconto }}</span>
+          </div>
+        {% endif %}
+        <div class="fa-row">
+          <span class="fa-row__label">Frete</span>
+          <span class="fa-row__value">R$ {{ pedido.frete }}</span>
+        </div>
+      </div>
+
+      <div class="fa-summary__meta">
+        <div class="fa-meta">
+          <span class="fa-meta__label">Pedido</span>
+          <span class="fa-meta__value">#{{ pedido.id }}</span>
+        </div>
+        <div class="fa-meta">
+          <span class="fa-meta__label">Status</span>
+          <span class="fa-meta__pill">Pagamento pendente</span>
+        </div>
+      </div>
+
+      <div class="fa-summary__cta">
+        <a href="{% url 'confirmacao' pedido.id pedido.access_token %}"
+           class="fa-btn fa-btn--primary">
+          <svg class="icon fa-btn__refresh" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/>
+            <path d="M21 3v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/>
+            <path d="M3 21v-5h5"/>
+          </svg>
+          Tentar novamente
+        </a>
+        <a href="{% url 'confirmacao' pedido.id pedido.access_token %}"
+           class="fa-btn fa-btn--ghost">
+          Escolher outro pagamento
+        </a>
+      </div>
+
+    </aside>
+
   </div>
+  {% else %}
+  <!-- Sem pedido em contexto: oferecemos retorno ao carrinho -->
+  <div class="fa-layout" style="grid-template-columns: 1fr;">
+    <section class="fa-details">
+      <div class="fa-section">
+        <div class="fa-keep">
+          <div class="fa-keep__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+          </div>
+          <div class="fa-keep__text">
+            <strong>Nada foi cobrado.</strong> Seus itens continuam no carrinho — basta voltar e tentar o pagamento de novo.
+          </div>
+        </div>
+        <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.625rem;">
+          <a href="{% url 'carrinho' %}" class="fa-btn fa-btn--primary">
+            Voltar ao carrinho
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </a>
+          <a href="/" class="fa-btn fa-btn--ghost">Continuar comprando</a>
+        </div>
+      </div>
+    </section>
+  </div>
+  {% endif %}
 
-  <a href="{% url 'carrinho' %}" class="status-card__btn">Tentar pagar novamente</a>
-  <a href="https://wa.me/5511913225256?text=Olá!%20Tive%20problema%20no%20pagamento%20do%20meu%20pedido." target="_blank" rel="noopener" class="status-card__btn status-card__btn--ghost">Falar conosco no WhatsApp</a>
+  <!-- ═══════════════════════════════════════════════════════════
+       SUPORTE
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="fa-support">
+    <div class="fa-support__icon" aria-hidden="true">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M20 12a8 8 0 1 0-3.5 6.6L20 20l-1.4-3.5A8 8 0 0 0 20 12z"
+              fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M9 9c0 4 2 6 6 6l1.5-1.5-2-1-1.5 1c-1-.5-2-1.5-2.5-2.5l1-1.5-1-2L9 9z"
+              fill="currentColor"/>
+      </svg>
+    </div>
 
-</div>
+    <div class="fa-support__text">
+      <h3 class="fa-support__title">Precisa de uma ajuda?</h3>
+      <p class="fa-support__sub">
+        Se o pagamento continuar dando problema, fale com a gente pelo WhatsApp.
+        Te ajudamos a finalizar seu pedido em poucos minutos.
+      </p>
+    </div>
+
+    <a class="fa-btn fa-btn--primary"
+       href="https://wa.me/5511913225256?text=Ol%C3%A1!%20Tive%20um%20problema%20no%20pagamento{% if pedido %}%20do%20pedido%20%23{{ pedido.id }}{% endif %}%20e%20gostaria%20de%20ajuda."
+       target="_blank" rel="noopener">
+      Falar pelo WhatsApp
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+    </a>
+  </section>
+
+</main>
 
 </body>
 </html>

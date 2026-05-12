@@ -492,7 +492,7 @@
           <div class="cko-field full">
             <label>Nome completo</label>
             <input type="text" name="nome" placeholder="Seu nome" required
-              value="{% if request.POST.nome %}{{ request.POST.nome }}{% elif user.is_authenticated %}{{ user.get_full_name }}{% endif %}">
+              value="{% if request.POST.nome %}{{ request.POST.nome }}{% elif user.is_authenticated and user.get_full_name %}{{ user.get_full_name }}{% elif carrinho.nome_cliente %}{{ carrinho.nome_cliente }}{% elif lead_nome %}{{ lead_nome }}{% endif %}">
           </div>
           <div class="cko-field">
             <label>E-mail</label>
@@ -508,7 +508,7 @@
           <div class="cko-field full">
             <label>Telefone</label>
             <input type="tel" name="telefone" id="telefone" placeholder="(11) 99999-9999" required
-              value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil %}{{ perfil.telefone }}{% elif carrinho.telefone_cliente %}{{ carrinho.telefone_cliente }}{% endif %}">
+              value="{% if request.POST.telefone %}{{ request.POST.telefone }}{% elif perfil and perfil.telefone %}{{ perfil.telefone }}{% elif carrinho.telefone_cliente %}{{ carrinho.telefone_cliente }}{% elif lead_telefone %}{{ lead_telefone }}{% endif %}">
           </div>
         </div>
 
@@ -658,11 +658,13 @@
   function salvarContatoCarrinho(imediato = false) {
     const telefone = document.getElementById('telefone');
     const emailInput = document.querySelector('input[name="email"]');
-    if (!telefone && !emailInput) return;
+    const nomeInput = document.querySelector('input[name="nome"]');
+    if (!telefone && !emailInput && !nomeInput) return;
 
     clearTimeout(salvarContatoTimer);
     const salvar = () => {
       const body = new URLSearchParams();
+      if (nomeInput && nomeInput.value.trim()) body.append('nome', nomeInput.value.trim());
       body.append('telefone', telefone ? telefone.value : '');
       body.append('aceita_whatsapp', (telefone && telefone.value.trim()) ? 'true' : 'false');
       if (emailInput && emailInput.value.trim()) body.append('email', emailInput.value.trim());
@@ -823,5 +825,6 @@
   }
 </script>
 
+{% include "partials/lead_capture.html" %}
 </body>
 </html>
