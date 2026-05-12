@@ -475,50 +475,58 @@
 }
 
 /* RESPONSIVO MOBILE */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .hero {
-    min-height: 560px;
+    min-height: 85vh;
     align-items: flex-end;
     background:
       linear-gradient(to top,
-        rgba(38, 28, 21, 0.9) 0%,
-        rgba(38, 28, 21, 0.58) 42%,
-        rgba(38, 28, 21, 0.16) 70%,
+        rgba(35, 25, 18, 0.72) 0%,
+        rgba(45, 32, 23, 0.44) 34%,
+        rgba(45, 32, 23, 0.10) 61%,
         rgba(255, 255, 255, 0) 100%),
-      url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778599215/Banner_9.16_z8vmuu.png') center center/cover no-repeat;
+      url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778616354/ChatGPT_Image_12_de_mai._de_2026_17_05_01_fpgqbc.png') center center/cover no-repeat;
   }
   .hero::before {
     background: linear-gradient(to top,
-      rgba(28, 20, 15, 0.92) 0%,
-      rgba(28, 20, 15, 0.62) 36%,
-      rgba(28, 20, 15, 0.16) 68%,
+      rgba(25, 18, 13, 0.66) 0%,
+      rgba(25, 18, 13, 0.34) 33%,
+      rgba(25, 18, 13, 0.08) 62%,
       rgba(28, 20, 15, 0) 100%);
   }
+  .hero::after {
+    background: linear-gradient(to bottom,
+      rgba(255, 249, 238, 0.08) 0%,
+      rgba(255, 249, 238, 0) 32%,
+      rgba(24, 18, 14, 0.10) 100%);
+  }
   .hero__inner {
-    padding: 0 1.25rem 1.75rem;
+    padding: 0 1.25rem max(2rem, env(safe-area-inset-bottom));
     max-width: 100%;
   }
   .hero__eyebrow {
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
+    font-size: 0.62rem;
+    letter-spacing: 0.17em;
     margin-bottom: var(--space-3);
   }
-  .hero__eyebrow::before { width: 28px; }
+  .hero__eyebrow::before { width: 30px; }
   .hero h1 {
-    font-size: clamp(2rem, 10.3vw, 3.05rem);
-    line-height: 0.88;
+    font-size: clamp(2.45rem, 11.6vw, 4rem);
+    line-height: 0.9;
     margin-bottom: var(--space-3);
+    max-width: 360px;
   }
   .hero__lead {
     display: block;
-    font-size: 0.86rem;
-    line-height: 1.55;
-    max-width: 300px;
-    margin-bottom: var(--space-4);
+    font-size: 0.95rem;
+    line-height: 1.58;
+    max-width: 330px;
+    margin-bottom: var(--space-5);
   }
   .hero__cta {
-    padding: 0.72rem 1.15rem;
-    font-size: 0.65rem;
+    min-height: 48px;
+    padding: 0.92rem 1.45rem;
+    font-size: 0.72rem;
     margin-top: 0;
   }
   .hero__signals { display: none; }
