@@ -16,6 +16,7 @@
 {% if google_site_verification %}
 <meta name="google-site-verification" content="{{ google_site_verification }}">
 {% endif %}
+{% include "partials/meta_pixel.html" %}
 {% if google_analytics_id %}
 <script async src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id }}"></script>
 <script>
