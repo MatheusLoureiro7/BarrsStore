@@ -13,6 +13,7 @@ from django.urls import reverse
 from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom
 from .mercadopago_security import validar_assinatura_mercadopago
 from .validators import cpf_valido
+from .integrations.meta_capi import send_purchase_event
 import mercadopago
 import json
 import requests as http_requests
@@ -162,6 +163,21 @@ def baixar_estoque_pedido(pedido):
         return True
 
 
+def enviar_meta_purchase_pedido(pedido):
+    """Envia Purchase para Meta CAPI uma unica vez por pedido aprovado."""
+    with transaction.atomic():
+        pedido_lock = Pedido.objects.select_for_update().get(pk=pedido.pk)
+        if pedido_lock.meta_purchase_sent:
+            logger.info('[META CAPI] Purchase do pedido %s ja enviado. Ignorando duplicidade.', pedido_lock.id)
+            return False
+
+        enviado = send_purchase_event(pedido_lock)
+        if enviado:
+            pedido_lock.meta_purchase_sent = True
+            pedido_lock.save(update_fields=['meta_purchase_sent'])
+            pedido.meta_purchase_sent = True
+        return enviado
+
 def confirmar_pedido_pago(pedido):
     logger.info('[PAGAMENTO] Confirmando pedido %s. status_atual=%s', pedido.id, pedido.status)
     atualizou = False
@@ -171,6 +187,9 @@ def confirmar_pedido_pago(pedido):
         if pedido.cupom_codigo:
             Cupom.objects.filter(codigo__iexact=pedido.cupom_codigo).update(usado=F('usado') + 1)
     baixar_estoque_pedido(pedido)
+
+    meta_enviado = enviar_meta_purchase_pedido(pedido)
+    logger.info('[META CAPI] Purchase pedido %s enviado=%s', pedido.id, meta_enviado)
 
     if not pedido.email_confirmacao_enviado:
         enviado = enviar_email_confirmacao(pedido)

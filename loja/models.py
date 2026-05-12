@@ -230,6 +230,7 @@ class Pedido(models.Model):
     email_poscompra_4_enviado = models.BooleanField(default=False)
     email_poscompra_5_enviado = models.BooleanField(default=False)
     estoque_baixado = models.BooleanField(default=False)
+    meta_purchase_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'
