@@ -37,6 +37,15 @@ body {
 }
 img, picture, video, canvas, svg { display: block; max-width: 100%; }
 input, button, textarea, select { font: inherit; color: inherit; }
+
+/* Evita zoom automatico do iPhone ao focar campos de formulario. */
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
 button { background: none; border: none; cursor: pointer; }
 a { color: inherit; }
 ul, ol { list-style: none; }
