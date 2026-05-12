@@ -33,6 +33,7 @@ GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '').strip()
 GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '').strip()
 META_PIXEL_ID = os.environ.get('META_PIXEL_ID', '').strip()
 META_ACCESS_TOKEN = os.environ.get('META_ACCESS_TOKEN', '').strip()
+META_TEST_EVENT_CODE = os.environ.get('META_TEST_EVENT_CODE', '').strip()
 WHATSAPP_API_URL = os.environ.get('WHATSAPP_API_URL', '').strip().rstrip('/')
 WHATSAPP_API_KEY = os.environ.get('WHATSAPP_API_KEY', '').strip()
 WHATSAPP_INSTANCE = os.environ.get('WHATSAPP_INSTANCE', 'loja').strip() or 'loja'

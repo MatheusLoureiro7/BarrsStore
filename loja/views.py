@@ -121,6 +121,31 @@ def resumir_erro_mercadopago(payment):
     }
 
 
+def payload_pagamento_seguro_para_log(payment_data):
+    """Mostra o essencial do pagamento sem expor token, CPF completo ou dados sensiveis."""
+    payer = payment_data.get('payer') or {}
+    identification = payer.get('identification') or {}
+    cpf = str(identification.get('number') or '')
+    email = payer.get('email') or ''
+    safe_payer = {
+        'email_domain': email.split('@')[-1] if '@' in email else '',
+        'has_identification': bool(identification),
+        'identification_type': identification.get('type'),
+        'cpf_last4': cpf[-4:] if cpf else '',
+        'has_phone': bool(payer.get('phone')),
+    }
+    return {
+        'transaction_amount': payment_data.get('transaction_amount'),
+        'payment_method_id': payment_data.get('payment_method_id'),
+        'installments': payment_data.get('installments'),
+        'issuer_id': payment_data.get('issuer_id'),
+        'has_token': bool(payment_data.get('token')),
+        'external_reference': payment_data.get('external_reference'),
+        'notification_url': payment_data.get('notification_url'),
+        'payer': safe_payer,
+    }
+
+
 def baixar_estoque_pedido(pedido):
     """Baixa o estoque uma unica vez quando o pagamento e confirmado."""
     with transaction.atomic():
@@ -1777,8 +1802,13 @@ def processar_pagamento_brick(request, pedido_id, token):
             payment_data['installments'] = int(form_data.get('installments'))
         except (TypeError, ValueError):
             payment_data['installments'] = 1
+    elif form_data.get('token'):
+        payment_data['installments'] = 1
     if form_data.get('issuer_id'):
-        payment_data['issuer_id'] = form_data.get('issuer_id')
+        try:
+            payment_data['issuer_id'] = int(form_data.get('issuer_id'))
+        except (TypeError, ValueError):
+            payment_data['issuer_id'] = form_data.get('issuer_id')
 
     if not payment_data.get('payment_method_id'):
         logger.warning('[MP-BRICK] Metodo de pagamento ausente no pedido %s.', pedido.id)
@@ -1789,6 +1819,11 @@ def processar_pagamento_brick(request, pedido_id, token):
         pedido.id,
         payment_data.get('payment_method_id'),
         pedido.total,
+    )
+    logger.info(
+        '[MP-BRICK] Payload seguro pedido=%s: %s',
+        pedido.id,
+        payload_pagamento_seguro_para_log(payment_data),
     )
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
     request_options = mercadopago.config.RequestOptions()
@@ -1805,6 +1840,11 @@ def processar_pagamento_brick(request, pedido_id, token):
             pedido.id,
             status_code,
             resumir_erro_mercadopago(payment),
+        )
+        logger.warning(
+            '[MP-BRICK] Payload que falhou pedido=%s: %s',
+            pedido.id,
+            payload_pagamento_seguro_para_log(payment_data),
         )
         return JsonResponse({
             'erro': payment.get('message') or 'Pagamento nao aprovado. Confira os dados e tente novamente.',

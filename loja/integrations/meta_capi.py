@@ -10,6 +10,14 @@ from django.urls import reverse
 logger = logging.getLogger(__name__)
 
 
+def safe_payload_for_log(payload):
+    """Copia o payload para log sem expor o access_token."""
+    safe_payload = dict(payload)
+    if 'access_token' in safe_payload:
+        safe_payload['access_token'] = '***'
+    return safe_payload
+
+
 def normalize_and_hash(value):
     """Normaliza dados pessoais antes do SHA256 exigido pela Meta CAPI."""
     if not value:
@@ -49,6 +57,7 @@ def send_purchase_event(pedido):
     """Envia Purchase para Meta Conversions API sem expor token no frontend."""
     pixel_id = getattr(settings, 'META_PIXEL_ID', '').strip()
     access_token = getattr(settings, 'META_ACCESS_TOKEN', '').strip()
+    test_event_code = getattr(settings, 'META_TEST_EVENT_CODE', '').strip()
 
     if not pixel_id or not access_token:
         logger.info('[META CAPI] Pixel/token nao configurados. Pedido %s ignorado.', pedido.id)
@@ -86,8 +95,12 @@ def send_purchase_event(pedido):
         ],
         'access_token': access_token,
     }
+    if test_event_code:
+        payload['test_event_code'] = test_event_code
 
     url = f'https://graph.facebook.com/v22.0/{pixel_id}/events'
+    logger.info('[META CAPI] Preparando Purchase pedido=%s event_id=%s teste=%s', pedido.id, event_id, bool(test_event_code))
+    logger.info('[META CAPI] Payload pedido=%s: %s', pedido.id, safe_payload_for_log(payload))
     try:
         response = requests.post(url, json=payload, timeout=10)
         if response.status_code >= 400:
@@ -98,7 +111,8 @@ def send_purchase_event(pedido):
                 response.text[:500],
             )
             return False
-        logger.info('[META CAPI] Purchase enviado pedido=%s event_id=%s', pedido.id, event_id)
+        logger.info('[META CAPI] Purchase enviado pedido=%s event_id=%s status=%s', pedido.id, event_id, response.status_code)
+        logger.info('[META CAPI] Resposta Meta pedido=%s: %s', pedido.id, response.text[:500])
         return True
     except requests.RequestException as exc:
         logger.warning('[META CAPI] Erro ao enviar Purchase pedido=%s: %s', pedido.id, exc)
