@@ -566,7 +566,7 @@
 
     <!-- COMPRA -->
     {% if produto.disponivel %}
-    <form method="POST" action="{% url 'add_carrinho' produto.id %}">
+    <form method="POST" action="{% url 'add_carrinho' produto.id %}" id="form-add-carrinho">
       {% csrf_token %}
       <input type="hidden" name="next" value="detalhe">
 
@@ -670,6 +670,23 @@
 </a>
 
 <script>
+const metaProduto = {
+  content_ids: ['{{ produto.id }}'],
+  content_type: 'product',
+  content_name: '{{ produto.nome|escapejs }}',
+  value: Number('{{ produto.preco|stringformat:"0.2f" }}'.replace(',', '.')),
+  currency: 'BRL'
+};
+
+function trackMetaPixel(eventName, data) {
+  if (typeof fbq === 'function') {
+    fbq('track', eventName, data);
+  }
+}
+
+// Meta Pixel: visualizacao de produto.
+trackMetaPixel('ViewContent', metaProduto);
+
 function alterarQtd(delta) {
   const input = document.getElementById('quantidade');
   if (!input) return;
@@ -679,20 +696,26 @@ function alterarQtd(delta) {
 }
 
 // Toast ao adicionar ao carrinho
-const formCarrinho = document.querySelector('form[action*="add"]');
+const formCarrinho = document.getElementById('form-add-carrinho');
 if (formCarrinho) {
   formCarrinho.addEventListener('submit', function() {
+    // Meta Pixel: produto adicionado ao carrinho antes do envio do formulario.
+    trackMetaPixel('AddToCart', metaProduto);
     const toast = document.getElementById('toast-carrinho');
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+    if (toast) {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
   });
 }
 
 // Toast pós-redirect (?added=1)
 if (window.location.search.includes('added=1')) {
   const toast = document.getElementById('toast-carrinho');
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
+  if (toast) {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
   history.replaceState(null, '', window.location.pathname);
 }
 </script>

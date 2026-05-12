@@ -693,6 +693,42 @@
   const freteGet = parseFloat("{{ frete_valor_selecionado|default:'0' }}".replace(',', '.')) || 0;
   let descontoCupom = 0;
 
+  function trackMetaPixel(eventName, data) {
+    if (typeof fbq === 'function') {
+      fbq('track', eventName, data);
+    }
+  }
+
+  // Meta Pixel: inicio de checkout, sem duplicar na mesma sessao do navegador.
+  const checkoutPixelItems = [
+    {% for item in itens %}
+    { id: '{{ item.produto.id }}', quantity: Number('{{ item.quantidade }}') }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+  const checkoutPixelData = {
+    content_ids: checkoutPixelItems.map(item => item.id),
+    content_type: 'product',
+    value: Math.max(0, subtotal + freteGet),
+    currency: 'BRL',
+    num_items: checkoutPixelItems.reduce((total, item) => total + item.quantity, 0)
+  };
+
+  try {
+    const checkoutPixelKey = [
+      'meta_initiate_checkout',
+      checkoutPixelData.content_ids.join('_'),
+      checkoutPixelData.num_items,
+      checkoutPixelData.value.toFixed(2)
+    ].join('_');
+
+    if (!sessionStorage.getItem(checkoutPixelKey)) {
+      trackMetaPixel('InitiateCheckout', checkoutPixelData);
+      sessionStorage.setItem(checkoutPixelKey, '1');
+    }
+  } catch (error) {
+    trackMetaPixel('InitiateCheckout', checkoutPixelData);
+  }
+
   function formatarMoeda(valor) {
     return 'R$ ' + valor.toFixed(2).replace('.', ',');
   }
