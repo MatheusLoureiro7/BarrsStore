@@ -39,9 +39,12 @@ WHATSAPP_API_KEY = os.environ.get('WHATSAPP_API_KEY', '').strip()
 WHATSAPP_INSTANCE = os.environ.get('WHATSAPP_INSTANCE', 'loja').strip() or 'loja'
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-c4971.up.railway.app',
-    'https://barrsstore.com.br',
-    'https://www.barrsstore.com.br',
+    origin.strip()
+    for origin in os.environ.get(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://web-production-c4971.up.railway.app,https://barrsstore.com.br,https://www.barrsstore.com.br'
+    ).split(',')
+    if origin.strip()
 ]
 
 INSTALLED_APPS = [
@@ -61,6 +64,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'loja.middleware.BlockScannerPathsMiddleware',
+    'loja.middleware.AdminRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -118,6 +123,8 @@ USE_TZ = True
 # Arquivos estáticos
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
+WHITENOISE_MAX_AGE = 31536000
 
 # Cloudinary
 import cloudinary
@@ -191,6 +198,14 @@ if not DEBUG:
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False' if DEBUG else 'True') == 'True'
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+X_FRAME_OPTIONS = 'DENY'
 
 if not DEBUG:
     # Compartilha os cookies entre barrsstore.com.br e www.barrsstore.com.br.
@@ -200,6 +215,7 @@ if not DEBUG:
 
 # Limitar tentativas de login (proteção brute force)
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+ADMIN_RATE_LIMIT = os.environ.get('ADMIN_RATE_LIMIT', '20/5m')
 
 # Sessão expira ao fechar o browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False

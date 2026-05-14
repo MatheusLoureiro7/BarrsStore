@@ -58,6 +58,112 @@
   margin-bottom: var(--space-4);
 }
 
+/* QUALIDADE E BANHOS */
+.about-quality {
+  margin: var(--space-7) 0;
+  padding: var(--space-6);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(215, 180, 111, 0.12), transparent 36%),
+    linear-gradient(180deg, #fff 0%, var(--color-surface) 100%);
+  border: 1px solid rgba(120, 105, 84, 0.16);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 14px 34px rgba(43, 37, 32, 0.06);
+}
+.about-quality__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  color: var(--color-brand);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.about-quality__eyebrow::before {
+  content: '';
+  width: 30px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.46;
+}
+.about-quality__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-4);
+}
+.about-quality__lead {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-5);
+}
+.quality-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.quality-card {
+  position: relative;
+  min-height: 178px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(120, 105, 84, 0.16);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration) var(--ease),
+              box-shadow var(--duration) var(--ease),
+              transform var(--duration) var(--ease);
+}
+.quality-card:hover {
+  border-color: rgba(115, 130, 105, 0.34);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.quality-card__icon {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+  box-shadow: 0 10px 22px rgba(83, 98, 76, 0.10);
+}
+.quality-card__icon .icon {
+  width: 18px;
+  height: 18px;
+}
+.quality-card__name {
+  font-family: var(--font-display);
+  color: var(--color-ink-soft);
+  font-size: 1.08rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.quality-card__text {
+  color: var(--color-ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.58;
+  margin: 0;
+}
+.quality-card__note {
+  margin-top: auto;
+  color: var(--color-brand);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* VALORES */
 .values {
   display: grid;
@@ -129,6 +235,27 @@
 
 @media (max-width: 600px) {
   .values { grid-template-columns: 1fr; }
+  .about { margin-top: var(--space-5); }
+  .about-quality {
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+  }
+  .quality-grid {
+    display: flex;
+    gap: 0.75rem;
+    margin: 0 calc(var(--space-4) * -1);
+    padding: 0 var(--space-4) 0.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .quality-grid::-webkit-scrollbar { display: none; }
+  .quality-card {
+    flex: 0 0 min(82vw, 300px);
+    min-height: auto;
+    scroll-snap-align: center;
+  }
 }
 </style>
 </head>
@@ -170,6 +297,45 @@
 
   <h2>Quem somos</h2>
   <p>Somos uma loja especializada em semijoias modernas e exclusivas, com foco em qualidade e estilo. Cada peça é cuidadosamente selecionada para garantir que você se sinta especial em qualquer ocasião. Cada peça carrega estilo, identidade e presença — porque se destacar não tem padrão.</p>
+
+  <section class="about-quality" aria-labelledby="quality-title">
+    <div class="about-quality__eyebrow">Qualidade Barrs</div>
+    <h2 class="about-quality__title" id="quality-title">Banhos premium para semijoias que duram mais</h2>
+    <p class="about-quality__lead">Cada peça é selecionada para entregar brilho, conforto e acabamento refinado. A Barrs Store combina camadas nobres, verniz protetor e tecnologia antialérgica para uma experiência de joalheria moderna no dia a dia.</p>
+
+    <div class="quality-grid" aria-label="Detalhes de qualidade das semijoias">
+      <article class="quality-card">
+        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg></span>
+        <h3 class="quality-card__name">Ouro 18K</h3>
+        <p class="quality-card__text">Banho dourado com cerca de 7 milésimos de ouro 18k, acabamento premium e brilho intenso.</p>
+        <span class="quality-card__note">Dourado sofisticado</span>
+      </article>
+      <article class="quality-card">
+        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
+        <h3 class="quality-card__name">Banho em prata</h3>
+        <p class="quality-card__text">Cerca de 50 milésimos de prata, com brilho sofisticado e acabamento premium.</p>
+        <span class="quality-card__note">Brilho refinado</span>
+      </article>
+      <article class="quality-card">
+        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg></span>
+        <h3 class="quality-card__name">Antialérgico</h3>
+        <p class="quality-card__text">Tecnologia livre de níquel para mais conforto no uso e cuidado com a pele.</p>
+        <span class="quality-card__note">Livre de níquel</span>
+      </article>
+      <article class="quality-card">
+        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg></span>
+        <h3 class="quality-card__name">Verniz protetor</h3>
+        <p class="quality-card__text">Verniz importado que ajuda a preservar o banho, o brilho e a durabilidade da peça.</p>
+        <span class="quality-card__note">Maior durabilidade</span>
+      </article>
+      <article class="quality-card">
+        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span>
+        <h3 class="quality-card__name">Garantia Barrs</h3>
+        <p class="quality-card__text">Garantia da loja contra defeitos de fabricação e orientação de cuidados com as peças.</p>
+        <span class="quality-card__note">Compra segura</span>
+      </article>
+    </div>
+  </section>
 
   <hr class="about__divider">
 
