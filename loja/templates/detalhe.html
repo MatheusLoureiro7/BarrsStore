@@ -701,11 +701,6 @@ if (formCarrinho) {
   formCarrinho.addEventListener('submit', function() {
     // Meta Pixel: produto adicionado ao carrinho antes do envio do formulario.
     trackMetaPixel('AddToCart', metaProduto);
-    const toast = document.getElementById('toast-carrinho');
-    if (toast) {
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
   });
 }
 

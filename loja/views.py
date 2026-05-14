@@ -1370,6 +1370,9 @@ def adicionar_carrinho(request, produto_id):
     item.save()
     aplicar_lead_no_carrinho(request, carrinho)
     carrinho.save(update_fields=['atualizado_em'])
+    request.session['carrinho_id'] = carrinho.id
+    request.session.modified = True
+    request.session.save()
 
     next_url = request.POST.get('next', 'carrinho')
     if next_url == 'detalhe':
