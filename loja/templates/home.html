@@ -781,7 +781,7 @@
 
 <!-- CONTROLES DE BUSCA -->
 <div class="controls" id="produtos">
-  <form method="GET" action="/" class="controls__search" role="search">
+  <form method="GET" action="/#produtos" class="controls__search" role="search">
     <svg class="icon controls__search-icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-search"/></svg>
     <input type="text" name="q" class="controls__search-input" placeholder="Buscar produtos..." value="{{ busca }}" aria-label="Buscar produtos">
     {% if ordem %}<input type="hidden" name="ordem" value="{{ ordem }}">{% endif %}
@@ -789,7 +789,7 @@
   </form>
   <div class="controls__row">
     <button type="submit" form="" class="btn btn--primary" style="padding:0.75rem 1.25rem" onclick="document.querySelector('.controls__search').submit()">Buscar</button>
-    <form method="GET" action="/" style="flex:1">
+    <form method="GET" action="/#produtos" style="flex:1">
       {% if busca %}<input type="hidden" name="q" value="{{ busca }}">{% endif %}
       {% if categoria_ativa %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
       <select name="ordem" class="controls__sort" onchange="this.form.submit()" aria-label="Ordenar produtos" style="width:100%">
@@ -805,9 +805,9 @@
 <!-- CATEGORIAS -->
 {% if categorias %}
 <div class="categories">
-  <a href="/" class="category-chip {% if not categoria_ativa %}active{% endif %}">Todas</a>
+  <a href="/{% if busca or ordem %}?{% if busca %}q={{ busca }}{% endif %}{% if busca and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}#produtos" class="category-chip {% if not categoria_ativa %}active{% endif %}">Todas</a>
   {% for cat in categorias %}
-  <a href="/?categoria={{ cat.slug }}{% if busca %}&q={{ busca }}{% endif %}{% if ordem %}&ordem={{ ordem }}{% endif %}"
+  <a href="/?categoria={{ cat.slug }}{% if busca %}&q={{ busca }}{% endif %}{% if ordem %}&ordem={{ ordem }}{% endif %}#produtos"
      class="category-chip {% if categoria_ativa == cat.slug %}active{% endif %}">{{ cat.nome }}</a>
   {% endfor %}
 </div>
@@ -815,7 +815,7 @@
 
 {% if busca %}
 <div class="search-result">
-  {{ produtos|length }} resultado{% if produtos|length != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" — <a href="/">Limpar busca</a>
+  {{ produtos|length }} resultado{% if produtos|length != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" — <a href="/{% if categoria_ativa or ordem %}?{% if categoria_ativa %}categoria={{ categoria_ativa }}{% endif %}{% if categoria_ativa and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}#produtos">Limpar busca</a>
 </div>
 {% endif %}
 
@@ -864,7 +864,7 @@
   <div class="empty-state">
     {% if busca %}
       Nenhum produto encontrado para "{{ busca }}".
-      <br><a href="/">Ver todos os produtos</a>
+      <br><a href="/#produtos">Ver todos os produtos</a>
     {% else %}
       Nenhum produto cadastrado ainda.
     {% endif %}
