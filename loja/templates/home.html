@@ -532,7 +532,7 @@
 /* RESPONSIVO MOBILE */
 @media (max-width: 767px) {
   .hero {
-    min-height: 85vh;
+    min-height: clamp(550px, 67vh, 630px);
     align-items: flex-end;
     background:
       linear-gradient(to top,
@@ -540,7 +540,7 @@
         rgba(45, 32, 23, 0.44) 34%,
         rgba(45, 32, 23, 0.10) 61%,
         rgba(255, 255, 255, 0) 100%),
-      url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778616354/ChatGPT_Image_12_de_mai._de_2026_17_05_01_fpgqbc.png') center center/cover no-repeat;
+      url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778616354/ChatGPT_Image_12_de_mai._de_2026_17_05_01_fpgqbc.png') center 42%/cover no-repeat;
   }
   .hero::before {
     background: linear-gradient(to top,
@@ -556,32 +556,32 @@
       rgba(24, 18, 14, 0.10) 100%);
   }
   .hero__inner {
-    padding: 0 1.25rem max(2rem, env(safe-area-inset-bottom));
+    padding: 0 1.25rem max(1rem, env(safe-area-inset-bottom));
     max-width: 100%;
   }
   .hero__eyebrow {
-    font-size: 0.62rem;
-    letter-spacing: 0.17em;
-    margin-bottom: var(--space-3);
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    margin-bottom: 0.55rem;
   }
   .hero__eyebrow::before { width: 30px; }
   .hero h1 {
-    font-size: clamp(2.45rem, 11.6vw, 4rem);
+    font-size: clamp(2.18rem, 10.2vw, 3.42rem);
     line-height: 0.9;
-    margin-bottom: var(--space-3);
+    margin-bottom: 0.6rem;
     max-width: 360px;
   }
   .hero__lead {
     display: block;
-    font-size: 0.95rem;
-    line-height: 1.58;
+    font-size: 0.88rem;
+    line-height: 1.46;
     max-width: 330px;
-    margin-bottom: var(--space-5);
+    margin-bottom: 0.95rem;
   }
   .hero__cta {
-    min-height: 48px;
-    padding: 0.92rem 1.45rem;
-    font-size: 0.72rem;
+    min-height: 44px;
+    padding: 0.78rem 1.25rem;
+    font-size: 0.68rem;
     margin-top: 0;
   }
   .hero__signals { display: none; }
