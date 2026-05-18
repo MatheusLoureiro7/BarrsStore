@@ -840,7 +840,7 @@
         {% endif %}
         {% if produto.destaque %}
           <span class="product-card__badge product-card__badge--accent">Destaque</span>
-        {% else %}
+        {% elif produto.is_novo %}
           <span class="product-card__badge">Novo</span>
         {% endif %}
       </div>

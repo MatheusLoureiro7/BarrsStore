@@ -532,11 +532,11 @@
   <!-- INFO -->
   <div>
     <!-- TAG DINÂMICA -->
-    {% if produto.estoque > 0 and produto.estoque <= 3 %}
+    {% if produto.estoque_baixo %}
       <span class="product__tag product__tag--last">Últimas unidades</span>
     {% elif produto.destaque %}
       <span class="product__tag product__tag--featured">Mais vendido</span>
-    {% else %}
+    {% elif produto.is_novo %}
       <span class="product__tag product__tag--new">Novo</span>
     {% endif %}
 
@@ -544,8 +544,8 @@
     <div class="product__price">R$ {{ produto.preco }}</div>
 
     {% if produto.disponivel %}
-      {% if produto.estoque <= 3 %}
-        <div class="product__stock product__stock--low">Apenas {{ produto.estoque }} em estoque</div>
+      {% if produto.estoque_baixo %}
+        <div class="product__stock product__stock--low">Últimas unidades</div>
       {% else %}
         <div class="product__stock product__stock--ok">Em estoque</div>
       {% endif %}
@@ -555,10 +555,6 @@
 
     <!-- PROPRIEDADES -->
     <div class="product__props">
-      <div class="product__prop">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-gem"/></svg>
-        Banho de prata 1.000
-      </div>
       <div class="product__prop">
         <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-shield"/></svg>
         Garantia de 1 ano

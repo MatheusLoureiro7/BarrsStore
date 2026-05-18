@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.text import slugify
 from decimal import Decimal
 import uuid
@@ -100,6 +101,14 @@ class Produto(models.Model):
 
     def disponivel(self):
         return self.estoque > 0
+
+    def is_novo(self):
+        if not self.criado_em:
+            return False
+        return self.criado_em >= timezone.now() - timezone.timedelta(days=14)
+
+    def estoque_baixo(self):
+        return 0 < self.estoque < 3
 
     def tem_tamanhos(self):
         return self.tipo == 'anel'
