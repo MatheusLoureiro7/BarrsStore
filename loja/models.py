@@ -65,6 +65,8 @@ class Produto(models.Model):
     imagem_alt = models.CharField(max_length=120, blank=True, default='', help_text='Texto alternativo da imagem para SEO e acessibilidade')
     preco = models.DecimalField(max_digits=10, decimal_places=2)
     imagem = models.ImageField(upload_to='produtos/', null=True, blank=True)
+    imagem_2 = models.ImageField(upload_to='produtos/', null=True, blank=True)
+    imagem_3 = models.ImageField(upload_to='produtos/', null=True, blank=True)
     estoque = models.IntegerField(default=10)
     visivel = models.BooleanField(default=True, help_text='Exibir este produto no site?')
     destaque = models.BooleanField(default=False)

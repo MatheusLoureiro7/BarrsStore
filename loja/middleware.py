@@ -44,15 +44,17 @@ class BlockScannerPathsMiddleware:
 
 
 class AdminRateLimitMiddleware:
-    """Rate limit simples para o painel Django, antes do processamento do admin."""
+    """Rate limit simples para acoes do painel, sem travar navegacao normal."""
 
     def __init__(self, get_response):
         self.get_response = get_response
-        self.limit, self.window = _parse_rate(getattr(settings, 'ADMIN_RATE_LIMIT', '20/5m'))
+        self.limit, self.window = _parse_rate(getattr(settings, 'ADMIN_RATE_LIMIT', '60/5m'))
 
     def __call__(self, request):
         path = request.path_info or request.path
         if not (path.startswith('/painel/') or path.startswith('/admin/')):
+            return self.get_response(request)
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
             return self.get_response(request)
 
         now = int(time.time())

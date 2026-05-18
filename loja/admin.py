@@ -28,7 +28,7 @@ class ProdutoAdmin(admin.ModelAdmin):
     readonly_fields = ('cliques',)
     fieldsets = (
         ('Produto', {
-            'fields': ('nome', 'slug', 'descricao', 'preco', 'imagem', 'estoque', 'visivel', 'destaque', 'categoria', 'tipo')
+            'fields': ('nome', 'slug', 'descricao', 'preco', 'imagem', 'imagem_2', 'imagem_3', 'estoque', 'visivel', 'destaque', 'categoria', 'tipo')
         }),
         ('SEO', {
             'fields': ('meta_description', 'imagem_alt')

@@ -215,7 +215,7 @@ if not DEBUG:
 
 # Limitar tentativas de login (proteção brute force)
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
-ADMIN_RATE_LIMIT = os.environ.get('ADMIN_RATE_LIMIT', '20/5m')
+ADMIN_RATE_LIMIT = os.environ.get('ADMIN_RATE_LIMIT', '60/5m')
 
 # Sessão expira ao fechar o browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False

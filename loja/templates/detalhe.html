@@ -48,15 +48,79 @@
   position: sticky;
   top: 88px;
 }
-.product__image {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
+.product-gallery {
+  position: relative;
+}
+.product-gallery__viewport {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  display: block;
   box-shadow: 0 14px 34px rgba(43, 37, 32, 0.08);
+}
+.product-gallery__track {
+  display: flex;
+  transform: translateX(calc(var(--gallery-index, 0) * -100%));
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.product-gallery__slide {
+  flex: 0 0 100%;
+}
+.product__image,
+.product-gallery__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  background: var(--color-surface);
+}
+.product-gallery__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  transform: translateY(-50%);
+  border: 1px solid rgba(232, 227, 216, 0.92);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--color-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(43, 37, 32, 0.12);
+  backdrop-filter: blur(10px);
+  transition: transform var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+.product-gallery__nav:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.04);
+}
+.product-gallery__nav--prev { left: var(--space-3); }
+.product-gallery__nav--next { right: var(--space-3); }
+.product-gallery__dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: var(--space-3);
+}
+.product-gallery__dot {
+  width: 7px;
+  height: 7px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: rgba(115, 130, 105, 0.26);
+  padding: 0;
+  cursor: pointer;
+  transition: width 220ms var(--ease), background 220ms var(--ease);
+}
+.product-gallery__dot.is-active {
+  width: 22px;
+  background: var(--color-brand);
 }
 .product__placeholder {
   width: 100%;
@@ -466,6 +530,12 @@
     padding: 0 var(--space-4);
   }
   .product__gallery { position: static; }
+  .product-gallery__nav {
+    width: 34px;
+    height: 34px;
+  }
+  .product-gallery__nav--prev { left: var(--space-2); }
+  .product-gallery__nav--next { right: var(--space-2); }
   .breadcrumb { padding: 0 var(--space-4); }
   .related { padding: 0 var(--space-4); }
   .product__name { font-size: 1.5rem; }
@@ -521,7 +591,36 @@
   <!-- GALERIA -->
   <div class="product__gallery">
     {% if produto.imagem %}
-      <img class="product__image" src="{{ produto.imagem.url }}" alt="{{ produto.alt_text }}" loading="eager" decoding="async">
+      <div class="product-gallery" data-product-gallery>
+        <div class="product-gallery__viewport">
+          <div class="product-gallery__track">
+            <div class="product-gallery__slide">
+              <img class="product-gallery__image" src="{{ produto.imagem.url }}" alt="{{ produto.alt_text }}" loading="eager" decoding="async">
+            </div>
+            {% if produto.imagem_2 %}
+            <div class="product-gallery__slide">
+              <img class="product-gallery__image" src="{{ produto.imagem_2.url }}" alt="{{ produto.alt_text }} - foto 2" loading="lazy" decoding="async">
+            </div>
+            {% endif %}
+            {% if produto.imagem_3 %}
+            <div class="product-gallery__slide">
+              <img class="product-gallery__image" src="{{ produto.imagem_3.url }}" alt="{{ produto.alt_text }} - foto 3" loading="lazy" decoding="async">
+            </div>
+            {% endif %}
+          </div>
+          {% if produto.imagem_2 or produto.imagem_3 %}
+          <button type="button" class="product-gallery__nav product-gallery__nav--prev" data-gallery-prev aria-label="Imagem anterior">
+            <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+          </button>
+          <button type="button" class="product-gallery__nav product-gallery__nav--next" data-gallery-next aria-label="Próxima imagem">
+            <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+          </button>
+          {% endif %}
+        </div>
+        {% if produto.imagem_2 or produto.imagem_3 %}
+        <div class="product-gallery__dots" data-gallery-dots aria-label="Navegar imagens"></div>
+        {% endif %}
+      </div>
     {% else %}
       <div class="product__placeholder">
         <svg class="icon" style="width:64px;height:64px" aria-hidden="true"><use href="#i-gem"/></svg>
@@ -690,6 +789,64 @@ const metaProduto = {
   value: Number('{{ produto.preco|stringformat:"0.2f" }}'.replace(',', '.')),
   currency: 'BRL'
 };
+
+(function initProductGallery() {
+  const gallery = document.querySelector('[data-product-gallery]');
+  if (!gallery) return;
+
+  const track = gallery.querySelector('.product-gallery__track');
+  const slides = Array.from(gallery.querySelectorAll('.product-gallery__slide'));
+  const dotsWrap = gallery.querySelector('[data-gallery-dots]');
+  const prev = gallery.querySelector('[data-gallery-prev]');
+  const next = gallery.querySelector('[data-gallery-next]');
+  if (!track || slides.length <= 1) return;
+
+  let index = 0;
+  let startX = 0;
+  let deltaX = 0;
+
+  if (dotsWrap) {
+    dotsWrap.innerHTML = slides.map((_, i) =>
+      `<button type="button" class="product-gallery__dot" aria-label="Mostrar imagem ${i + 1}"></button>`
+    ).join('');
+  }
+  const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.product-gallery__dot')) : [];
+
+  function setSlide(nextIndex) {
+    index = (nextIndex + slides.length) % slides.length;
+    track.style.setProperty('--gallery-index', index);
+    dots.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
+  }
+
+  prev?.addEventListener('click', () => setSlide(index - 1));
+  next?.addEventListener('click', () => setSlide(index + 1));
+  dots.forEach((dot, i) => dot.addEventListener('click', () => setSlide(i)));
+
+  gallery.addEventListener('pointerdown', (event) => {
+    startX = event.clientX;
+    deltaX = 0;
+  }, { passive: true });
+
+  gallery.addEventListener('pointermove', (event) => {
+    if (!startX) return;
+    deltaX = event.clientX - startX;
+  }, { passive: true });
+
+  gallery.addEventListener('pointerup', () => {
+    if (Math.abs(deltaX) > 42) {
+      setSlide(index + (deltaX < 0 ? 1 : -1));
+    }
+    startX = 0;
+    deltaX = 0;
+  }, { passive: true });
+
+  gallery.addEventListener('pointercancel', () => {
+    startX = 0;
+    deltaX = 0;
+  }, { passive: true });
+
+  setSlide(0);
+})();
 
 function trackMetaPixel(eventName, data) {
   if (typeof fbq === 'function') {
