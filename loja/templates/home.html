@@ -417,6 +417,10 @@
   box-shadow: 0 8px 18px rgba(43, 37, 32, 0.08);
 }
 .product-card__badge--accent { background: var(--color-ink); color: #fff; }
+.product-card__badge--out {
+  background: rgba(61, 45, 32, 0.88);
+  color: #fff;
+}
 
 .product-card__body {
   padding: var(--space-4) var(--space-4) var(--space-3);
@@ -510,6 +514,27 @@
   transform: translateY(-1px);
 }
 .product-card__add:active { transform: translateY(0) scale(0.96); }
+.product-card__add--disabled {
+  color: var(--color-ink-muted);
+  background: var(--color-bg-alt);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+.product-card__add--disabled:hover {
+  border-color: var(--color-border);
+  background: var(--color-bg-alt);
+  color: var(--color-ink-muted);
+  box-shadow: none;
+  transform: none;
+}
+.product-card__stock {
+  font-size: 0.6875rem;
+  color: var(--color-error);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
 
 .empty-state {
   text-align: center;
@@ -838,7 +863,9 @@
             <svg class="icon" style="width:48px;height:48px" aria-hidden="true"><use href="#i-gem"/></svg>
           </div>
         {% endif %}
-        {% if produto.destaque %}
+        {% if not produto.disponivel %}
+          <span class="product-card__badge product-card__badge--out">Esgotado</span>
+        {% elif produto.destaque %}
           <span class="product-card__badge product-card__badge--accent">Destaque</span>
         {% elif produto.is_novo %}
           <span class="product-card__badge">Novo</span>
@@ -847,15 +874,20 @@
       <div class="product-card__body">
         <div class="product-card__name">{{ produto.nome }}</div>
         <div class="product-card__price">R$ {{ produto.preco }}</div>
+        {% if not produto.disponivel %}<div class="product-card__stock">Esgotado</div>{% endif %}
         {% if produto.descricao %}<div class="product-card__desc">{{ produto.descricao }}</div>{% endif %}
       </div>
       <div class="product-card__actions">
         <a href="{% url 'detalhe_produto' produto.slug %}" class="product-card__view">Ver produto</a>
+        {% if produto.disponivel %}
         <form method="POST" action="{% url 'add_carrinho' produto.id %}" style="margin:0">
           {% csrf_token %}
           <input type="hidden" name="next" value="home">
           <button type="submit" class="product-card__add" title="Adicionar ao carrinho" aria-label="Adicionar {{ produto.nome }} ao carrinho">+</button>
         </form>
+        {% else %}
+          <button type="button" class="product-card__add product-card__add--disabled" title="Produto esgotado" aria-label="{{ produto.nome }} esgotado" disabled>×</button>
+        {% endif %}
       </div>
     </article>
     {% endfor %}

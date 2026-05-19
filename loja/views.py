@@ -234,9 +234,7 @@ def baixar_estoque_pedido(pedido):
 
             produto_lock = Produto.objects.select_for_update().get(pk=produto.pk)
             produto_lock.estoque = max((produto_lock.estoque or 0) - item.quantidade, 0)
-            if produto_lock.estoque <= 0:
-                produto_lock.visivel = False
-            produto_lock.save(update_fields=['estoque', 'visivel'])
+            produto_lock.save(update_fields=['estoque'])
             logger.info(
                 '[ESTOQUE] Pedido %s baixou %s un. do produto %s. estoque_atual=%s visivel=%s',
                 pedido_lock.id,
@@ -1515,9 +1513,6 @@ def salvar_lead_cliente(request):
     nome = request.POST.get('nome', '').strip()
     telefone = apenas_digitos(request.POST.get('telefone', ''))
 
-    if not verificar_turnstile(request):
-        return turnstile_error_json()
-
     if len(nome) < 2:
         return JsonResponse({'ok': False, 'erro': 'Informe seu nome.'}, status=400)
     if len(telefone) < 10:
@@ -1540,7 +1535,7 @@ def home(request):
     ordem = request.GET.get('ordem', '')
     categoria_slug = request.GET.get('categoria', '')
 
-    produtos = Produto.objects.filter(visivel=True, estoque__gt=0)
+    produtos = Produto.objects.filter(visivel=True)
 
     if busca:
         produtos = produtos.filter(
@@ -1582,7 +1577,7 @@ def home(request):
 
 # ── DETALHE DO PRODUTO ─────────────────────────────────────────────
 def detalhe_produto(request, slug):
-    produto = get_object_or_404(Produto, slug=slug, visivel=True, estoque__gt=0)
+    produto = get_object_or_404(Produto, slug=slug, visivel=True)
     if not request.user.is_staff:
         Produto.objects.filter(pk=produto.pk).update(cliques=F('cliques') + 1)
     relacionados = Produto.objects.filter(visivel=True, estoque__gt=0, categoria=produto.categoria).exclude(id=produto.id)[:4]
@@ -1606,7 +1601,7 @@ def detalhe_produto(request, slug):
 
 
 def detalhe_produto_id(request, produto_id):
-    produto = get_object_or_404(Produto, id=produto_id, visivel=True, estoque__gt=0)
+    produto = get_object_or_404(Produto, id=produto_id, visivel=True)
     return redirect(produto.get_absolute_url(), permanent=True)
 
 

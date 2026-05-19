@@ -631,7 +631,9 @@
   <!-- INFO -->
   <div>
     <!-- TAG DINÂMICA -->
-    {% if produto.estoque_baixo %}
+    {% if not produto.disponivel %}
+      <span class="product__tag product__tag--last">Esgotado</span>
+    {% elif produto.estoque_baixo %}
       <span class="product__tag product__tag--last">Últimas unidades</span>
     {% elif produto.destaque %}
       <span class="product__tag product__tag--featured">Mais vendido</span>
@@ -649,7 +651,7 @@
         <div class="product__stock product__stock--ok">Em estoque</div>
       {% endif %}
     {% else %}
-      <div class="product__stock product__stock--out">Fora de estoque</div>
+      <div class="product__stock product__stock--out">Esgotado no momento</div>
     {% endif %}
 
     <!-- PROPRIEDADES -->
@@ -724,7 +726,7 @@
       <button type="submit" class="product__cta">Adicionar ao carrinho</button>
     </form>
     {% else %}
-    <div class="product__cta product__cta--disabled">Indisponível</div>
+    <div class="product__cta product__cta--disabled">Produto esgotado</div>
     {% endif %}
 
     <a href="/" class="product__back">← Voltar para a loja</a>
