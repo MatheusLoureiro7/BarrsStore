@@ -1,4 +1,4 @@
-{% load static %}
+{% load static cloudinary_extras %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -595,16 +595,34 @@
         <div class="product-gallery__viewport">
           <div class="product-gallery__track">
             <div class="product-gallery__slide">
-              <img class="product-gallery__image" src="{{ produto.imagem.url }}" alt="{{ produto.alt_text }}" loading="eager" decoding="async">
+              <img class="product-gallery__image"
+                   src="{{ produto.imagem|cloudinary_url:'c_fill,w_900,h_900,q_auto,f_auto' }}"
+                   srcset="{{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w, {{ produto.imagem|cloudinary_url:'c_fill,w_1100,h_1100,q_auto,f_auto' }} 1100w"
+                   sizes="(max-width: 720px) 100vw, 52vw"
+                   alt="{{ produto.alt_text }}"
+                   loading="eager"
+                   decoding="async">
             </div>
             {% if produto.imagem_2 %}
             <div class="product-gallery__slide">
-              <img class="product-gallery__image" src="{{ produto.imagem_2.url }}" alt="{{ produto.alt_text }} - foto 2" loading="lazy" decoding="async">
+              <img class="product-gallery__image"
+                   src="{{ produto.imagem_2|cloudinary_url:'c_fill,w_900,h_900,q_auto,f_auto' }}"
+                   srcset="{{ produto.imagem_2|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_1100,h_1100,q_auto,f_auto' }} 1100w"
+                   sizes="(max-width: 720px) 100vw, 52vw"
+                   alt="{{ produto.alt_text }} - foto 2"
+                   loading="lazy"
+                   decoding="async">
             </div>
             {% endif %}
             {% if produto.imagem_3 %}
             <div class="product-gallery__slide">
-              <img class="product-gallery__image" src="{{ produto.imagem_3.url }}" alt="{{ produto.alt_text }} - foto 3" loading="lazy" decoding="async">
+              <img class="product-gallery__image"
+                   src="{{ produto.imagem_3|cloudinary_url:'c_fill,w_900,h_900,q_auto,f_auto' }}"
+                   srcset="{{ produto.imagem_3|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem_3|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w, {{ produto.imagem_3|cloudinary_url:'c_fill,w_1100,h_1100,q_auto,f_auto' }} 1100w"
+                   sizes="(max-width: 720px) 100vw, 52vw"
+                   alt="{{ produto.alt_text }} - foto 3"
+                   loading="lazy"
+                   decoding="async">
             </div>
             {% endif %}
           </div>

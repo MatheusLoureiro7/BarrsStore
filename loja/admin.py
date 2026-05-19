@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.utils.html import format_html, format_html_join
 from django.contrib import messages
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel, Cupom
+from .models import Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel, Cupom, EmailPendente
 
 
 @admin.register(Categoria)
@@ -223,3 +223,11 @@ class CarrinhoAdmin(admin.ModelAdmin):
     list_display = ('id', 'telefone_cliente', 'aceita_whatsapp', 'whatsapp_abandono_enviado', 'criado_em', 'atualizado_em')
     list_filter = ('aceita_whatsapp', 'whatsapp_abandono_enviado')
     search_fields = ('telefone_cliente',)
+
+
+@admin.register(EmailPendente)
+class EmailPendenteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'assunto', 'destinatario_email', 'status', 'tentativas', 'criado_em', 'enviado_em')
+    list_filter = ('status', 'criado_em')
+    search_fields = ('assunto', 'destinatario_email')
+    readonly_fields = ('dedupe_key', 'payload', 'tentativas', 'ultimo_erro', 'criado_em', 'atualizado_em', 'enviado_em')

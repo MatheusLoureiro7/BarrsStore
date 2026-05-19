@@ -19,6 +19,21 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured('Configure SECRET_KEY nas variaveis de ambiente.')
 
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '').strip()
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            send_default_pii=False,
+            traces_sample_rate=float(os.environ.get('SENTRY_TRACES_SAMPLE_RATE', '0.05')),
+            environment=os.environ.get('SENTRY_ENVIRONMENT', 'production' if not DEBUG else 'local'),
+        )
+    except ImportError:
+        if not DEBUG:
+            raise
+
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(

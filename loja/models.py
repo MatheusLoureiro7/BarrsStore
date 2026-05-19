@@ -332,3 +332,31 @@ class PerfilCliente(models.Model):
 
     def __str__(self):
         return f'Perfil de {self.user.email}'
+
+
+class EmailPendente(models.Model):
+    STATUS_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('enviado', 'Enviado'),
+        ('erro', 'Erro'),
+    ]
+
+    dedupe_key = models.CharField(max_length=64, unique=True)
+    destinatario_email = models.EmailField()
+    destinatario_nome = models.CharField(max_length=120, blank=True, default='')
+    assunto = models.CharField(max_length=200)
+    payload = models.JSONField(default=dict)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
+    tentativas = models.PositiveIntegerField(default=0)
+    ultimo_erro = models.TextField(blank=True, default='')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+    enviado_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['criado_em']
+        verbose_name = 'E-mail pendente'
+        verbose_name_plural = 'E-mails pendentes'
+
+    def __str__(self):
+        return f'{self.assunto} -> {self.destinatario_email}'

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static cloudinary_extras %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -556,6 +556,36 @@
   font-weight: 600;
 }
 
+.load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+.load-more__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 46px;
+  padding: 0.75rem 1.4rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--duration) var(--ease),
+              box-shadow var(--duration) var(--ease),
+              transform var(--duration) var(--ease);
+}
+.load-more__btn:hover {
+  border-color: var(--color-brand);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
 /* RESPONSIVO MOBILE */
 @media (max-width: 767px) {
   .hero {
@@ -842,7 +872,7 @@
 
 {% if busca %}
 <div class="search-result">
-  {{ produtos|length }} resultado{% if produtos|length != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" — <a href="/{% if categoria_ativa or ordem %}?{% if categoria_ativa %}categoria={{ categoria_ativa }}{% endif %}{% if categoria_ativa and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}#produtos">Limpar busca</a>
+  {{ total_produtos }} resultado{% if total_produtos != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" - <a href="/{% if categoria_ativa or ordem %}?{% if categoria_ativa %}categoria={{ categoria_ativa }}{% endif %}{% if categoria_ativa and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}#produtos">Limpar busca</a>
 </div>
 {% endif %}
 
@@ -850,7 +880,7 @@
 <section class="section">
   <div class="section__head">
     <h2 class="section__title">{% if busca %}Resultados{% else %}Coleção{% endif %}</h2>
-    <span class="section__count">{{ produtos|length }} produto{% if produtos|length != 1 %}s{% endif %}</span>
+    <span class="section__count">{{ total_produtos }} produto{% if total_produtos != 1 %}s{% endif %}</span>
   </div>
 
   {% if produtos %}
@@ -859,7 +889,13 @@
     <article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}">
       <div class="product-card__media">
         {% if produto.imagem %}
-          <img src="{{ produto.imagem.url }}" alt="{{ produto.alt_text }}" loading="lazy" decoding="async">
+          <img
+            src="{{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }}"
+            srcset="{{ produto.imagem|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }} 360w, {{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w"
+            sizes="(max-width: 640px) 46vw, (max-width: 1024px) 33vw, 280px"
+            alt="{{ produto.alt_text }}"
+            loading="lazy"
+            decoding="async">
         {% else %}
           <div class="product-card__placeholder">
             <svg class="icon" style="width:48px;height:48px" aria-hidden="true"><use href="#i-gem"/></svg>
@@ -895,6 +931,11 @@
     </article>
     {% endfor %}
   </div>
+  {% if has_next_page %}
+  <div class="load-more">
+    <a href="{{ next_page_url }}" class="load-more__btn">Carregar mais</a>
+  </div>
+  {% endif %}
   {% else %}
   <div class="empty-state">
     {% if busca %}

@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom
+from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom, EmailPendente
 from .mercadopago_security import validar_assinatura_mercadopago
 from .validators import cpf_valido
 from .integrations.meta_capi import send_purchase_event
@@ -22,6 +22,7 @@ import requests as http_requests
 import os
 import logging
 import uuid
+import hashlib
 from decimal import Decimal, InvalidOperation
 
 logger = logging.getLogger(__name__)
@@ -176,6 +177,47 @@ def resposta_externa_segura_para_log(response):
         'ok': getattr(response, 'ok', False),
         'body_len': len(texto),
     }
+
+
+def enfileirar_email_pendente(payload, motivo=''):
+    destinatarios = payload.get('to') or [{}]
+    destinatario = destinatarios[0] if destinatarios else {}
+    dedupe_raw = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    dedupe_key = hashlib.sha256(dedupe_raw.encode('utf-8')).hexdigest()
+    email_pendente, criado = EmailPendente.objects.get_or_create(
+        dedupe_key=dedupe_key,
+        defaults={
+            'destinatario_email': destinatario.get('email', ''),
+            'destinatario_nome': destinatario.get('name', ''),
+            'assunto': payload.get('subject', '')[:200],
+            'payload': payload,
+            'ultimo_erro': motivo[:1000],
+        },
+    )
+    if not criado and email_pendente.status == 'enviado':
+        return email_pendente
+    if not criado and motivo:
+        email_pendente.ultimo_erro = motivo[:1000]
+        email_pendente.save(update_fields=['ultimo_erro', 'atualizado_em'])
+    return email_pendente
+
+
+def enviar_brevo_payload(payload, timeout=10):
+    brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
+    if not brevo_api_key:
+        return False, 'BREVO_API_KEY nao configurada.', None
+    try:
+        resposta = http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
+            json=payload,
+            timeout=timeout,
+        )
+        if resposta.status_code >= 400:
+            return False, f'Brevo status {resposta.status_code}', resposta
+        return True, '', resposta
+    except Exception as exc:
+        return False, str(exc), None
 
 
 def verificar_turnstile(request):
@@ -910,26 +952,16 @@ def enviar_email_rastreio(pedido):
 
 # ── HELPERS DE EMAIL ──────────────────────────────────────────────
 def _brevo_send(assunto, html, destinatario_email, destinatario_nome):
-    brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-    if not brevo_api_key:
-        return False
-    sender = _brevo_sender()
-    try:
-        r = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
-            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
-            json={
-                'sender': sender,
-                'to': [{'email': destinatario_email, 'name': destinatario_nome}],
-                'subject': assunto,
-                'htmlContent': html,
-            },
-            timeout=10,
-        )
-        return r.status_code < 400
-    except Exception as exc:
-        logger.exception('[BREVO] Erro ao enviar "%s". email_domain=%s erro=%s', assunto, dominio_email_para_log(destinatario_email), exc)
-        return False
+    payload = _brevo_payload(destinatario_email, destinatario_nome, assunto, html)
+    ok, erro, resposta = enviar_brevo_payload(payload)
+    if ok:
+        return True
+    enfileirar_email_pendente(payload, erro)
+    if resposta is not None:
+        logger.warning('[BREVO] E-mail "%s" enfileirado: %s', assunto, resposta_externa_segura_para_log(resposta))
+    else:
+        logger.warning('[BREVO] E-mail "%s" enfileirado. email_domain=%s erro=%s', assunto, dominio_email_para_log(destinatario_email), erro)
+    return False
 
 
 def _email_wrapper(titulo, corpo_html):
@@ -1104,11 +1136,6 @@ def _brevo_payload(destinatario_email, destinatario_nome, assunto, html):
 def enviar_email_confirmacao(pedido):
     """Envia e-mail premium de confirmacao para o cliente via Brevo."""
     try:
-        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-        if not brevo_api_key:
-            logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
-            return False
-
         link_acompanhar = site_url(reverse('rastrear_pedido'))
         corpo = (
             _paragrafo(f'Ola, <strong style="color:#3D2D20">{pedido.nome}</strong>. Seu pagamento foi aprovado e seu pedido ja entrou em preparo com todo o cuidado da Barrs Store.')
@@ -1123,15 +1150,11 @@ def enviar_email_confirmacao(pedido):
         if brevo_admin_email and brevo_admin_email.lower() != pedido.email.lower():
             payload['bcc'] = [{'email': brevo_admin_email, 'name': EMAIL_BRAND_NAME}]
 
-        resposta = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
-            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
-            json=payload,
-            timeout=10,
-        )
-        logger.info('[BREVO] Confirmacao pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
-        if resposta.status_code >= 400:
-            logger.warning('Brevo recusou o e-mail do pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
+        ok, erro, resposta = enviar_brevo_payload(payload)
+        logger.info('[BREVO] Confirmacao pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta) if resposta else erro)
+        if not ok:
+            enfileirar_email_pendente(payload, erro)
+            logger.warning('E-mail do pedido %s enfileirado para reenvio. erro=%s', pedido.id, erro)
             return False
         return True
     except Exception as exc:
@@ -1144,11 +1167,6 @@ def enviar_email_pagamento_pendente(pedido):
     if pedido.email_pagamento_pendente_enviado:
         return True
     try:
-        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-        if not brevo_api_key:
-            logger.warning('BREVO_API_KEY nao configurada. E-mail de pagamento pendente do pedido %s nao foi enviado.', pedido.id)
-            return False
-
         link_pagamento = site_url(reverse('confirmacao', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token}))
         corpo = (
             _paragrafo(f'Ola, <strong style="color:#3D2D20">{pedido.nome}</strong>. Seu pedido foi reservado e esta aguardando a finalizacao do pagamento.')
@@ -1157,18 +1175,15 @@ def enviar_email_pagamento_pendente(pedido):
             + _paragrafo('<span style="color:#9E9488;font-size:13px">Se voce ja pagou, pode ignorar este e-mail. A confirmacao acontece automaticamente assim que o pagamento for aprovado.</span>')
         )
         html = _email_wrapper('Seu pedido foi reservado', corpo, f'Finalize o pagamento do pedido #{pedido.id}.')
-        resposta = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
-            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
-            json=_brevo_payload(pedido.email, pedido.nome, f'Finalize o pagamento do pedido #{pedido.id} - Barrs Store', html),
-            timeout=10,
-        )
-        logger.info('[BREVO] Pagamento pendente pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
-        if resposta.status_code < 400:
+        payload = _brevo_payload(pedido.email, pedido.nome, f'Finalize o pagamento do pedido #{pedido.id} - Barrs Store', html)
+        ok, erro, resposta = enviar_brevo_payload(payload)
+        logger.info('[BREVO] Pagamento pendente pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta) if resposta else erro)
+        if ok:
             pedido.email_pagamento_pendente_enviado = True
             pedido.save(update_fields=['email_pagamento_pendente_enviado'])
             return True
-        logger.warning('Brevo recusou o e-mail de pagamento pendente do pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
+        enfileirar_email_pendente(payload, erro)
+        logger.warning('E-mail de pagamento pendente do pedido %s enfileirado. erro=%s', pedido.id, erro)
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail de pagamento pendente do pedido %s: %s', pedido.id, exc)
     return False
@@ -1179,11 +1194,6 @@ def enviar_email_rastreio(pedido):
     if not pedido.codigo_rastreio:
         return False
     try:
-        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-        if not brevo_api_key:
-            logger.warning('BREVO_API_KEY nao configurada. E-mail de rastreio do pedido %s nao foi enviado.', pedido.id)
-            return False
-
         rastreio_url = pedido.rastreio_url()
         transportadora = pedido.rastreio_transportadora()
         corpo = (
@@ -1200,15 +1210,12 @@ def enviar_email_rastreio(pedido):
             + _paragrafo(f'<span style="color:#9E9488;font-size:13px">Caso o botao nao abra, acesse este link: <a href="{rastreio_url}" style="color:#738269;text-decoration:none">{rastreio_url}</a></span>')
         )
         html = _email_wrapper('Seu pedido foi enviado', corpo, f'Codigo de rastreio do pedido #{pedido.id}: {pedido.codigo_rastreio}.')
-        resposta = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
-            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
-            json=_brevo_payload(pedido.email, pedido.nome, f'Seu pedido #{pedido.id} foi enviado - Barrs Store', html),
-            timeout=10,
-        )
-        logger.info('[BREVO] Rastreio pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
-        if resposta.status_code >= 400:
-            logger.warning('Brevo recusou o e-mail de rastreio do pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
+        payload = _brevo_payload(pedido.email, pedido.nome, f'Seu pedido #{pedido.id} foi enviado - Barrs Store', html)
+        ok, erro, resposta = enviar_brevo_payload(payload)
+        logger.info('[BREVO] Rastreio pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta) if resposta else erro)
+        if not ok:
+            enfileirar_email_pendente(payload, erro)
+            logger.warning('E-mail de rastreio do pedido %s enfileirado. erro=%s', pedido.id, erro)
             return False
         pedido.email_rastreio_enviado = True
         pedido.save(update_fields=['email_rastreio_enviado'])
@@ -1554,6 +1561,23 @@ def home(request):
     else:
         produtos = produtos.order_by('-criado_em')
 
+    total_produtos = produtos.count()
+    try:
+        page_number = max(1, int(request.GET.get('page') or 1))
+    except (TypeError, ValueError):
+        page_number = 1
+    per_page = 12
+    produtos_pagina = produtos[:page_number * per_page]
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    base_query = query_params.urlencode()
+    next_page_url = ''
+    has_next_page = total_produtos > page_number * per_page
+    if has_next_page:
+        next_query = query_params.copy()
+        next_query['page'] = page_number + 1
+        next_page_url = f'?{next_query.urlencode()}#produtos'
+
     categorias = Categoria.objects.all()
     seo = seo_context(
         request,
@@ -1563,11 +1587,14 @@ def home(request):
     )
 
     context = {
-        'produtos': produtos,
+        'produtos': produtos_pagina,
+        'has_next_page': has_next_page,
+        'next_page_url': next_page_url,
+        'base_query': base_query,
         'qtd_carrinho': get_carrinho_info(request),
         'busca': busca,
         'ordem': ordem,
-        'total_produtos': produtos.count(),
+        'total_produtos': total_produtos,
         'categorias': categorias,
         'categoria_ativa': categoria_slug,
     }
