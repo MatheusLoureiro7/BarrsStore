@@ -391,6 +391,14 @@
   transform: scale(1.045);
   filter: saturate(1.04) contrast(1.02);
 }
+.product-card--sold-out .product-card__media img {
+  opacity: 0.75;
+  filter: saturate(0.82) contrast(0.96);
+}
+.product-card--sold-out:hover .product-card__media img {
+  opacity: 0.78;
+  filter: saturate(0.86) contrast(0.98);
+}
 
 .product-card__placeholder {
   width: 100%;
@@ -418,8 +426,10 @@
 }
 .product-card__badge--accent { background: var(--color-ink); color: #fff; }
 .product-card__badge--out {
-  background: rgba(61, 45, 32, 0.88);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-ink-soft);
+  border: 1px solid rgba(120, 105, 84, 0.22);
+  box-shadow: 0 10px 24px rgba(43, 37, 32, 0.10);
 }
 
 .product-card__body {
@@ -526,14 +536,6 @@
   color: var(--color-ink-muted);
   box-shadow: none;
   transform: none;
-}
-.product-card__stock {
-  font-size: 0.6875rem;
-  color: var(--color-error);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-top: 2px;
 }
 
 .empty-state {
@@ -854,7 +856,7 @@
   {% if produtos %}
   <div class="product-grid">
     {% for produto in produtos %}
-    <article class="product-card">
+    <article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}">
       <div class="product-card__media">
         {% if produto.imagem %}
           <img src="{{ produto.imagem.url }}" alt="{{ produto.alt_text }}" loading="lazy" decoding="async">
@@ -864,7 +866,7 @@
           </div>
         {% endif %}
         {% if not produto.disponivel %}
-          <span class="product-card__badge product-card__badge--out">Esgotado</span>
+          <span class="product-card__badge product-card__badge--out">ESGOTADO</span>
         {% elif produto.destaque %}
           <span class="product-card__badge product-card__badge--accent">Destaque</span>
         {% elif produto.is_novo %}
@@ -873,8 +875,9 @@
       </div>
       <div class="product-card__body">
         <div class="product-card__name">{{ produto.nome }}</div>
-        <div class="product-card__price">R$ {{ produto.preco }}</div>
-        {% if not produto.disponivel %}<div class="product-card__stock">Esgotado</div>{% endif %}
+        {% if produto.disponivel %}
+          <div class="product-card__price">R$ {{ produto.preco }}</div>
+        {% endif %}
         {% if produto.descricao %}<div class="product-card__desc">{{ produto.descricao }}</div>{% endif %}
       </div>
       <div class="product-card__actions">
