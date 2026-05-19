@@ -4,7 +4,8 @@
       "Bash(python *)",
       "Bash(cd C:\\\\\\\\Users\\\\\\\\Bibico\\\\\\\\Documents\\\\\\\\projetos\\\\\\\\BarrsStore)",
       "Bash(venv/Scripts/python.exe manage.py check)",
-      "Bash(venv/Scripts/python.exe *)"
+      "Bash(venv/Scripts/python.exe *)",
+      "Bash(xxd Procfile)"
     ]
   }
 }
