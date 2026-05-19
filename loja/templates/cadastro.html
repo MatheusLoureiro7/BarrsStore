@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load static inline_static %}
 
-{% block title %}Criar conta â€” Barrs Store{% endblock %}
+{% block title %}Criar conta — Barrs Store{% endblock %}
 
 {% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/cadastro.css' %}"><style>
 {% inline_static 'loja/css/pages/cadastro.css' %}
 </style>{% endblock %}
 
 {% block content %}
-<!-- NAVEGAÃ‡ÃƒO MÃNIMA -->
+<!-- NAVEGAÇÃO MÍNIMA -->
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -27,7 +27,7 @@
   <div class="auth-card">
     <div class="auth-card__eyebrow">Nova conta</div>
     <h1 class="auth-card__title">Criar sua conta</h1>
-    <p class="auth-card__sub">Acompanhe seus pedidos e tenha uma experiÃªncia personalizada.</p>
+    <p class="auth-card__sub">Acompanhe seus pedidos e tenha uma experiência personalizada.</p>
 
     {% if messages %}
       {% for msg in messages %}
@@ -47,12 +47,12 @@
       </div>
       <div class="auth-field">
         <label>Senha</label>
-        <input type="password" name="senha" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" minlength="8" required autocomplete="new-password">
-        <p class="auth-field__hint">MÃ­nimo de 8 caracteres</p>
+        <input type="password" name="senha" placeholder="••••••••" minlength="8" required autocomplete="new-password">
+        <p class="auth-field__hint">Mínimo de 8 caracteres</p>
       </div>
       <div class="auth-field">
         <label>Confirmar senha</label>
-        <input type="password" name="senha2" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" minlength="8" required autocomplete="new-password">
+        <input type="password" name="senha2" placeholder="••••••••" minlength="8" required autocomplete="new-password">
       </div>
       {% include "partials/turnstile_widget.html" %}
       <button type="submit" class="auth-btn">Criar conta</button>
@@ -60,7 +60,7 @@
 
     <div class="auth-divider">ou</div>
 
-    <p class="auth-link">JÃ¡ tem conta? <a href="{% url 'login' %}">Entrar</a></p>
+    <p class="auth-link">Já tem conta? <a href="{% url 'login' %}">Entrar</a></p>
   </div>
 </main>
 {% endblock %}

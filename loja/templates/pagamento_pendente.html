@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% load static inline_static %}
 
-{% block title %}Aguardando confirmaÃ§Ã£o do pagamento â€” Barrs Store{% endblock %}
+{% block title %}Aguardando confirmação do pagamento — Barrs Store{% endblock %}
 
 {% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/pagamento_pendente.css' %}"><style>
 {% inline_static 'loja/css/pages/pagamento_pendente.css' %}
 </style>{% endblock %}
 
 {% block content %}
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+<!-- ═══════════════════════════════════════════════════════════
      HEADER
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+═══════════════════════════════════════════════════════════ -->
 <header class="pe-header">
   <div class="pe-header__inner">
     <a class="pe-brand" href="/">
@@ -21,29 +21,29 @@
     </a>
     <div class="pe-header__safe">
       <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
-      Aguardando confirmaÃ§Ã£o do pagamento
+      Aguardando confirmação do pagamento
     </div>
   </div>
 </header>
 
 <main class="pe-page">
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  <!-- ═══════════════════════════════════════════════════════════
        HERO
-  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  ═══════════════════════════════════════════════════════════ -->
   <section class="pe-hero" aria-labelledby="hero-title">
     <div class="pe-hero__seal" aria-hidden="true">
       <svg class="icon"><use href="#i-clock"/></svg>
     </div>
 
-    <div class="pe-hero__eyebrow">Aguardando confirmaÃ§Ã£o</div>
+    <div class="pe-hero__eyebrow">Aguardando confirmação</div>
 
-    <h1 class="pe-hero__title" id="hero-title">Pagamento em anÃ¡lise</h1>
+    <h1 class="pe-hero__title" id="hero-title">Pagamento em análise</h1>
 
     <p class="pe-hero__sub">
-      Recebemos seu pedido e estamos aguardando a confirmaÃ§Ã£o do pagamento.
-      Assim que o pagamento for aprovado, seu pedido serÃ¡ atualizado automaticamente
-      {% if pedido.email %}e vocÃª receberÃ¡ um e-mail em <strong>{{ pedido.email }}</strong>{% endif %}.
+      Recebemos seu pedido e estamos aguardando a confirmação do pagamento.
+      Assim que o pagamento for aprovado, seu pedido será atualizado automaticamente
+      {% if pedido.email %}e você receberá um e-mail em <strong>{{ pedido.email }}</strong>{% endif %}.
     </p>
 
     <div class="pe-hero__order">
@@ -52,9 +52,9 @@
     </div>
   </section>
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  <!-- ═══════════════════════════════════════════════════════════
        TIMELINE
-  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  ═══════════════════════════════════════════════════════════ -->
   <section class="pe-timeline" aria-label="Status do pedido">
     <div class="pe-timeline__inner">
 
@@ -63,14 +63,14 @@
           <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
         </span>
         <span class="pe-step__label">Pedido recebido</span>
-        <span class="pe-step__note">ConcluÃ­do</span>
+        <span class="pe-step__note">Concluído</span>
       </div>
 
       <div class="pe-step pe-step--current">
         <span class="pe-step__dot">
           <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
         </span>
-        <span class="pe-step__label">Aguardando confirmaÃ§Ã£o</span>
+        <span class="pe-step__label">Aguardando confirmação</span>
         <span class="pe-step__note">Em andamento</span>
       </div>
 
@@ -78,19 +78,19 @@
         <span class="pe-step__dot">
           <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
         </span>
-        <span class="pe-step__label">PreparaÃ§Ã£o para envio</span>
-        <span class="pe-step__note">PrÃ³xima etapa</span>
+        <span class="pe-step__label">Preparação para envio</span>
+        <span class="pe-step__note">Próxima etapa</span>
       </div>
 
     </div>
   </section>
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  <!-- ═══════════════════════════════════════════════════════════
        LAYOUT 2 COLUNAS
-  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  ═══════════════════════════════════════════════════════════ -->
   <div class="pe-layout">
 
-    <!-- â”€â”€â”€â”€ COLUNA ESQUERDA: DETALHES â”€â”€â”€â”€ -->
+    <!-- ──── COLUNA ESQUERDA: DETALHES ──── -->
     <section class="pe-details">
 
       <!-- Itens -->
@@ -118,7 +118,7 @@
               <div>
                 <div class="pe-item__name">{{ item.nome_produto }}</div>
                 <div class="pe-item__meta">
-                  Qtd: {{ item.quantidade }}{% if item.tamanho %} Â· Tamanho: {{ item.tamanho }}{% endif %}
+                  Qtd: {{ item.quantidade }}{% if item.tamanho %} · Tamanho: {{ item.tamanho }}{% endif %}
                 </div>
               </div>
               <div class="pe-item__price">R$ {{ item.subtotal }}</div>
@@ -135,11 +135,11 @@
 
         <div class="pe-delivery-grid">
           <div>
-            <div class="pe-delivery__label">EndereÃ§o de entrega</div>
+            <div class="pe-delivery__label">Endereço de entrega</div>
             <div class="pe-delivery__value">
               {{ pedido.rua }}, {{ pedido.numero }}<br>
               {% if pedido.bairro %}{{ pedido.bairro }}<br>{% endif %}
-              {{ pedido.cidade }}/{{ pedido.estado }}{% if pedido.cep %} Â· CEP {{ pedido.cep }}{% endif %}
+              {{ pedido.cidade }}/{{ pedido.estado }}{% if pedido.cep %} · CEP {{ pedido.cep }}{% endif %}
             </div>
           </div>
 
@@ -159,7 +159,7 @@
           <div>
             <div class="pe-notice__title">Pagou via Pix?</div>
             <div class="pe-notice__sub">
-              A confirmaÃ§Ã£o costuma acontecer em poucos minutos. Boletos podem levar atÃ© 2 dias Ãºteis para compensar â€” esta pÃ¡gina atualiza sozinha assim que recebermos o pagamento.
+              A confirmação costuma acontecer em poucos minutos. Boletos podem levar até 2 dias úteis para compensar — esta página atualiza sozinha assim que recebermos o pagamento.
             </div>
           </div>
         </div>
@@ -167,13 +167,13 @@
 
     </section>
 
-    <!-- â”€â”€â”€â”€ COLUNA DIREITA: RESUMO â”€â”€â”€â”€ -->
+    <!-- ──── COLUNA DIREITA: RESUMO ──── -->
     <aside class="pe-summary" aria-label="Resumo financeiro do pedido">
 
       <div class="pe-summary__head">
         <div class="pe-summary__label">Total do pedido</div>
         <div class="pe-summary__total">R$ {{ pedido.total }}</div>
-        <div class="pe-summary__total-sub">Aguardando confirmaÃ§Ã£o do Mercado Pago</div>
+        <div class="pe-summary__total-sub">Aguardando confirmação do Mercado Pago</div>
       </div>
 
       <div class="pe-summary__rows">
@@ -184,7 +184,7 @@
         {% if pedido.desconto > 0 %}
           <div class="pe-row">
             <span class="pe-row__label">Desconto</span>
-            <span class="pe-row__value pe-row__value--off">âˆ’ R$ {{ pedido.desconto }}</span>
+            <span class="pe-row__value pe-row__value--off">− R$ {{ pedido.desconto }}</span>
           </div>
         {% endif %}
         <div class="pe-row">
@@ -218,9 +218,9 @@
 
   </div>
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  <!-- ═══════════════════════════════════════════════════════════
        SUPORTE
-  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  ═══════════════════════════════════════════════════════════ -->
   <section class="pe-support">
     <div class="pe-support__icon" aria-hidden="true">
       <svg class="icon" viewBox="0 0 24 24">
@@ -232,9 +232,9 @@
     </div>
 
     <div class="pe-support__text">
-      <h3 class="pe-support__title">Alguma dÃºvida sobre o pagamento?</h3>
+      <h3 class="pe-support__title">Alguma dúvida sobre o pagamento?</h3>
       <p class="pe-support__sub">
-        Se jÃ¡ efetuou o pagamento e ele ainda nÃ£o foi reconhecido em alguns minutos,
+        Se já efetuou o pagamento e ele ainda não foi reconhecido em alguns minutos,
         fale com a gente pelo WhatsApp. Estamos aqui para ajudar.
       </p>
     </div>
@@ -253,11 +253,11 @@
 (function () {
   'use strict';
 
-  // Polling automÃ¡tico: verifica o status do pagamento e redireciona
-  // para a pÃ¡gina de sucesso assim que o Mercado Pago aprovar.
+  // Polling automático: verifica o status do pagamento e redireciona
+  // para a página de sucesso assim que o Mercado Pago aprovar.
   var STATUS_URL = "{% url 'status_pagamento' pedido.id pedido.access_token %}";
   var INTERVAL_MS = 8000;   // 8s entre checagens
-  var MAX_DURATION_MS = 30 * 60 * 1000; // pÃ¡ra apÃ³s 30 min
+  var MAX_DURATION_MS = 30 * 60 * 1000; // pára após 30 min
 
   var startedAt = Date.now();
   var inFlight = false;
@@ -281,13 +281,13 @@
           window.location.href = data.sucesso_url;
         }
       })
-      .catch(function () { /* silencioso â€” tenta de novo no prÃ³ximo tick */ })
+      .catch(function () { /* silencioso — tenta de novo no próximo tick */ })
       .finally(function () { inFlight = false; });
   }
 
   var timerId = setInterval(checkStatus, INTERVAL_MS);
 
-  // Checa tambÃ©m quando a aba volta a ficar visÃ­vel (ex.: cliente
+  // Checa também quando a aba volta a ficar visível (ex.: cliente
   // alterna para o app do banco e retorna).
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') checkStatus();

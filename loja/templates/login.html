@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load static inline_static %}
 
-{% block title %}Entrar â€” Barrs Store{% endblock %}
+{% block title %}Entrar — Barrs Store{% endblock %}
 
 {% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/login.css' %}"><style>
 {% inline_static 'loja/css/pages/login.css' %}
 </style>{% endblock %}
 
 {% block content %}
-<!-- NAVEGAÃ‡ÃƒO MÃNIMA -->
+<!-- NAVEGAÇÃO MÍNIMA -->
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -43,7 +43,7 @@
       </div>
       <div class="auth-field">
         <label>Senha</label>
-        <input type="password" name="senha" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required autocomplete="current-password">
+        <input type="password" name="senha" placeholder="••••••••" required autocomplete="current-password">
       </div>
       {% include "partials/turnstile_widget.html" %}
       <button type="submit" class="auth-btn">Entrar</button>
@@ -51,7 +51,7 @@
 
     <div class="auth-divider">ou</div>
 
-    <p class="auth-link">NÃ£o tem conta? <a href="{% url 'cadastro' %}">Criar conta</a></p>
+    <p class="auth-link">Não tem conta? <a href="{% url 'cadastro' %}">Criar conta</a></p>
   </div>
 </main>
 {% endblock %}

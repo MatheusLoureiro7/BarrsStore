@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load static inline_static %}
 
-{% block title %}Carrinho â€” Barrs Store{% endblock %}
+{% block title %}Carrinho — Barrs Store{% endblock %}
 
 {% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/carrinho.css' %}"><style>
 {% inline_static 'loja/css/pages/carrinho.css' %}
 </style>{% endblock %}
 
 {% block content %}
-<!-- NAVEGAÃ‡ÃƒO -->
+<!-- NAVEGAÇÃO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -58,7 +58,7 @@
           <div class="cart-item__qty">
             <form method="POST" action="{% url 'remover_item' item.id %}" class="qtd-form">
               {% csrf_token %}
-              <button type="submit" class="cart-item__qty-btn" title="Diminuir" aria-label="Diminuir quantidade">âˆ’</button>
+              <button type="submit" class="cart-item__qty-btn" title="Diminuir" aria-label="Diminuir quantidade">−</button>
             </form>
             <span class="cart-item__qty-num">{{ item.quantidade }}</span>
             <form method="POST" action="{% url 'add_carrinho' item.produto.id %}" class="qtd-form">
@@ -96,9 +96,9 @@
         <div class="shipping-status" id="cep-status-frete"></div>
         <div class="frete-loading" id="frete-loading">
           <span class="frete-loading__spinner"></span>
-          Calculando opÃ§Ãµes de frete
+          Calculando opções de frete
         </div>
-        <div class="frete-erro" id="frete-erro">NÃ£o foi possÃ­vel calcular o frete. Verifique o CEP.</div>
+        <div class="frete-erro" id="frete-erro">Não foi possível calcular o frete. Verifique o CEP.</div>
         <div class="shipping-options" id="opcoes-frete"></div>
       </div>
 
@@ -120,7 +120,7 @@
           Finalizar compra
         </button>
       </form>
-      <a href="/" class="summary-back">â† Continuar comprando</a>
+      <a href="/" class="summary-back">← Continuar comprando</a>
     </aside>
   </div>
 
@@ -130,7 +130,7 @@
     <div class="empty-cart__icon">
       <svg class="icon" style="width:28px;height:28px" aria-hidden="true"><use href="#i-cart"/></svg>
     </div>
-    <p>Seu carrinho estÃ¡ vazio.</p>
+    <p>Seu carrinho está vazio.</p>
     <a href="/">Ver produtos</a>
   </div>
   {% endif %}
@@ -157,7 +157,7 @@
     const btn = document.getElementById('btn-calcular');
 
     if (cep.length !== 8) {
-      status.textContent = 'Digite um CEP vÃ¡lido.';
+      status.textContent = 'Digite um CEP válido.';
       status.className = 'shipping-status erro';
       return;
     }
@@ -197,7 +197,7 @@
             onchange="selecionarFrete(${op.preco}, '${op.nome} ${op.empresa}', ${op.id}, this.closest('.opcao-frete'))">
           <div class="opcao-info">
             <div class="opcao-nome">${op.nome}</div>
-            <div class="opcao-prazo">${op.empresa} Â· ${op.prazo} dias Ãºteis</div>
+            <div class="opcao-prazo">${op.empresa} · ${op.prazo} dias úteis</div>
           </div>
           <div class="opcao-preco">R$ ${op.preco.toFixed(2).replace('.', ',')}</div>
         `;

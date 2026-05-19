@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 import os
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
@@ -104,6 +104,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'loja.context_processors.marketing_tags',
             ],
+            'libraries': {
+                'inline_static': 'loja.templatetags.inline_static',
+            },
         },
     },
 ]
@@ -136,7 +139,7 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-# Arquivos estáticos
+# Arquivos estÃ¡ticos
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
@@ -190,9 +193,9 @@ DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ── SEGURANÇA ──────────────────────────────────────────────────────
+# â”€â”€ SEGURANÃ‡A â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if not DEBUG:
-    # HTTPS obrigatório
+    # HTTPS obrigatÃ³rio
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -202,12 +205,12 @@ if not DEBUG:
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = True
 
-    # Proteção HSTS (diz ao browser: só HTTPS por 1 ano)
+    # ProteÃ§Ã£o HSTS (diz ao browser: sÃ³ HTTPS por 1 ano)
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-    # Proteção XSS e Clickjacking
+    # ProteÃ§Ã£o XSS e Clickjacking
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
@@ -246,24 +249,24 @@ TURNSTILE_REQUIRED = bool(TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY)
 
 if not DEBUG:
     # Compartilha os cookies entre barrsstore.com.br e www.barrsstore.com.br.
-    # Isso evita falha de CSRF quando o cliente navega entre as duas versões do domínio.
+    # Isso evita falha de CSRF quando o cliente navega entre as duas versÃµes do domÃ­nio.
     SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', '.barrsstore.com.br')
     CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', '.barrsstore.com.br')
 
-# Limitar tentativas de login (proteção brute force)
+# Limitar tentativas de login (proteÃ§Ã£o brute force)
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 ADMIN_RATE_LIMIT = os.environ.get('ADMIN_RATE_LIMIT', '60/5m')
 
-# Sessão expira ao fechar o browser
+# SessÃ£o expira ao fechar o browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 dias
 
 JAZZMIN_SETTINGS = {
     "site_title": "Barrs Store Admin",
     "site_header": "Barrs Store",
-    "site_brand": "💎 Barrs Store",
+    "site_brand": "ðŸ’Ž Barrs Store",
     "welcome_sign": "Bem-vinda ao painel da Barrs Store",
-    "copyright": "Barrs Store © 2026",
+    "copyright": "Barrs Store Â© 2026",
     "search_model": ["loja.Produto", "loja.Pedido"],
     "topmenu_links": [
         {"name": "Ver site", "url": "/", "new_window": True},
@@ -325,3 +328,4 @@ LOGGING = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
