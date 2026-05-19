@@ -1,12 +1,14 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
-{% block title %}Rastrear pedido — Barrs Store{% endblock %}
+{% block title %}Rastrear pedido â€” Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/rastrear_pedido.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/rastrear_pedido.css' %}"><style>
+{% inline_static 'loja/css/pages/rastrear_pedido.css' %}
+</style>{% endblock %}
 
 {% block content %}
-<!-- NAVEGAÇÃO -->
+<!-- NAVEGAÃ‡ÃƒO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -20,7 +22,7 @@
 <main class="track">
   <div class="track__eyebrow">Acompanhamento</div>
   <h1 class="track__title">Rastrear pedido</h1>
-  <p class="track__lead">Digite o número do pedido e o e-mail usado na compra para acompanhar o status e o código de rastreio.</p>
+  <p class="track__lead">Digite o nÃºmero do pedido e o e-mail usado na compra para acompanhar o status e o cÃ³digo de rastreio.</p>
 
   {% if erro %}
   <div class="track__erro">{{ erro }}</div>
@@ -29,7 +31,7 @@
   <form class="track-card" method="GET">
     <div class="track-grid">
       <div class="track-field">
-        <label>Número do pedido</label>
+        <label>NÃºmero do pedido</label>
         <input name="pedido" placeholder="Ex: 123" value="{{ request.GET.pedido }}" required>
       </div>
       <div class="track-field">
@@ -52,7 +54,7 @@
     </div>
     <div class="track-row">
       <span class="track-row__label">Rastreio</span>
-      <span class="track-row__value">{% if pedido.codigo_rastreio %}{{ pedido.codigo_rastreio }}{% else %}Ainda não enviado{% endif %}</span>
+      <span class="track-row__value">{% if pedido.codigo_rastreio %}{{ pedido.codigo_rastreio }}{% else %}Ainda nÃ£o enviado{% endif %}</span>
     </div>
     {% if pedido.codigo_rastreio %}
       <a class="track__btn" href="{{ pedido.rastreio_url }}" target="_blank" rel="noopener" style="margin-top:var(--space-4)">Acompanhar nos Correios</a>

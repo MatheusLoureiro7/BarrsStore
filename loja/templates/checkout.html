@@ -1,14 +1,16 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
-{% block title %}Finalizar Compra — Barrs Store{% endblock %}
+{% block title %}Finalizar Compra â€” Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/checkout.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/checkout.css' %}"><style>
+{% inline_static 'loja/css/pages/checkout.css' %}
+</style>{% endblock %}
 
 {% block content %}
 <h1 class="sr-only">Finalizar compra</h1>
 
-<!-- NAVEGAÇÃO -->
+<!-- NAVEGAÃ‡ÃƒO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -40,7 +42,7 @@
   <div class="step__line"></div>
   <div class="step active"><div class="step__num">2</div>Checkout</div>
   <div class="step__line"></div>
-  <div class="step"><div class="step__num">3</div>Confirmação</div>
+  <div class="step"><div class="step__num">3</div>ConfirmaÃ§Ã£o</div>
 </div>
 
 <!-- MENSAGENS -->
@@ -52,7 +54,7 @@
 </ul>
 {% endif %}
 
-<!-- FORMULÁRIO -->
+<!-- FORMULÃRIO -->
 <form method="POST" action="{% url 'finalizar_compra' %}">
   {% csrf_token %}
   <input type="hidden" name="frete_valor" id="frete_valor_hidden" value="{{ frete_valor_selecionado }}">
@@ -92,16 +94,16 @@
         {% if not user.is_authenticated %}
         <div class="account-callout">
           <div class="account-callout__title">Entrar ou criar conta</div>
-          <div class="account-callout__sub">Se o e-mail já tiver cadastro, use sua senha. Se for novo, criamos sua conta automaticamente.</div>
-          <input type="password" name="senha" placeholder="Senha (mínimo 8 caracteres)" minlength="8" required>
-          <div class="account-callout__hint">Obrigatória para finalizar e acompanhar seu pedido</div>
+          <div class="account-callout__sub">Se o e-mail jÃ¡ tiver cadastro, use sua senha. Se for novo, criamos sua conta automaticamente.</div>
+          <input type="password" name="senha" placeholder="Senha (mÃ­nimo 8 caracteres)" minlength="8" required>
+          <div class="account-callout__hint">ObrigatÃ³ria para finalizar e acompanhar seu pedido</div>
         </div>
         {% endif %}
       </section>
 
-      <!-- ENDEREÇO -->
+      <!-- ENDEREÃ‡O -->
       <section class="cko-section">
-        <h2 class="cko-section__title">Endereço de entrega</h2>
+        <h2 class="cko-section__title">EndereÃ§o de entrega</h2>
         <div class="cko-grid">
           <div class="cko-field full">
             <label>CEP</label>
@@ -119,7 +121,7 @@
               value="{% if request.POST.rua %}{{ request.POST.rua }}{% elif perfil %}{{ perfil.rua }}{% endif %}">
           </div>
           <div class="cko-field">
-            <label>Número</label>
+            <label>NÃºmero</label>
             <input type="text" name="numero" placeholder="123" required
               value="{% if request.POST.numero %}{{ request.POST.numero }}{% elif perfil %}{{ perfil.numero }}{% endif %}">
           </div>
@@ -213,7 +215,7 @@
         </div>
         <div class="trust-item">
           <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-check"/></svg>
-          Confirmação automática após o Pix
+          ConfirmaÃ§Ã£o automÃ¡tica apÃ³s o Pix
         </div>
         <div class="trust-item">
           <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-whatsapp"/></svg>
@@ -351,20 +353,20 @@
     const status = document.getElementById('cep-status');
 
     if (cep.length !== 8) {
-      status.textContent = 'Digite um CEP válido (8 números).';
+      status.textContent = 'Digite um CEP vÃ¡lido (8 nÃºmeros).';
       status.className = 'cep-status cep-erro';
       return;
     }
 
     cepInput.value = cep.slice(0,5) + '-' + cep.slice(5);
-    status.textContent = 'Buscando endereço...';
+    status.textContent = 'Buscando endereÃ§o...';
     status.className = 'cep-status';
 
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const data = await res.json();
       if (data.erro) {
-        status.textContent = 'CEP não encontrado.';
+        status.textContent = 'CEP nÃ£o encontrado.';
         status.className = 'cep-status cep-erro';
         return;
       }
@@ -372,7 +374,7 @@
       document.getElementById('bairro').value = data.bairro || '';
       document.getElementById('cidade').value = data.localidade || '';
       document.getElementById('estado').value = data.uf || '';
-      status.textContent = 'Endereço encontrado';
+      status.textContent = 'EndereÃ§o encontrado';
       status.className = 'cep-status cep-ok';
       document.querySelector('input[name="numero"]').focus();
     } catch(e) {
@@ -404,7 +406,7 @@
     {% if turnstile_site_key %}
     const turnstileToken = document.querySelector('.coupon-box input[name="cf-turnstile-response"]')?.value || '';
     if (!turnstileToken) {
-      status.textContent = 'Confirme a verificação de segurança e tente novamente.';
+      status.textContent = 'Confirme a verificaÃ§Ã£o de seguranÃ§a e tente novamente.';
       status.className = 'coupon-status erro';
       return;
     }
@@ -425,14 +427,14 @@
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        status.textContent = data.erro || 'Não foi possível aplicar o cupom.';
+        status.textContent = data.erro || 'NÃ£o foi possÃ­vel aplicar o cupom.';
         status.className = 'coupon-status erro';
         return;
       }
 
       descontoCupom = data.tipo === 'frete_gratis' ? freteGet : parseFloat(data.desconto || 0);
       input.value = data.codigo;
-      document.getElementById('desconto-label').textContent = data.tipo === 'frete_gratis' ? `Frete grátis ${data.codigo}` : `Desconto ${data.codigo}`;
+      document.getElementById('desconto-label').textContent = data.tipo === 'frete_gratis' ? `Frete grÃ¡tis ${data.codigo}` : `Desconto ${data.codigo}`;
       document.getElementById('desconto-display').textContent = '- ' + formatarMoeda(descontoCupom);
       document.getElementById('desconto-row').style.display = 'flex';
       status.textContent = 'Cupom aplicado com sucesso';

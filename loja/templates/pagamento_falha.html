@@ -1,14 +1,16 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
-{% block title %}Pagamento não concluído — Barrs Store{% endblock %}
+{% block title %}Pagamento nÃ£o concluÃ­do â€” Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/pagamento_falha.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/pagamento_falha.css' %}"><style>
+{% inline_static 'loja/css/pages/pagamento_falha.css' %}
+</style>{% endblock %}
 
 {% block content %}
-<!-- ═══════════════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      HEADER
-═══════════════════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <header class="fa-header">
   <div class="fa-header__inner">
     <a class="fa-brand" href="/">
@@ -19,16 +21,16 @@
     </a>
     <div class="fa-header__safe">
       <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
-      Seu pedido está salvo e seguro
+      Seu pedido estÃ¡ salvo e seguro
     </div>
   </div>
 </header>
 
 <main class="fa-page">
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        HERO
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="fa-hero" aria-labelledby="hero-title">
     <div class="fa-hero__seal" aria-hidden="true">
       <svg class="fa-hero__seal__icon" viewBox="0 0 24 24" fill="none"
@@ -40,13 +42,13 @@
       </svg>
     </div>
 
-    <div class="fa-hero__eyebrow">Pagamento não concluído</div>
+    <div class="fa-hero__eyebrow">Pagamento nÃ£o concluÃ­do</div>
 
     <h1 class="fa-hero__title" id="hero-title">Vamos tentar de novo?</h1>
 
     <p class="fa-hero__sub">
-      Não conseguimos confirmar o pagamento desta vez — mas{% if pedido %} seu pedido <strong>#{{ pedido.id }}</strong> continua salvo e nada foi cobrado.{% else %} seu pedido continua salvo e nada foi cobrado.{% endif %}
-      Você pode tentar novamente quando quiser, com o mesmo ou outro método de pagamento.
+      NÃ£o conseguimos confirmar o pagamento desta vez â€” mas{% if pedido %} seu pedido <strong>#{{ pedido.id }}</strong> continua salvo e nada foi cobrado.{% else %} seu pedido continua salvo e nada foi cobrado.{% endif %}
+      VocÃª pode tentar novamente quando quiser, com o mesmo ou outro mÃ©todo de pagamento.
     </p>
 
     {% if pedido %}
@@ -57,9 +59,9 @@
     {% endif %}
   </section>
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        TIMELINE
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="fa-timeline" aria-label="Status do pedido">
     <div class="fa-timeline__inner">
 
@@ -68,7 +70,7 @@
           <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
         </span>
         <span class="fa-step__label">Pedido recebido</span>
-        <span class="fa-step__note">Concluído</span>
+        <span class="fa-step__note">ConcluÃ­do</span>
       </div>
 
       <div class="fa-step fa-step--current">
@@ -83,20 +85,20 @@
         <span class="fa-step__dot">
           <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
         </span>
-        <span class="fa-step__label">Preparação para envio</span>
-        <span class="fa-step__note">Próxima etapa</span>
+        <span class="fa-step__label">PreparaÃ§Ã£o para envio</span>
+        <span class="fa-step__note">PrÃ³xima etapa</span>
       </div>
 
     </div>
   </section>
 
   {% if pedido %}
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        LAYOUT 2 COLUNAS
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <div class="fa-layout">
 
-    <!-- ──── COLUNA ESQUERDA: DETALHES ──── -->
+    <!-- â”€â”€â”€â”€ COLUNA ESQUERDA: DETALHES â”€â”€â”€â”€ -->
     <section class="fa-details">
 
       <!-- Itens -->
@@ -124,7 +126,7 @@
               <div>
                 <div class="fa-item__name">{{ item.nome_produto }}</div>
                 <div class="fa-item__meta">
-                  Qtd: {{ item.quantidade }}{% if item.tamanho %} · Tamanho: {{ item.tamanho }}{% endif %}
+                  Qtd: {{ item.quantidade }}{% if item.tamanho %} Â· Tamanho: {{ item.tamanho }}{% endif %}
                 </div>
               </div>
               <div class="fa-item__price">R$ {{ item.subtotal }}</div>
@@ -137,7 +139,7 @@
             <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
           </div>
           <div class="fa-keep__text">
-            <strong>Nada foi cobrado.</strong> Seu pedido continua reservado por algumas horas — basta finalizar o pagamento quando puder.
+            <strong>Nada foi cobrado.</strong> Seu pedido continua reservado por algumas horas â€” basta finalizar o pagamento quando puder.
           </div>
         </div>
       </div>
@@ -154,23 +156,23 @@
             Causas mais comuns
           </div>
           <div class="fa-reasons__list">
-            <div class="fa-reason">Saldo ou limite insuficiente no cartão</div>
+            <div class="fa-reason">Saldo ou limite insuficiente no cartÃ£o</div>
             <div class="fa-reason">Algum dado digitado incorretamente</div>
-            <div class="fa-reason">Operadora bloqueou a transação por segurança</div>
-            <div class="fa-reason">Pagamento cancelado antes da confirmação</div>
+            <div class="fa-reason">Operadora bloqueou a transaÃ§Ã£o por seguranÃ§a</div>
+            <div class="fa-reason">Pagamento cancelado antes da confirmaÃ§Ã£o</div>
           </div>
         </div>
       </div>
 
     </section>
 
-    <!-- ──── COLUNA DIREITA: RESUMO + CTA ──── -->
+    <!-- â”€â”€â”€â”€ COLUNA DIREITA: RESUMO + CTA â”€â”€â”€â”€ -->
     <aside class="fa-summary" aria-label="Resumo financeiro do pedido">
 
       <div class="fa-summary__head">
         <div class="fa-summary__label">Total do pedido</div>
         <div class="fa-summary__total">R$ {{ pedido.total }}</div>
-        <div class="fa-summary__total-sub">Nada foi cobrado — pronto para tentar novamente</div>
+        <div class="fa-summary__total-sub">Nada foi cobrado â€” pronto para tentar novamente</div>
       </div>
 
       <div class="fa-summary__rows">
@@ -181,7 +183,7 @@
         {% if pedido.desconto > 0 %}
           <div class="fa-row">
             <span class="fa-row__label">Desconto</span>
-            <span class="fa-row__value fa-row__value--off">− R$ {{ pedido.desconto }}</span>
+            <span class="fa-row__value fa-row__value--off">âˆ’ R$ {{ pedido.desconto }}</span>
           </div>
         {% endif %}
         <div class="fa-row">
@@ -233,7 +235,7 @@
             <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
           </div>
           <div class="fa-keep__text">
-            <strong>Nada foi cobrado.</strong> Seus itens continuam no carrinho — basta voltar e tentar o pagamento de novo.
+            <strong>Nada foi cobrado.</strong> Seus itens continuam no carrinho â€” basta voltar e tentar o pagamento de novo.
           </div>
         </div>
         <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.625rem;">
@@ -248,9 +250,9 @@
   </div>
   {% endif %}
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        SUPORTE
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="fa-support">
     <div class="fa-support__icon" aria-hidden="true">
       <svg class="icon" viewBox="0 0 24 24">

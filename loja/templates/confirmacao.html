@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
 {% block title %}Finalizar pagamento | Barrs Store{% endblock %}
 
@@ -7,7 +7,9 @@
 <script src="https://sdk.mercadopago.com/js/v2"></script>
 {% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/confirmacao.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/confirmacao.css' %}"><style>
+{% inline_static 'loja/css/pages/confirmacao.css' %}
+</style>{% endblock %}
 
 {% block content %}
 <!-- HEADER MINIMAL E ELEGANTE -->
@@ -49,9 +51,9 @@
 <main class="co-page">
   <div class="co-layout">
 
-    <!-- ═══════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          PAINEL DE PAGAMENTO
-    ════════════════════════════════════════════════════════ -->
+    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <section class="co-pay" aria-labelledby="pay-title">
 
       <!-- Intro editorial -->
@@ -62,7 +64,7 @@
         </div>
         <h1 class="co-pay__title" id="pay-title">Finalize seu<br>pagamento.</h1>
         <p class="co-pay__subtitle">
-          Olá, <strong>{{ pedido.nome }}</strong>. Escolha como pagar e conclua sua compra com segurança.
+          OlÃ¡, <strong>{{ pedido.nome }}</strong>. Escolha como pagar e conclua sua compra com seguranÃ§a.
         </p>
       </div>
 
@@ -75,7 +77,7 @@
         <div class="co-trust__div" aria-hidden="true"></div>
         <div class="co-trust__item" role="listitem">
           <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
-          Confirmação automática
+          ConfirmaÃ§Ã£o automÃ¡tica
         </div>
         <div class="co-trust__div" aria-hidden="true"></div>
         <div class="co-trust__item" role="listitem">
@@ -138,15 +140,15 @@
 
         <!-- Fallback direto -->
         <div id="mp-direto" class="co-fallback">
-          Caso o pagamento não carregue, <a href="#" id="mp-direto-link">clique aqui para concluir pelo Mercado Pago</a>.
+          Caso o pagamento nÃ£o carregue, <a href="#" id="mp-direto-link">clique aqui para concluir pelo Mercado Pago</a>.
         </div>
 
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          RESUMO DO PEDIDO
-    ════════════════════════════════════════════════════════ -->
+    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <aside class="co-summary" aria-label="Resumo do pedido">
 
       <div class="co-sum-header">
@@ -170,14 +172,14 @@
             {% endif %}
             <div>
               <div class="co-item__name">{{ item.nome_produto }}</div>
-              <div class="co-item__meta">Qtd: {{ item.quantidade }}{% if item.tamanho %} · Tam: {{ item.tamanho }}{% endif %}</div>
+              <div class="co-item__meta">Qtd: {{ item.quantidade }}{% if item.tamanho %} Â· Tam: {{ item.tamanho }}{% endif %}</div>
             </div>
             <div class="co-item__price">R$ {{ item.subtotal }}</div>
           </div>
         {% endfor %}
       </div>
 
-      <!-- Preços -->
+      <!-- PreÃ§os -->
       <div class="co-prices">
         <div class="co-row">
           <span class="co-row__label">Subtotal</span>
@@ -186,7 +188,7 @@
         {% if pedido.desconto > 0 %}
           <div class="co-row">
             <span class="co-row__label">Desconto</span>
-            <span class="co-row__value co-row__value--off">− R$ {{ pedido.desconto }}</span>
+            <span class="co-row__value co-row__value--off">âˆ’ R$ {{ pedido.desconto }}</span>
           </div>
         {% endif %}
         <div class="co-row">
@@ -213,15 +215,15 @@
       <div class="co-notes">
         <div class="co-note">
           <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
-          Pix com confirmação automática. Se a tela não atualizar, aguarde — seu pedido é confirmado assim que o pagamento for aprovado.
+          Pix com confirmaÃ§Ã£o automÃ¡tica. Se a tela nÃ£o atualizar, aguarde â€” seu pedido Ã© confirmado assim que o pagamento for aprovado.
         </div>
         <div class="co-note">
           <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>
-          Precisa de ajuda? Nosso atendimento está disponível pelo WhatsApp.
+          Precisa de ajuda? Nosso atendimento estÃ¡ disponÃ­vel pelo WhatsApp.
         </div>
       </div>
 
-      <!-- Ações secundárias -->
+      <!-- AÃ§Ãµes secundÃ¡rias -->
       <div class="co-actions">
         <a href="/" class="co-actions__link">Continuar comprando</a>
         <a href="/minha-conta/" class="co-actions__link">Acompanhar meus pedidos</a>
@@ -253,7 +255,7 @@
   let statusInFlight = false;
   let statusStartedAt = 0;
 
-  /* O valor deve ser um Number puro (sem vírgula) */
+  /* O valor deve ser um Number puro (sem vÃ­rgula) */
   const totalPedido = Number(
     '{{ pedido.total|stringformat:"0.2f" }}'.replace(',', '.')
   );
@@ -261,7 +263,7 @@
   function showError(msg) {
     loadingEl.style.display = 'none';
     errorEl.style.display   = 'block';
-    errorEl.innerHTML = (msg || 'Não foi possível carregar o pagamento.')
+    errorEl.innerHTML = (msg || 'NÃ£o foi possÃ­vel carregar o pagamento.')
       + ' <a href="javascript:location.reload()">Tentar novamente</a>';
   }
 
@@ -384,7 +386,7 @@
           },
         }
       );
-      if (!prefResp.ok) throw new Error('Não foi possível iniciar o pagamento.');
+      if (!prefResp.ok) throw new Error('NÃ£o foi possÃ­vel iniciar o pagamento.');
       const prefData = await prefResp.json();
 
       if (prefData.init_point) {
@@ -407,8 +409,8 @@
         customization: {
           visual: {
             style: {
-              /* flat = sem sombras próprias do Brick; nosso CSS
-                 adiciona apenas o gradiente do botão por cima.  */
+              /* flat = sem sombras prÃ³prias do Brick; nosso CSS
+                 adiciona apenas o gradiente do botÃ£o por cima.  */
               theme: 'default',
               customVariables: {
                 /* Texto */
@@ -416,7 +418,7 @@
                 textSecondaryColor:    '#9A9188',
 
                 /* Inputs brancos = sem "bloco" visual pesado;
-                   a borda suave cria a separação necessária.    */
+                   a borda suave cria a separaÃ§Ã£o necessÃ¡ria.    */
                 inputBackgroundColor:  '#FFFFFF',
                 formBackgroundColor:   '#FFFFFF',
 
@@ -433,7 +435,7 @@
                 outlinePrimaryColor:   '#E0D8CF',
                 outlineSecondaryColor: '#EDE7DE',
 
-                /* Botão */
+                /* BotÃ£o */
                 buttonTextColor:       '#FFFFFF',
 
                 /* Tipografia tighter = checkout de marca premium */
@@ -466,8 +468,8 @@
             emailSectionTitle:        'Seus dados',
             installmentsSectionTitle: 'Parcelamento',
             cardholderName: {
-              label:       'Nome no cartão',
-              placeholder: 'Como aparece no cartão',
+              label:       'Nome no cartÃ£o',
+              placeholder: 'Como aparece no cartÃ£o',
             },
             email: {
               label:       'E-mail',
@@ -477,7 +479,7 @@
               label: 'CPF',
             },
             cardNumber: {
-              label:       'Número do cartão',
+              label:       'NÃºmero do cartÃ£o',
               placeholder: '0000 0000 0000 0000',
             },
             expirationDate: {
@@ -485,7 +487,7 @@
               placeholder: 'MM/AA',
             },
             securityCode: {
-              label:       'Código de segurança',
+              label:       'CÃ³digo de seguranÃ§a',
               placeholder: 'CVV',
             },
             entityType: {
@@ -500,26 +502,26 @@
             selectIssuerBank:   'Banco emissor',
             formSubmit:         'Confirmar pagamento',
             paymentMethods: {
-              newCreditCardTitle:  'Novo cartão de crédito',
-              creditCardTitle:     'Cartão de crédito',
-              creditCardValueProp: 'Parcele em até 6x',
-              newDebitCardTitle:   'Novo cartão de débito',
-              debitCardTitle:      'Cartão de débito',
-              debitCardValueProp:  'Aprovação imediata',
+              newCreditCardTitle:  'Novo cartÃ£o de crÃ©dito',
+              creditCardTitle:     'CartÃ£o de crÃ©dito',
+              creditCardValueProp: 'Parcele em atÃ© 6x',
+              newDebitCardTitle:   'Novo cartÃ£o de dÃ©bito',
+              debitCardTitle:      'CartÃ£o de dÃ©bito',
+              debitCardValueProp:  'AprovaÃ§Ã£o imediata',
               ticketTitle:         'Pix',
-              ticketValueProp:     'Aprovação instantânea',
+              ticketValueProp:     'AprovaÃ§Ã£o instantÃ¢nea',
             },
             reviewConfirm: {
               componentTitle:           'Revise seu pedido',
               payerDetailsTitle:        'Seus dados',
               shippingDetailsTitle:     'Entrega',
-              billingDetailsTitle:      'Cobrança',
+              billingDetailsTitle:      'CobranÃ§a',
               paymentMethodDetailsTitle:'Forma de pagamento',
               detailsTitle:             'Detalhes',
               summaryItemsTitle:        'Itens',
               summaryShippingTitle:     'Frete',
               summaryDiscountTitle:     'Desconto',
-              summaryYouPayTitle:       'Você paga',
+              summaryYouPayTitle:       'VocÃª paga',
               summaryTotalTitle:        'Total',
             },
           },
@@ -531,7 +533,7 @@
           },
 
           onSubmit: ({ formData }) => {
-            showStatus('Processando pagamento com segurança...');
+            showStatus('Processando pagamento com seguranÃ§a...');
             return fetch(
               '{% url "processar_pagamento_brick" pedido.id pedido.access_token %}',
               {
@@ -547,7 +549,7 @@
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
                   throw new Error(
-                    data.erro || 'Pagamento não aprovado. Confira os dados e tente novamente.'
+                    data.erro || 'Pagamento nÃ£o aprovado. Confira os dados e tente novamente.'
                   );
                 }
                 if ((data.status === 'pending' || data.status === 'in_process') && showPixPayment(data)) {
@@ -566,14 +568,14 @@
 
           onError: (error) => {
             console.error('[MP Brick]', error);
-            showError('Não foi possível carregar o pagamento.');
+            showError('NÃ£o foi possÃ­vel carregar o pagamento.');
           },
         },
       });
 
     } catch (error) {
       console.error('[iniciarPagamento]', error);
-      showError('Não foi possível carregar o pagamento.');
+      showError('NÃ£o foi possÃ­vel carregar o pagamento.');
     }
   }
 

@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
-{% block title %}Guia de medidas — Barrs Store{% endblock %}
+{% block title %}Guia de medidas â€” Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/medidas.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/medidas.css' %}"><style>
+{% inline_static 'loja/css/pages/medidas.css' %}
+</style>{% endblock %}
 
 {% block content %}
 <nav class="nav">
@@ -12,8 +14,8 @@
     Barrs Store
   </a>
   <ul class="nav__links">
-    <li><a href="/">Início</a></li>
-    <li><a href="/#produtos">Coleção</a></li>
+    <li><a href="/">InÃ­cio</a></li>
+    <li><a href="/#produtos">ColeÃ§Ã£o</a></li>
     <li><a href="{% url 'medidas' %}" class="active">Medidas</a></li>
     <li><a href="/contato/">Contato</a></li>
   </ul>
@@ -37,32 +39,32 @@
   <section class="measure-hero">
     <div>
       <div class="measure-hero__eyebrow">Guia de medidas</div>
-      <h1 class="measure-hero__title">Escolha seu anel com mais segurança</h1>
-      <p class="measure-hero__lead">Use o guia abaixo para comparar uma medida que você já tem em casa e escolher o tamanho com mais tranquilidade antes de finalizar sua compra.</p>
+      <h1 class="measure-hero__title">Escolha seu anel com mais seguranÃ§a</h1>
+      <p class="measure-hero__lead">Use o guia abaixo para comparar uma medida que vocÃª jÃ¡ tem em casa e escolher o tamanho com mais tranquilidade antes de finalizar sua compra.</p>
       <div class="measure-hero__actions">
         <a href="/#produtos" class="measure-btn measure-btn--primary">Ver produtos</a>
-        <a href="https://wa.me/5511913225256?text=Ola!%20Preciso%20de%20ajuda%20com%20medidas%20da%20Barrs%20Store." class="measure-btn measure-btn--ghost" target="_blank" rel="noopener">Tirar dúvida</a>
+        <a href="https://wa.me/5511913225256?text=Ola!%20Preciso%20de%20ajuda%20com%20medidas%20da%20Barrs%20Store." class="measure-btn measure-btn--ghost" target="_blank" rel="noopener">Tirar dÃºvida</a>
       </div>
     </div>
     <div class="measure-hero__frame">
-      <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777483182/ChatGPT_Image_29_de_abr._de_2026_12_39_48_vngvlp.png" alt="Guia de medidas de anéis Barrs Store" loading="eager" decoding="async">
+      <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777483182/ChatGPT_Image_29_de_abr._de_2026_12_39_48_vngvlp.png" alt="Guia de medidas de anÃ©is Barrs Store" loading="eager" decoding="async">
     </div>
   </section>
 
   <section class="measure-tips">
     <div class="tip">
       <div class="tip__num">01</div>
-      <div class="tip__title">Meça com calma</div>
-      <div class="tip__desc">Escolha um anel que já fique confortável no dedo desejado e compare com a referência do guia.</div>
+      <div class="tip__title">MeÃ§a com calma</div>
+      <div class="tip__desc">Escolha um anel que jÃ¡ fique confortÃ¡vel no dedo desejado e compare com a referÃªncia do guia.</div>
     </div>
     <div class="tip">
       <div class="tip__num">02</div>
       <div class="tip__title">Confira o dedo certo</div>
-      <div class="tip__desc">A medida pode mudar entre as mãos. Use como referência o dedo em que você pretende usar a peça.</div>
+      <div class="tip__desc">A medida pode mudar entre as mÃ£os. Use como referÃªncia o dedo em que vocÃª pretende usar a peÃ§a.</div>
     </div>
     <div class="tip">
       <div class="tip__num">03</div>
-      <div class="tip__title">Na dúvida, chame a gente</div>
+      <div class="tip__title">Na dÃºvida, chame a gente</div>
       <div class="tip__desc">Se ficar entre dois tamanhos, fale conosco pelo WhatsApp antes de concluir o pedido.</div>
     </div>
   </section>
@@ -71,14 +73,14 @@
     <div class="measure-cta__inner">
       <div>
         <div class="measure-cta__title">Um detalhe muda tudo</div>
-        <div class="measure-cta__text">Queremos que sua peça chegue linda e no tamanho certo. Use este guia sempre que for escolher anéis na Barrs Store.</div>
+        <div class="measure-cta__text">Queremos que sua peÃ§a chegue linda e no tamanho certo. Use este guia sempre que for escolher anÃ©is na Barrs Store.</div>
       </div>
       <a href="/#produtos" class="measure-btn measure-btn--primary">Continuar comprando</a>
     </div>
   </section>
 </main>
 
-<a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!" class="wa-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+<a href="https://wa.me/5511913225256?text=OlÃ¡!%20Vim%20pelo%20site%20da%20Barrs%20Store!" class="wa-float" target="_blank" rel="noopener" aria-label="WhatsApp">
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
   </svg>

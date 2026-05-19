@@ -1,19 +1,21 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
-{% block title %}Minha Conta — Barrs Store{% endblock %}
+{% block title %}Minha Conta â€” Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/minha_conta.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/minha_conta.css' %}"><style>
+{% inline_static 'loja/css/pages/minha_conta.css' %}
+</style>{% endblock %}
 
 {% block content %}
-<!-- NAVEGAÇÃO -->
+<!-- NAVEGAÃ‡ÃƒO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
     Barrs Store
   </a>
   <ul class="nav__links">
-    <li><a href="/">Início</a></li>
+    <li><a href="/">InÃ­cio</a></li>
   </ul>
   <div class="nav__right">
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
@@ -91,7 +93,7 @@
           <div class="order-card__info">
             <div class="order-card__num">Pedido #{{ pedido.id }}</div>
             <div class="order-card__meta">
-              {{ pedido.criado_em|date:"d/m/Y" }} às {{ pedido.criado_em|time:"H:i" }} · {{ pedido.itens.count }} item{% if pedido.itens.count != 1 %}ns{% endif %} · {{ pedido.get_forma_pagamento_display }}
+              {{ pedido.criado_em|date:"d/m/Y" }} Ã s {{ pedido.criado_em|time:"H:i" }} Â· {{ pedido.itens.count }} item{% if pedido.itens.count != 1 %}ns{% endif %} Â· {{ pedido.get_forma_pagamento_display }}
             </div>
           </div>
           <div class="order-card__right">
@@ -105,7 +107,7 @@
 
     {% else %}
       <div class="orders-empty">
-        <p>Você ainda não fez nenhum pedido.</p>
+        <p>VocÃª ainda nÃ£o fez nenhum pedido.</p>
         <a href="/">Ver produtos</a>
       </div>
     {% endif %}
@@ -117,14 +119,14 @@
       {% csrf_token %}
 
       <div class="form-block">
-        <div class="form-block__title">Informações pessoais</div>
+        <div class="form-block__title">InformaÃ§Ãµes pessoais</div>
         <div class="form-grid">
           <div class="form-field">
             <label>Primeiro nome</label>
             <input type="text" name="primeiro_nome" value="{{ request.user.first_name }}">
           </div>
           <div class="form-field">
-            <label>Último nome</label>
+            <label>Ãšltimo nome</label>
             <input type="text" name="ultimo_nome" value="{{ request.user.last_name }}">
           </div>
           <div class="form-field full">
@@ -139,14 +141,14 @@
       </div>
 
       <div class="form-block">
-        <div class="form-block__title">Endereço padrão</div>
+        <div class="form-block__title">EndereÃ§o padrÃ£o</div>
         <div class="form-grid">
           <div class="form-field">
             <label>CEP</label>
             <input type="text" name="cep" id="cep" value="{{ perfil.cep }}" placeholder="00000-000" maxlength="9">
           </div>
           <div class="form-field">
-            <label>Número</label>
+            <label>NÃºmero</label>
             <input type="text" name="numero" id="numero" value="{{ perfil.numero }}" placeholder="123">
           </div>
           <div class="form-field full">
@@ -172,7 +174,7 @@
         </div>
       </div>
 
-      <button type="submit" class="form-save">Salvar alterações</button>
+      <button type="submit" class="form-save">Salvar alteraÃ§Ãµes</button>
     </form>
   </div>
 
@@ -187,7 +189,7 @@ function trocarAba(event, nome, el) {
   document.getElementById('secao-' + nome).classList.add('active');
 }
 
-// CEP automático via ViaCEP
+// CEP automÃ¡tico via ViaCEP
 const cepInput = document.getElementById('cep');
 if (cepInput) {
   cepInput.addEventListener('blur', function() {

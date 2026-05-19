@@ -1,14 +1,16 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
-{% block title %}Pedido confirmado — Barrs Store{% endblock %}
+{% block title %}Pedido confirmado â€” Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/pagamento_sucesso.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/pagamento_sucesso.css' %}"><style>
+{% inline_static 'loja/css/pages/pagamento_sucesso.css' %}
+</style>{% endblock %}
 
 {% block content %}
-<!-- ═══════════════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      HEADER MINIMAL
-═══════════════════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <header class="su-header">
   <div class="su-header__inner">
     <a class="su-brand" href="/">
@@ -19,16 +21,16 @@
     </a>
     <div class="su-header__safe">
       <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
-      Pedido concluído com sucesso
+      Pedido concluÃ­do com sucesso
     </div>
   </div>
 </header>
 
 <main class="su-page">
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        HERO COM SELO ANIMADO
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="su-hero" aria-labelledby="hero-title">
     <div class="su-hero__seal" aria-hidden="true">
       <svg class="icon"><use href="#i-check"/></svg>
@@ -41,8 +43,8 @@
     </h1>
 
     <p class="su-hero__sub">
-      Seu pagamento foi aprovado e seu pedido entrou em preparação.
-      Em breve você receberá o código de rastreio no e-mail
+      Seu pagamento foi aprovado e seu pedido entrou em preparaÃ§Ã£o.
+      Em breve vocÃª receberÃ¡ o cÃ³digo de rastreio no e-mail
       <strong>{{ pedido.email }}</strong>.
     </p>
 
@@ -52,9 +54,9 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        TIMELINE DO PEDIDO
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="su-timeline" aria-label="Status do pedido">
     <div class="su-timeline__inner">
 
@@ -70,8 +72,8 @@
         <span class="su-step__dot">
           <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
         </span>
-        <span class="su-step__label">Em preparação</span>
-        <span class="su-step__note">Até 2 dias úteis</span>
+        <span class="su-step__label">Em preparaÃ§Ã£o</span>
+        <span class="su-step__note">AtÃ© 2 dias Ãºteis</span>
       </div>
 
       <div class="su-step">
@@ -93,12 +95,12 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        LAYOUT 2 COLUNAS: DETALHES + RESUMO
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <div class="su-layout">
 
-    <!-- ──── COLUNA ESQUERDA: DETALHES ──── -->
+    <!-- â”€â”€â”€â”€ COLUNA ESQUERDA: DETALHES â”€â”€â”€â”€ -->
     <section class="su-details">
 
       <!-- Itens -->
@@ -126,7 +128,7 @@
               <div>
                 <div class="su-item__name">{{ item.nome_produto }}</div>
                 <div class="su-item__meta">
-                  Qtd: {{ item.quantidade }}{% if item.tamanho %} · Tamanho: {{ item.tamanho }}{% endif %}
+                  Qtd: {{ item.quantidade }}{% if item.tamanho %} Â· Tamanho: {{ item.tamanho }}{% endif %}
                 </div>
               </div>
               <div class="su-item__price">R$ {{ item.subtotal }}</div>
@@ -143,11 +145,11 @@
 
         <div class="su-delivery-grid">
           <div>
-            <div class="su-delivery__label">Endereço de entrega</div>
+            <div class="su-delivery__label">EndereÃ§o de entrega</div>
             <div class="su-delivery__value">
               {{ pedido.rua }}, {{ pedido.numero }}<br>
               {% if pedido.bairro %}{{ pedido.bairro }}<br>{% endif %}
-              {{ pedido.cidade }}/{{ pedido.estado }}{% if pedido.cep %} · CEP {{ pedido.cep }}{% endif %}
+              {{ pedido.cidade }}/{{ pedido.estado }}{% if pedido.cep %} Â· CEP {{ pedido.cep }}{% endif %}
             </div>
           </div>
 
@@ -169,9 +171,9 @@
             <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
           </div>
           <div>
-            <div class="su-eta__title">Postagem em até 2 dias úteis</div>
+            <div class="su-eta__title">Postagem em atÃ© 2 dias Ãºteis</div>
             <div class="su-eta__sub">
-              Você receberá o código de rastreio por e-mail assim que o pedido for enviado.
+              VocÃª receberÃ¡ o cÃ³digo de rastreio por e-mail assim que o pedido for enviado.
             </div>
           </div>
         </div>
@@ -179,7 +181,7 @@
 
     </section>
 
-    <!-- ──── COLUNA DIREITA: RESUMO ──── -->
+    <!-- â”€â”€â”€â”€ COLUNA DIREITA: RESUMO â”€â”€â”€â”€ -->
     <aside class="su-summary" aria-label="Resumo financeiro do pedido">
 
       <div class="su-summary__head">
@@ -196,7 +198,7 @@
         {% if pedido.desconto > 0 %}
           <div class="su-row">
             <span class="su-row__label">Desconto</span>
-            <span class="su-row__value su-row__value--off">− R$ {{ pedido.desconto }}</span>
+            <span class="su-row__value su-row__value--off">âˆ’ R$ {{ pedido.desconto }}</span>
           </div>
         {% endif %}
         <div class="su-row">
@@ -212,7 +214,7 @@
         </div>
         <div class="su-meta">
           <span class="su-meta__label">Status</span>
-          <span class="su-meta__pill">Em preparação</span>
+          <span class="su-meta__pill">Em preparaÃ§Ã£o</span>
         </div>
       </div>
 
@@ -230,9 +232,9 @@
 
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        SUPORTE PELO WHATSAPP
-  ═══════════════════════════════════════════════════════════ -->
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="su-support">
     <div class="su-support__icon" aria-hidden="true">
       <svg class="icon" viewBox="0 0 24 24">
@@ -246,7 +248,7 @@
     <div class="su-support__text">
       <h3 class="su-support__title">Precisa de ajuda?</h3>
       <p class="su-support__sub">
-        Nosso atendimento está disponível pelo WhatsApp para tirar qualquer dúvida
+        Nosso atendimento estÃ¡ disponÃ­vel pelo WhatsApp para tirar qualquer dÃºvida
         sobre seu pedido, prazos ou trocas.
       </p>
     </div>

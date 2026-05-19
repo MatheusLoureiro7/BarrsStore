@@ -1,12 +1,14 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static inline_static %}
 
-{% block title %}Pedido #{{ pedido.id }} — Barrs Store{% endblock %}
+{% block title %}Pedido #{{ pedido.id }} â€” Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/detalhe_pedido.css' %}">{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/detalhe_pedido.css' %}"><style>
+{% inline_static 'loja/css/pages/detalhe_pedido.css' %}
+</style>{% endblock %}
 
 {% block content %}
-<!-- NAVEGAÇÃO -->
+<!-- NAVEGAÃ‡ÃƒO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -35,7 +37,7 @@
   <header class="order-header">
     <div>
       <h1 class="order-header__title">Pedido #{{ pedido.id }}</h1>
-      <p class="order-header__date">{{ pedido.criado_em|date:"d \d\e F \d\e Y" }} às {{ pedido.criado_em|time:"H:i" }}</p>
+      <p class="order-header__date">{{ pedido.criado_em|date:"d \d\e F \d\e Y" }} Ã s {{ pedido.criado_em|time:"H:i" }}</p>
     </div>
     <span class="badge-status badge-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
   </header>
@@ -83,7 +85,7 @@
     <div class="item-row">
       <div>
         <div class="item-row__name">{{ item.nome_produto }}</div>
-        <div class="item-row__qty">Quantidade: {{ item.quantidade }} · R$ {{ item.preco_unitario }} cada</div>
+        <div class="item-row__qty">Quantidade: {{ item.quantidade }} Â· R$ {{ item.preco_unitario }} cada</div>
       </div>
       <div class="item-row__price">R$ {{ item.subtotal }}</div>
     </div>
@@ -101,7 +103,7 @@
       {% endif %}
       <div class="info-row">
         <span class="info-row__label">Frete</span>
-        <span class="info-row__value">{% if pedido.frete > 0 %}R$ {{ pedido.frete }}{% else %}Grátis{% endif %}</span>
+        <span class="info-row__value">{% if pedido.frete > 0 %}R$ {{ pedido.frete }}{% else %}GrÃ¡tis{% endif %}</span>
       </div>
       <div class="total-row">
         <span>Total</span>
@@ -115,7 +117,7 @@
   <section class="detail-block">
     <h2 class="detail-block__title">Rastreio</h2>
     <div class="info-row">
-      <span class="info-row__label">Código</span>
+      <span class="info-row__label">CÃ³digo</span>
       <span class="info-row__value">{{ pedido.codigo_rastreio }}</span>
     </div>
     <a href="{{ pedido.rastreio_url }}" target="_blank" rel="noopener" class="detail-btn">Acompanhar entrega</a>
@@ -124,14 +126,14 @@
 
   <!-- ENTREGA -->
   <section class="detail-block">
-    <h2 class="detail-block__title">Endereço de entrega</h2>
+    <h2 class="detail-block__title">EndereÃ§o de entrega</h2>
     <div class="info-row">
-      <span class="info-row__label">Destinatário</span>
+      <span class="info-row__label">DestinatÃ¡rio</span>
       <span class="info-row__value">{{ pedido.nome }}</span>
     </div>
     <div class="info-row">
-      <span class="info-row__label">Endereço</span>
-      <span class="info-row__value">{{ pedido.rua }}, {{ pedido.numero }}{% if pedido.complemento %} — {{ pedido.complemento }}{% endif %}</span>
+      <span class="info-row__label">EndereÃ§o</span>
+      <span class="info-row__value">{{ pedido.rua }}, {{ pedido.numero }}{% if pedido.complemento %} â€” {{ pedido.complemento }}{% endif %}</span>
     </div>
     <div class="info-row">
       <span class="info-row__label">Bairro</span>
@@ -164,7 +166,7 @@
     </div>
   </section>
 
-  <a href="{% url 'minha_conta' %}" class="detail-btn detail-btn--ghost">← Voltar para minha conta</a>
+  <a href="{% url 'minha_conta' %}" class="detail-btn detail-btn--ghost">â† Voltar para minha conta</a>
 
 </main>
 {% endblock %}
