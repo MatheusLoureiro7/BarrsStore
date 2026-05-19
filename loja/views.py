@@ -6,9 +6,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom
 from .mercadopago_security import validar_assinatura_mercadopago
@@ -49,6 +51,19 @@ def site_url(path=''):
     if not path:
         return base
     return f"{base}{path if path.startswith('/') else '/' + path}"
+
+
+def pacote_envio_por_quantidade(total_itens):
+    """Ajusta peso e altura da caixa sem alterar a embalagem padrao da loja."""
+    total_itens = max(int(total_itens or 1), 1)
+    peso = max(Decimal('0.20'), Decimal('0.10') * total_itens)
+    altura_extra = max(total_itens - 1, 0) // 4
+    return {
+        'width': CAIXA_ENVIO['width'],
+        'length': CAIXA_ENVIO['length'],
+        'height': min(CAIXA_ENVIO['height'] + altura_extra, 18),
+        'weight': float(peso),
+    }
 
 
 def seo_context(request, title, description, image_url='', robots='index, follow'):
@@ -146,6 +161,20 @@ def payload_pagamento_seguro_para_log(payment_data):
         'external_reference': payment_data.get('external_reference'),
         'notification_url': payment_data.get('notification_url'),
         'payer': safe_payer,
+    }
+
+
+def dominio_email_para_log(email):
+    email = (email or '').strip()
+    return email.split('@')[-1].lower() if '@' in email else ''
+
+
+def resposta_externa_segura_para_log(response):
+    texto = getattr(response, 'text', '') or ''
+    return {
+        'status_code': getattr(response, 'status_code', None),
+        'ok': getattr(response, 'ok', False),
+        'body_len': len(texto),
     }
 
 
@@ -411,6 +440,8 @@ def criar_envio_melhor_envio(pedido):
 
     service_id = inferir_servico_melhor_envio(pedido)
     subtotal_declarado = max(pedido.subtotal - pedido.desconto, Decimal('1.00'))
+    itens_pedido = list(pedido.itens.all())
+    pacote = pacote_envio_por_quantidade(sum(item.quantidade for item in itens_pedido))
 
     payload = {
         'service': int(service_id),
@@ -446,14 +477,9 @@ def criar_envio_melhor_envio(pedido):
                 'quantity': str(item.quantidade),
                 'unitary_value': str(item.preco_unitario),
             }
-            for item in pedido.itens.all()
+            for item in itens_pedido
         ],
-        'volumes': [{
-            'height': CAIXA_ENVIO['height'],
-            'width': CAIXA_ENVIO['width'],
-            'length': CAIXA_ENVIO['length'],
-            'weight': CAIXA_ENVIO['weight'],
-        }],
+        'volumes': [pacote],
         'options': {
             'insurance_value': float(subtotal_declarado),
             'receipt': False,
@@ -471,7 +497,7 @@ def criar_envio_melhor_envio(pedido):
             timeout=15,
         )
         texto = resposta.text[:1000]
-        logger.info('[ME] Criar envio pedido %s: status=%s body=%s', pedido.id, resposta.status_code, texto)
+        logger.info('[ME] Criar envio pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
 
         if resposta.status_code >= 400:
             pedido.melhor_envio_status = 'erro'
@@ -716,7 +742,7 @@ def enviar_email_confirmacao(pedido):
             logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
             return False
 
-        logger.info('[BREVO] Iniciando envio do pedido %s para %s', pedido.id, pedido.email)
+        logger.info('[BREVO] Iniciando envio do pedido %s. email_domain=%s', pedido.id, dominio_email_para_log(pedido.email))
         brevo_from_email = os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip()
         brevo_admin_email = os.environ.get('BREVO_ADMIN_EMAIL', brevo_from_email).strip()
         payload = {
@@ -741,13 +767,12 @@ def enviar_email_confirmacao(pedido):
             json=payload,
             timeout=10,
         )
-        logger.info('[BREVO] Resposta pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:500])
+        logger.info('[BREVO] Resposta pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
         if resposta.status_code >= 400:
             logger.warning(
-                'Brevo recusou o e-mail do pedido %s. Status %s: %s',
+                'Brevo recusou o e-mail do pedido %s: %s',
                 pedido.id,
-                resposta.status_code,
-                resposta.text[:500],
+                resposta_externa_segura_para_log(resposta),
             )
             return False
         return True
@@ -788,16 +813,15 @@ def enviar_email_pagamento_pendente(pedido):
             },
             timeout=10,
         )
-        logger.info('[BREVO] Pagamento pendente pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:300])
+        logger.info('[BREVO] Pagamento pendente pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
         if resposta.status_code < 400:
             pedido.email_pagamento_pendente_enviado = True
             pedido.save(update_fields=['email_pagamento_pendente_enviado'])
             return True
         logger.warning(
-            'Brevo recusou o e-mail de pagamento pendente do pedido %s. Status %s: %s',
+            'Brevo recusou o e-mail de pagamento pendente do pedido %s: %s',
             pedido.id,
-            resposta.status_code,
-            resposta.text[:500],
+            resposta_externa_segura_para_log(resposta),
         )
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail de pagamento pendente do pedido %s: %s', pedido.id, exc)
@@ -838,13 +862,12 @@ def enviar_email_rastreio(pedido):
             },
             timeout=10,
         )
-        logger.info('[BREVO] Rastreio pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:300])
+        logger.info('[BREVO] Rastreio pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
         if resposta.status_code >= 400:
             logger.warning(
-                'Brevo recusou o e-mail de rastreio do pedido %s. Status %s: %s',
+                'Brevo recusou o e-mail de rastreio do pedido %s: %s',
                 pedido.id,
-                resposta.status_code,
-                resposta.text[:500],
+                resposta_externa_segura_para_log(resposta),
             )
             return False
         pedido.email_rastreio_enviado = True
@@ -875,7 +898,7 @@ def _brevo_send(assunto, html, destinatario_email, destinatario_nome):
         )
         return r.status_code < 400
     except Exception as exc:
-        logger.exception('[BREVO] Erro ao enviar "%s" para %s: %s', assunto, destinatario_email, exc)
+        logger.exception('[BREVO] Erro ao enviar "%s". email_domain=%s erro=%s', assunto, dominio_email_para_log(destinatario_email), exc)
         return False
 
 
@@ -1076,9 +1099,9 @@ def enviar_email_confirmacao(pedido):
             json=payload,
             timeout=10,
         )
-        logger.info('[BREVO] Confirmacao pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:500])
+        logger.info('[BREVO] Confirmacao pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
         if resposta.status_code >= 400:
-            logger.warning('Brevo recusou o e-mail do pedido %s. Status %s: %s', pedido.id, resposta.status_code, resposta.text[:500])
+            logger.warning('Brevo recusou o e-mail do pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
             return False
         return True
     except Exception as exc:
@@ -1110,12 +1133,12 @@ def enviar_email_pagamento_pendente(pedido):
             json=_brevo_payload(pedido.email, pedido.nome, f'Finalize o pagamento do pedido #{pedido.id} - Barrs Store', html),
             timeout=10,
         )
-        logger.info('[BREVO] Pagamento pendente pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:300])
+        logger.info('[BREVO] Pagamento pendente pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
         if resposta.status_code < 400:
             pedido.email_pagamento_pendente_enviado = True
             pedido.save(update_fields=['email_pagamento_pendente_enviado'])
             return True
-        logger.warning('Brevo recusou o e-mail de pagamento pendente do pedido %s. Status %s: %s', pedido.id, resposta.status_code, resposta.text[:500])
+        logger.warning('Brevo recusou o e-mail de pagamento pendente do pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail de pagamento pendente do pedido %s: %s', pedido.id, exc)
     return False
@@ -1153,9 +1176,9 @@ def enviar_email_rastreio(pedido):
             json=_brevo_payload(pedido.email, pedido.nome, f'Seu pedido #{pedido.id} foi enviado - Barrs Store', html),
             timeout=10,
         )
-        logger.info('[BREVO] Rastreio pedido %s: status=%s body=%s', pedido.id, resposta.status_code, resposta.text[:300])
+        logger.info('[BREVO] Rastreio pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
         if resposta.status_code >= 400:
-            logger.warning('Brevo recusou o e-mail de rastreio do pedido %s. Status %s: %s', pedido.id, resposta.status_code, resposta.text[:500])
+            logger.warning('Brevo recusou o e-mail de rastreio do pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
             return False
         pedido.email_rastreio_enviado = True
         pedido.save(update_fields=['email_rastreio_enviado'])
@@ -1385,24 +1408,12 @@ def enviar_email_abandono_3(carrinho):
 def enviar_whatsapp_pedido(pedido):
     """Envia notificação no WhatsApp quando chegar um novo pedido."""
     try:
-        itens_texto = ', '.join(
-            f"{item.quantidade}x {item.nome_produto}{f' - Tam. {item.tamanho}' if item.tamanho else ''}"
-            for item in pedido.itens.all()
-        )
-
-        frete_texto = f"R$ {pedido.frete}" if pedido.frete > 0 else "Grátis"
-
+        painel_url = site_url(f'/painel/loja/pedido/{pedido.id}/change/')
         mensagem = (
-            f"🛍️ NOVO PEDIDO #{pedido.id}\n\n"
-            f"👤 {pedido.nome}\n"
-            f"📱 {pedido.telefone}\n"
-            f"📧 {pedido.email}\n\n"
-            f"📦 Itens: {itens_texto}\n\n"
-            f"💰 Subtotal: R$ {pedido.subtotal}\n"
-            f"🚚 Frete: {frete_texto}\n"
-            f"💎 Total: R$ {pedido.total}\n\n"
-            f"💳 Pagamento: {pedido.get_forma_pagamento_display()}\n"
-            f"📍 Endereço: {pedido.rua}, {pedido.numero} - {pedido.cidade}/{pedido.estado}"
+            f"Novo pedido #{pedido.id}\n\n"
+            f"Total: R$ {pedido.total}\n"
+            f"Status: {pedido.get_status_display()}\n"
+            f"Ver no painel: {painel_url}"
         )
 
         whatsapp_phone = os.environ.get('WHATSAPP_ADMIN_PHONE', '5511913225256').strip()
@@ -1560,7 +1571,7 @@ def detalhe_produto(request, slug):
 
 
 def detalhe_produto_id(request, produto_id):
-    produto = get_object_or_404(Produto, id=produto_id)
+    produto = get_object_or_404(Produto, id=produto_id, visivel=True, estoque__gt=0)
     return redirect(produto.get_absolute_url(), permanent=True)
 
 
@@ -1631,16 +1642,19 @@ def calcular_frete_melhor_envio(request):
 
         produtos_cotacao = []
         subtotal_declarado = Decimal('1.00')
+        pacote = pacote_envio_por_quantidade(1)
         if carrinho:
             subtotal_declarado = max(carrinho.total(), Decimal('1.00'))
+            total_itens = sum(item.quantidade for item in carrinho.itens.all())
+            pacote = pacote_envio_por_quantidade(total_itens)
             # A cotacao do Melhor Envio usa produtos com dimensoes e valor segurado.
             # Como a loja envia tudo em uma caixa padrao, cotamos um volume unico.
             produtos_cotacao = [{
                 'id': f'carrinho-{carrinho.id}',
-                'width': CAIXA_ENVIO['width'],
-                'height': CAIXA_ENVIO['height'],
-                'length': CAIXA_ENVIO['length'],
-                'weight': CAIXA_ENVIO['weight'],
+                'width': pacote['width'],
+                'height': pacote['height'],
+                'length': pacote['length'],
+                'weight': pacote['weight'],
                 'insurance_value': float(subtotal_declarado),
                 'quantity': 1,
             }]
@@ -1649,10 +1663,10 @@ def calcular_frete_melhor_envio(request):
             'from': {'postal_code': apenas_digitos(os.environ.get('ME_REMETENTE_CEP', '08275700'))},
             'to': {'postal_code': cep_destino},
             'package': {
-                'height': CAIXA_ENVIO['height'],
-                'width': CAIXA_ENVIO['width'],
-                'length': CAIXA_ENVIO['length'],
-                'weight': CAIXA_ENVIO['weight'],
+                'height': pacote['height'],
+                'width': pacote['width'],
+                'length': pacote['length'],
+                'weight': pacote['weight'],
             },
             'options': {
                 # Mantem o calculo do carrinho igual ao envio criado depois da compra.
@@ -1955,21 +1969,28 @@ def checkout(request):
                 messages.error(request, 'Digite sua senha para entrar ou criar sua conta antes de finalizar.')
                 return render_checkout()
 
-            if len(senha) < 8:
-                messages.error(request, 'A senha deve ter pelo menos 8 caracteres.')
-                return render_checkout()
-
             usuario_existente = User.objects.filter(email__iexact=email_pedido).first()
             if usuario_existente:
                 user = authenticate(request, username=usuario_existente.username, password=senha)
                 if not user:
-                    messages.error(request, 'Este e-mail ja tem cadastro. Digite a senha correta para continuar.')
+                    messages.error(request, 'Nao foi possivel validar suas credenciais. Confira os dados e tente novamente.')
                     return render_checkout()
                 login(request, user)
                 cliente = user
             else:
                 nome_completo = request.POST.get('nome', '').strip()
                 partes = nome_completo.split()
+                user_preview = User(
+                    username=email_pedido,
+                    email=email_pedido,
+                    first_name=partes[0] if partes else '',
+                    last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
+                )
+                try:
+                    validate_password(senha, user_preview)
+                except ValidationError as exc:
+                    messages.error(request, ' '.join(exc.messages))
+                    return render_checkout()
                 user = User.objects.create_user(
                     username=email_pedido,
                     email=email_pedido,
@@ -2295,6 +2316,7 @@ def processar_pagamento_brick(request, pedido_id, token):
 
 
 # ── MERCADO PAGO: RETORNOS ─────────────────────────────────────────
+@ratelimit(key='ip', rate='30/m', method='GET', block=False)
 def pagamento_sucesso(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
     payment_id = request.GET.get('payment_id') or request.GET.get('collection_id')
@@ -2313,6 +2335,7 @@ def pagamento_falha(request, pedido_id, token):
     return render(request, 'pagamento_falha.html', context)
 
 
+@ratelimit(key='ip', rate='30/m', method='GET', block=False)
 def pagamento_pendente(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
     payment_id = request.GET.get('payment_id') or request.GET.get('collection_id')
@@ -2387,21 +2410,30 @@ def cadastro(request):
             messages.error(request, 'As senhas não coincidem.')
         elif User.objects.filter(email=email).exists():
             messages.error(request, 'Este e-mail já está cadastrado.')
-        elif len(senha) < 8:
-            messages.error(request, 'A senha deve ter pelo menos 8 caracteres.')
         else:
             partes = nome.split()
-            user = User.objects.create_user(
+            user_preview = User(
                 username=email,
                 email=email,
-                password=senha,
                 first_name=partes[0] if partes else '',
                 last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
             )
-            PerfilCliente.objects.create(user=user)
-            login(request, user)
-            messages.success(request, 'Conta criada com sucesso!')
-            return redirect('minha_conta')
+            try:
+                validate_password(senha, user_preview)
+            except ValidationError as exc:
+                messages.error(request, ' '.join(exc.messages))
+            else:
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=senha,
+                    first_name=partes[0] if partes else '',
+                    last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
+                )
+                PerfilCliente.objects.create(user=user)
+                login(request, user)
+                messages.success(request, 'Conta criada com sucesso!')
+                return redirect('minha_conta')
 
     context = {'qtd_carrinho': get_carrinho_info(request)}
     context.update(noindex_context(request, 'Criar conta - Barrs Store'))
@@ -2485,6 +2517,14 @@ def detalhe_pedido(request, pedido_id):
 def robots_txt(request):
     linhas = [
         'User-agent: *',
+        'Disallow: /painel/',
+        'Disallow: /admin/',
+        'Disallow: /carrinho/',
+        'Disallow: /finalizar/',
+        'Disallow: /pagamento/',
+        'Disallow: /minha-conta/',
+        'Disallow: /login/',
+        'Disallow: /cadastro/',
         'Allow: /',
         f'Sitemap: {site_url("/sitemap.xml")}',
     ]
@@ -2530,16 +2570,20 @@ def garantia(request):
     return render(request, 'garantia.html', context)
 
 
+@ratelimit(key='ip', rate='10/m', method='GET', block=True)
 def rastrear_pedido(request):
     pedido = None
     erro = ''
     if request.GET.get('pedido') or request.GET.get('email'):
         pedido_id = request.GET.get('pedido', '').strip().replace('#', '')
         email = request.GET.get('email', '').strip()
-        try:
-            pedido = Pedido.objects.get(id=pedido_id, email__iexact=email)
-        except (Pedido.DoesNotExist, ValueError):
-            erro = 'Nao encontramos um pedido com esses dados.'
+        if not pedido_id or not email:
+            erro = 'Informe o numero do pedido e o e-mail da compra.'
+        else:
+            try:
+                pedido = Pedido.objects.get(id=pedido_id, email__iexact=email)
+            except (Pedido.DoesNotExist, ValueError):
+                erro = 'Nao encontramos um pedido com esses dados.'
 
     context = {
         'pedido': pedido,

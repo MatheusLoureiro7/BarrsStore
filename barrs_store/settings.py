@@ -72,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'loja.middleware.ContentSecurityPolicyReportOnlyMiddleware',
 ]
 
 ROOT_URLCONF = 'barrs_store.urls'
@@ -206,6 +207,20 @@ CSRF_COOKIE_HTTPONLY = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 X_FRAME_OPTIONS = 'DENY'
+CONTENT_SECURITY_POLICY_REPORT_ONLY = os.environ.get(
+    'CONTENT_SECURITY_POLICY_REPORT_ONLY',
+    "default-src 'self'; "
+    "base-uri 'self'; "
+    "object-src 'none'; "
+    "frame-ancestors 'none'; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' data: https://fonts.gstatic.com; "
+    "img-src 'self' data: blob: https://res.cloudinary.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com; "
+    "connect-src 'self' https://api.mercadopago.com https://*.mercadopago.com https://www.facebook.com https://graph.facebook.com https://www.google-analytics.com https://analytics.google.com; "
+    "frame-src 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br; "
+    "form-action 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br"
+).strip()
 
 if not DEBUG:
     # Compartilha os cookies entre barrsstore.com.br e www.barrsstore.com.br.
@@ -250,8 +265,8 @@ MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
 MERCADOPAGO_PUBLIC_KEY = os.environ.get('MP_PUBLIC_KEY')
 MERCADOPAGO_WEBHOOK_SECRET = os.environ.get('MP_WEBHOOK_SECRET', '').strip()
 MERCADOPAGO_WEBHOOK_TOLERANCE_SECONDS = int(os.environ.get('MP_WEBHOOK_TOLERANCE_SECONDS', '600'))
-MERCADOPAGO_WEBHOOK_STRICT = (
-    os.environ.get('MP_WEBHOOK_STRICT', 'False' if DEBUG else 'True') == 'True'
+MERCADOPAGO_WEBHOOK_STRICT = True if not DEBUG else (
+    os.environ.get('MP_WEBHOOK_STRICT', 'False') == 'True'
 )
 
 LOGGING = {

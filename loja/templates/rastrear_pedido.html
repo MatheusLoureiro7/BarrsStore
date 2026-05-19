@@ -122,8 +122,6 @@
   color: var(--color-ink-soft);
   font-variant-numeric: tabular-nums;
 }
-.track-row__value--total { color: var(--color-brand); font-weight: 700; }
-
 @media (max-width: 620px) {
   .track-grid { grid-template-columns: 1fr; }
 }
@@ -174,10 +172,6 @@
     <div class="track-row">
       <span class="track-row__label">Status</span>
       <span class="track-row__value">{{ pedido.get_status_display }}</span>
-    </div>
-    <div class="track-row">
-      <span class="track-row__label">Total</span>
-      <span class="track-row__value track-row__value--total">R$ {{ pedido.total }}</span>
     </div>
     <div class="track-row">
       <span class="track-row__label">Rastreio</span>
