@@ -141,6 +141,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 WHITENOISE_MAX_AGE = 31536000
+WHITENOISE_USE_FINDERS = os.environ.get('WHITENOISE_USE_FINDERS', 'True') == 'True'
 
 # Cloudinary
 import cloudinary
