@@ -309,12 +309,19 @@ def enviar_meta_purchase_pedido(pedido):
 
 def confirmar_pedido_pago(pedido):
     logger.info('[PAGAMENTO] Confirmando pedido %s. status_atual=%s', pedido.id, pedido.status)
-    atualizou = False
-    if pedido.status != 'confirmado':
-        pedido.status = 'confirmado'
-        atualizou = True
-        if pedido.cupom_codigo:
-            Cupom.objects.filter(codigo__iexact=pedido.cupom_codigo).update(usado=F('usado') + 1)
+
+    # Trava o pedido para garantir que status e cupom sao tocados uma unica vez,
+    # mesmo se webhook MP for reentregue ou se o cliente abrir varias abas em paralelo.
+    with transaction.atomic():
+        pedido_lock = Pedido.objects.select_for_update().get(pk=pedido.pk)
+        if pedido_lock.status != 'confirmado':
+            pedido_lock.status = 'confirmado'
+            if pedido_lock.cupom_codigo:
+                Cupom.objects.filter(codigo__iexact=pedido_lock.cupom_codigo).update(usado=F('usado') + 1)
+            pedido_lock.save(update_fields=['status'])
+        pedido = pedido_lock
+
+    # Efeitos colaterais idempotentes (cada um tem flag/lock proprio).
     baixar_estoque_pedido(pedido)
 
     meta_enviado = enviar_meta_purchase_pedido(pedido)
@@ -325,11 +332,7 @@ def confirmar_pedido_pago(pedido):
         logger.info('[PAGAMENTO] E-mail de confirmacao do pedido %s enviado=%s', pedido.id, enviado)
         if enviado:
             pedido.email_confirmacao_enviado = True
-            atualizou = True
-
-    if atualizou:
-        pedido.save(update_fields=['status', 'email_confirmacao_enviado', 'estoque_baixado'])
-        logger.info('[PAGAMENTO] Pedido %s salvo como confirmado.', pedido.id)
+            pedido.save(update_fields=['email_confirmacao_enviado'])
 
     envio_criado = criar_envio_melhor_envio(pedido)
     logger.info('[PAGAMENTO] Melhor Envio pedido %s criado=%s', pedido.id, envio_criado)
@@ -1567,12 +1570,31 @@ def home(request):
     except (TypeError, ValueError):
         page_number = 1
     per_page = 12
-    produtos_pagina = produtos[:page_number * per_page]
     query_params = request.GET.copy()
     query_params.pop('page', None)
+    query_params.pop('partial', None)
     base_query = query_params.urlencode()
-    next_page_url = ''
+
+    # Resposta parcial usada pelo infinite scroll do front: devolve so o chunk daquela pagina.
+    is_partial = (
+        request.GET.get('partial') == '1'
+        or request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    )
+    if is_partial:
+        from django.template.loader import render_to_string
+        inicio = (page_number - 1) * per_page
+        fim = page_number * per_page
+        chunk = list(produtos[inicio:fim])
+        html = render_to_string('partials/product_cards_chunk.html', {'produtos': chunk}, request=request)
+        return JsonResponse({
+            'html': html,
+            'has_next': total_produtos > fim,
+            'next_page': page_number + 1 if total_produtos > fim else 0,
+        })
+
+    produtos_pagina = produtos[:page_number * per_page]
     has_next_page = total_produtos > page_number * per_page
+    next_page_url = ''
     if has_next_page:
         next_query = query_params.copy()
         next_query['page'] = page_number + 1
@@ -1590,6 +1612,7 @@ def home(request):
         'produtos': produtos_pagina,
         'has_next_page': has_next_page,
         'next_page_url': next_page_url,
+        'next_page_number': page_number + 1 if has_next_page else 0,
         'base_query': base_query,
         'qtd_carrinho': get_carrinho_info(request),
         'busca': busca,
@@ -1978,6 +2001,10 @@ def checkout(request):
         return render(request, 'checkout.html', context)
 
     if request.method == 'POST':
+        if not verificar_turnstile(request):
+            messages.error(request, 'Confirme a verificacao de seguranca e tente novamente.')
+            return render_checkout()
+
         cliente = request.user if request.user.is_authenticated else None
         salvar_lead_na_sessao(
             request,
@@ -2407,6 +2434,7 @@ def pagamento_pendente(request, pedido_id, token):
     return render(request, 'pagamento_pendente.html', context)
 
 
+@ratelimit(key='ip', rate='120/m', method='GET', block=False)
 def status_pagamento(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
     return JsonResponse({

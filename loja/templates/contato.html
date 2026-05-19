@@ -1,101 +1,11 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contato — Barrs Store</title>
-{% include "partials/seo_head.html" %}
-{% include "partials/base_styles.html" %}
-<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<style>
-.contact {
-  max-width: 720px;
-  margin: var(--space-7) auto var(--space-9);
-  padding: 0 var(--space-5);
-}
-.contact__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-brand);
-  margin-bottom: var(--space-3);
-}
-.contact__title {
-  font-family: var(--font-display);
-  font-size: clamp(1.875rem, 3.5vw, 2.5rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-ink-soft);
-  margin-bottom: var(--space-3);
-}
-.contact__lead {
-  font-size: var(--text-base);
-  color: var(--color-ink-muted);
-  line-height: var(--leading-relaxed);
-  margin-bottom: var(--space-6);
-}
 
-.channels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-.channel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-5);
-  text-decoration: none;
-  color: inherit;
-  transition: border-color var(--duration) var(--ease),
-              transform var(--duration) var(--ease),
-              box-shadow var(--duration) var(--ease);
-  display: block;
-}
-a.channel:hover {
-  border-color: var(--color-brand-soft);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-.channel__icon {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-brand-bg);
-  border-radius: 50%;
-  color: var(--color-brand);
-  margin-bottom: var(--space-3);
-}
-.channel__title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-ink-soft);
-  margin-bottom: 4px;
-}
-.channel__desc {
-  font-size: 0.75rem;
-  color: var(--color-ink-muted);
-  line-height: 1.5;
-  margin-bottom: var(--space-3);
-}
-.channel__value {
-  font-size: var(--text-sm);
-  color: var(--color-brand);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
+{% block title %}Contato — Barrs Store{% endblock %}
 
-@media (max-width: 600px) {
-  .channels { grid-template-columns: 1fr; }
-}
-</style>
-</head>
-<body>
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/contato.css' %}">{% endblock %}
 
+{% block content %}
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -171,5 +81,4 @@ a.channel:hover {
 </a>
 
 {% include "partials/lead_capture.html" %}
-</body>
-</html>
+{% endblock %}

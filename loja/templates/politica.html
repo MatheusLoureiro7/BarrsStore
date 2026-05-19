@@ -1,72 +1,11 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Política de Privacidade — Barrs Store</title>
-{% include "partials/seo_head.html" %}
-{% include "partials/base_styles.html" %}
-<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<style>
-.policy {
-  max-width: 720px;
-  margin: var(--space-7) auto var(--space-9);
-  padding: 0 var(--space-5);
-}
-.policy__eyebrow {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-brand);
-  margin-bottom: var(--space-3);
-}
-.policy__title {
-  font-family: var(--font-display);
-  font-size: clamp(1.875rem, 3.5vw, 2.5rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-ink-soft);
-  margin-bottom: var(--space-2);
-}
-.policy__date {
-  font-size: 0.75rem;
-  color: var(--color-ink-muted);
-  margin-bottom: var(--space-6);
-}
-.policy h2 {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--color-ink-soft);
-  margin: var(--space-6) 0 var(--space-3);
-}
-.policy p {
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-  line-height: var(--leading-relaxed);
-  margin-bottom: var(--space-3);
-}
-.policy a {
-  color: var(--color-brand);
-  text-decoration: none;
-  transition: color var(--duration) var(--ease);
-}
-.policy a:hover { color: var(--color-ink-soft); text-decoration: underline; }
-.policy__intro {
-  font-size: var(--text-base);
-  color: var(--color-ink-soft);
-  line-height: var(--leading-relaxed);
-  margin-bottom: var(--space-5);
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
-}
-</style>
-</head>
-<body>
 
+{% block title %}Política de Privacidade — Barrs Store{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/politica.css' %}">{% endblock %}
+
+{% block content %}
 <nav class="nav">
   <a href="/" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
@@ -117,5 +56,4 @@
 </main>
 
 {% include "partials/lead_capture.html" %}
-</body>
-</html>
+{% endblock %}

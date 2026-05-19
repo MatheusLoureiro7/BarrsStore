@@ -1,87 +1,11 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Página não encontrada — Barrs Store</title>
-{% include "partials/base_styles.html" %}
-<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
-<style>
-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-7) var(--space-5);
-  min-height: 100vh;
-  text-align: center;
-}
-.notfound {
-  max-width: 480px;
-}
-.notfound__code {
-  font-family: var(--font-display);
-  font-size: clamp(4rem, 12vw, 7rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  color: var(--color-brand);
-  line-height: 1;
-  margin-bottom: var(--space-3);
-  font-variant-numeric: tabular-nums;
-}
-.notfound__title {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-ink-soft);
-  margin-bottom: var(--space-3);
-}
-.notfound__text {
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-  line-height: var(--leading-relaxed);
-  margin-bottom: var(--space-6);
-}
-.notfound__actions {
-  display: flex;
-  gap: var(--space-3);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.notfound__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0.75rem 1.5rem;
-  background: var(--color-brand);
-  color: #fff;
-  border: 1px solid var(--color-brand);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-decoration: none;
-  transition: background var(--duration) var(--ease),
-              border-color var(--duration) var(--ease);
-}
-.notfound__btn:hover {
-  background: var(--color-ink-soft);
-  border-color: var(--color-ink-soft);
-}
-.notfound__btn--ghost {
-  background: var(--color-surface);
-  color: var(--color-ink-soft);
-  border-color: var(--color-border);
-}
-.notfound__btn--ghost:hover {
-  border-color: var(--color-ink-soft);
-  background: var(--color-bg);
-}
-</style>
-</head>
-<body>
 
+{% block title %}Página não encontrada — Barrs Store{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/404.css' %}">{% endblock %}
+
+{% block content %}
 <div class="notfound">
   <div class="notfound__code">404</div>
   <h1 class="notfound__title">Página não encontrada</h1>
@@ -94,6 +18,4 @@ body {
     <a href="/#produtos" class="notfound__btn notfound__btn--ghost">Ver produtos</a>
   </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

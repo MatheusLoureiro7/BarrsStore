@@ -1,0 +1,785 @@
+﻿/* ═══════════════════════════════════════════════════════════════
+   CHECKOUT PREMIUM — BARRS STORE
+   Filosofia: editorial, jóias de luxo, skincare sofisticado
+   Tipografia: Playfair Display (display) + Montserrat (UI)
+═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --co-h: 66px;
+}
+
+body {
+  background: #F6F3ED;
+  min-height: 100vh;
+}
+
+/* ── HEADER ──────────────────────────────────────────────────── */
+.co-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  height: var(--co-h);
+  background: rgba(246, 243, 237, 0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-bottom: 1px solid rgba(228, 221, 208, 0.65);
+}
+.co-header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.co-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.co-brand__img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.co-brand__name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.015em;
+}
+.co-steps {
+  display: flex;
+  align-items: center;
+}
+.co-step {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.02em;
+  opacity: 0.55;
+}
+.co-step--active {
+  color: var(--color-brand);
+  opacity: 1;
+}
+.co-step__node {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.co-step--active .co-step__node {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+}
+.co-step--active .co-step__node-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+.co-step__node-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+}
+.co-step__sep {
+  width: 28px;
+  height: 1px;
+  background: var(--color-border);
+  margin: 0 0.625rem;
+}
+.co-secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  flex-shrink: 0;
+}
+.co-secure .icon { width: 13px; height: 13px; color: var(--color-brand); }
+
+/* ── PÁGINA ──────────────────────────────────────────────────── */
+.co-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.75rem 2rem 4.5rem;
+}
+.co-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ── PAINEL DE PAGAMENTO ─────────────────────────────────────── */
+.co-pay {
+  background: #FFFFFF;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.04),
+    0 8px 32px rgba(43, 37, 32, 0.07);
+  animation: coFadeUp 0.45s var(--ease) both;
+}
+
+/* Intro editorial */
+.co-pay__intro {
+  padding: 2.5rem 2.5rem 2rem;
+}
+.co-pay__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-brand);
+  margin-bottom: 1.125rem;
+}
+.co-pay__eyebrow::before {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+}
+.co-pay__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 4.5vw, 3rem);
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.875rem;
+}
+.co-pay__subtitle {
+  color: var(--color-ink-muted);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  max-width: 500px;
+}
+.co-pay__subtitle strong {
+  color: var(--color-ink-soft);
+  font-weight: 600;
+}
+
+/* Trust strip elegante */
+.co-trust {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 2.5rem;
+  border-top: 1px solid var(--color-border-soft);
+  border-bottom: 1px solid var(--color-border-soft);
+  background: var(--color-surface-alt);
+  gap: 0;
+  flex-wrap: wrap;
+}
+.co-trust__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.co-trust__item .icon { width: 13px; height: 13px; color: var(--color-brand); }
+.co-trust__div {
+  width: 1px;
+  height: 14px;
+  background: var(--color-border);
+  margin: 0 1.125rem;
+}
+
+/* Corpo do pagamento */
+.co-pay__body {
+  padding: 2rem 2.5rem 2.5rem;
+}
+.co-method-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.co-method-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+.co-total-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.1rem;
+  background: var(--color-brand-bg);
+  border: 1px solid rgba(107, 122, 100, 0.22);
+  color: var(--color-brand);
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Loading premium */
+.co-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 2.75rem 2rem;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 16px;
+  background: var(--color-surface-alt);
+  margin-bottom: 0;
+}
+.co-loading__ring {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--color-brand-bg);
+  border-top-color: var(--color-brand);
+  animation: coSpin 700ms linear infinite;
+}
+.co-loading__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* Error */
+.co-error {
+  display: none;
+  padding: 0.875rem 1.125rem;
+  border-radius: 12px;
+  background: var(--color-error-bg);
+  border: 1px solid rgba(168, 93, 82, 0.18);
+  color: var(--color-error);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin-bottom: 1rem;
+}
+.co-error a {
+  color: var(--color-error);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Status / processando */
+.co-status {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.875rem 1.125rem;
+  border-radius: 12px;
+  background: var(--color-brand-bg);
+  border: 1px solid rgba(107, 122, 100, 0.2);
+  color: var(--color-brand);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.co-status__ring {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid rgba(107, 122, 100, 0.28);
+  border-top-color: var(--color-brand);
+  animation: coSpin 700ms linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── MERCADO PAGO BRICK ──────────────────────────────────────── */
+/* customVariables no JS controlam cores, raios, tipografia e
+   espaçamento internos. Aqui apenas complementamos o que não é
+   possível via variáveis: gradiente no botão de submit.          */
+.co-brick-wrap {
+  border: 1px solid var(--color-border-soft);
+  border-radius: 14px;
+  background: #fff;
+  /* sem overflow:hidden — evita cortar dropdowns do Brick */
+}
+
+#paymentBrick_container {
+  text-align: left;
+}
+
+/* Gradiente no botão de submit — único override CSS necessário.
+   O botão de submit NÃO está em iframe, pode ser estilizado.     */
+#paymentBrick_container button[type="submit"] {
+  background: linear-gradient(155deg, #738269 0%, #5C6B55 100%) !important;
+  box-shadow:
+    0 1px 3px rgba(80, 96, 76, 0.18),
+    0 4px 14px rgba(80, 96, 76, 0.16) !important;
+  letter-spacing: 0.025em !important;
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+#paymentBrick_container button[type="submit"]:hover {
+  background: linear-gradient(155deg, #697860 0%, #54624D 100%) !important;
+  box-shadow:
+    0 1px 3px rgba(80, 96, 76, 0.22),
+    0 6px 20px rgba(80, 96, 76, 0.26) !important;
+  transform: translateY(-1px) !important;
+}
+#paymentBrick_container button[type="submit"]:active {
+  transform: translateY(0) !important;
+  box-shadow:
+    0 1px 3px rgba(80, 96, 76, 0.14),
+    0 2px 6px rgba(80, 96, 76, 0.12) !important;
+}
+
+/* ── DROPDOWN PREMIUM (parcelas, banco emissor) ───────────────
+   <select> nativo é horrível visualmente. Removemos a seta do
+   SO, adicionamos chevron sob medida e refinamos tipografia.   */
+#paymentBrick_container select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B5E53' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 14px !important;
+  padding-right: 38px !important;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-feature-settings: "kern", "liga" !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+}
+
+/* Dropdowns customizados (caso o Brick use componentes próprios) */
+#paymentBrick_container [role="combobox"],
+#paymentBrick_container [role="listbox"] {
+  font-family: 'Montserrat', system-ui, sans-serif !important;
+}
+#paymentBrick_container [role="option"] {
+  padding: 0.625rem 0.875rem !important;
+  font-family: 'Montserrat', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  transition: background 160ms ease !important;
+}
+#paymentBrick_container [role="option"]:hover,
+#paymentBrick_container [role="option"][aria-selected="true"] {
+  background: #E8EDE3 !important;
+}
+
+/* ── TIPOGRAFIA REFINADA EM INPUTS DOM ───────────────────────── */
+/* Sem override de altura/padding (causou problemas antes).
+   Apenas refina a tipografia para sair do default genérico.    */
+#paymentBrick_container input[type="text"],
+#paymentBrick_container input[type="email"],
+#paymentBrick_container input[type="tel"],
+#paymentBrick_container input[type="number"] {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-feature-settings: "kern", "liga" !important;
+  letter-spacing: 0.005em !important;
+}
+
+.co-pix-box {
+  display: none;
+  margin-top: 1.25rem;
+  padding: 1.375rem;
+  border: 1px solid rgba(107, 122, 100, 0.22);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #FBFAF7 0%, #FFFFFF 100%);
+}
+.co-pix-box.is-visible {
+  display: block;
+  animation: coFadeUp 0.35s var(--ease) both;
+}
+.co-pix-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.125rem;
+}
+.co-pix-title {
+  margin: 0 0 0.375rem;
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  font-size: 1.25rem;
+  line-height: 1.15;
+}
+.co-pix-copy {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.co-pix-total {
+  flex-shrink: 0;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.co-pix-grid {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 1.125rem;
+  align-items: center;
+}
+.co-pix-qr {
+  width: 180px;
+  height: 180px;
+  padding: 0.625rem;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 14px;
+  background: #fff;
+  object-fit: contain;
+}
+.co-pix-code {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.875rem;
+  background: #F7F3EC;
+  color: var(--color-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+.co-pix-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.875rem;
+}
+.co-pix-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(155deg, #738269 0%, #5C6B55 100%);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.co-pix-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 0.25rem;
+  color: var(--color-brand);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.co-pix-link:hover { text-decoration: underline; text-underline-offset: 2px; }
+.co-pix-note {
+  margin-top: 0.875rem;
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 640px) {
+  .co-pix-grid {
+    grid-template-columns: 1fr;
+  }
+  .co-pix-qr {
+    width: min(220px, 100%);
+    height: auto;
+    justify-self: center;
+  }
+}
+
+/* Fallback */
+.co-fallback {
+  display: none;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border-soft);
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  line-height: 1.6;
+}
+.co-fallback a {
+  color: var(--color-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+.co-fallback a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── RESUMO DO PEDIDO ────────────────────────────────────────── */
+.co-summary {
+  position: sticky;
+  top: calc(var(--co-h) + 1.25rem);
+  background: #FFFFFF;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: coFadeUp 0.45s 0.07s var(--ease) both;
+}
+
+.co-sum-header {
+  padding: 1.625rem 1.875rem 1.375rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.co-sum-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.012em;
+}
+.co-sum-order {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Itens do pedido */
+.co-items {
+  padding: 1.375rem 1.875rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: grid;
+  gap: 1.125rem;
+}
+.co-item {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 0.875rem;
+  align-items: center;
+}
+.co-item__img {
+  width: 52px;
+  height: 52px;
+  border-radius: 11px;
+  object-fit: cover;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-soft);
+  flex-shrink: 0;
+}
+.co-item__placeholder {
+  width: 52px;
+  height: 52px;
+  border-radius: 11px;
+  background: var(--color-brand-bg);
+  border: 1px solid rgba(107, 122, 100, 0.14);
+  display: grid;
+  place-items: center;
+  color: var(--color-brand);
+  flex-shrink: 0;
+}
+.co-item__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.35;
+}
+.co-item__meta {
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  margin-top: 0.125rem;
+}
+.co-item__price {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  align-self: center;
+}
+
+/* Breakdown de preços */
+.co-prices {
+  padding: 1.25rem 1.875rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: grid;
+  gap: 0.6rem;
+}
+.co-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.co-row__label {
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+.co-row__value {
+  font-size: 0.8125rem;
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.co-row__value--off { color: #5a8f6b; }
+.co-row--total {
+  padding-top: 0.875rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--color-border);
+}
+.co-row--total .co-row__label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.co-row--total .co-row__value {
+  font-size: 1.1875rem;
+  font-weight: 800;
+  color: var(--color-brand);
+}
+
+/* Entrega */
+.co-delivery {
+  padding: 1.125rem 1.875rem;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.co-delivery__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  margin-bottom: 0.5rem;
+}
+.co-delivery__addr {
+  font-size: 0.8125rem;
+  color: var(--color-ink-soft);
+  line-height: 1.55;
+}
+.co-delivery__email {
+  font-size: 0.8125rem;
+  color: var(--color-ink-muted);
+  margin-top: 0.25rem;
+}
+
+/* Notas */
+.co-notes {
+  padding: 1.125rem 1.875rem;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: grid;
+  gap: 0.75rem;
+}
+.co-note {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+  line-height: 1.55;
+}
+.co-note .icon {
+  width: 13px;
+  height: 13px;
+  color: var(--color-brand);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Ações */
+.co-actions {
+  padding: 1rem 1.875rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.co-actions__link {
+  display: block;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+.co-actions__link:hover {
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+}
+
+/* ── ANIMAÇÕES ───────────────────────────────────────────────── */
+@keyframes coFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes coSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── RESPONSIVO ──────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .co-page {
+    padding: 1.5rem 1.25rem 3.5rem;
+  }
+  .co-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .co-summary {
+    position: static;
+    order: -1;
+  }
+  .co-steps { display: none; }
+}
+
+@media (max-width: 640px) {
+  .co-header__inner { padding: 0 1.25rem; }
+  .co-secure { display: none; }
+
+  .co-pay__intro { padding: 1.75rem 1.25rem 1.5rem; }
+  .co-trust { padding: 0.75rem 1.25rem; gap: 0.625rem; }
+  .co-trust__div { display: none; }
+  .co-pay__body { padding: 1.5rem 1.25rem 2rem; }
+
+  .co-method-head { flex-direction: column; align-items: flex-start; }
+  .co-total-badge { width: 100%; justify-content: center; }
+
+  .co-pay__title { font-size: 2rem; }
+
+  .co-sum-header,
+  .co-items,
+  .co-prices,
+  .co-delivery,
+  .co-notes,
+  .co-actions { padding-left: 1.25rem; padding-right: 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .co-pay, .co-summary { animation: none; }
+}
+

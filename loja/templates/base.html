@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Barrs Store{% endblock %}</title>
+{% include "partials/seo_head.html" %}
+{% block extra_head %}{% endblock %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'loja/css/base.css' %}">
+<link rel="stylesheet" href="{% static 'loja/css/components/lead_capture.css' %}">
+{% block page_css %}{% endblock %}
+<link rel="icon" type="image/png" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
+</head>
+<body
+  data-cart-count="{{ qtd_carrinho|default:0 }}"
+  data-cart-url="{% url 'carrinho' %}"
+  data-login-url="{% url 'login' %}"
+  data-account-url="{% url 'minha_conta' %}"
+  data-track-url="{% url 'rastrear_pedido' %}"
+  data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+{% include "partials/icon_sprite.html" %}
+{% block content %}{% endblock %}
+<script src="{% static 'loja/js/base.js' %}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
