@@ -196,7 +196,7 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
 
-SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_REFERRER_POLICY = 'same-origin'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -207,20 +207,26 @@ CSRF_COOKIE_HTTPONLY = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 X_FRAME_OPTIONS = 'DENY'
-CONTENT_SECURITY_POLICY_REPORT_ONLY = os.environ.get(
-    'CONTENT_SECURITY_POLICY_REPORT_ONLY',
+CONTENT_SECURITY_POLICY = os.environ.get(
+    'CONTENT_SECURITY_POLICY',
     "default-src 'self'; "
     "base-uri 'self'; "
     "object-src 'none'; "
     "frame-ancestors 'none'; "
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' data: https://fonts.gstatic.com; "
     "img-src 'self' data: blob: https://res.cloudinary.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com; "
-    "connect-src 'self' https://api.mercadopago.com https://*.mercadopago.com https://www.facebook.com https://graph.facebook.com https://www.google-analytics.com https://analytics.google.com; "
-    "frame-src 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br; "
+    "connect-src 'self' https://api.mercadopago.com https://*.mercadopago.com https://www.facebook.com https://graph.facebook.com https://www.google-analytics.com https://analytics.google.com https://challenges.cloudflare.com; "
+    "frame-src 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br https://challenges.cloudflare.com; "
     "form-action 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br"
 ).strip()
+CSP_ENFORCE = os.environ.get('CSP_ENFORCE', 'False') == 'True'
+CONTENT_SECURITY_POLICY_REPORT_ONLY = CONTENT_SECURITY_POLICY if not CSP_ENFORCE else ''
+
+TURNSTILE_SITE_KEY = os.environ.get('TURNSTILE_SITE_KEY', '').strip()
+TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY', '').strip()
+TURNSTILE_REQUIRED = bool(TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY)
 
 if not DEBUG:
     # Compartilha os cookies entre barrsstore.com.br e www.barrsstore.com.br.

@@ -199,6 +199,7 @@
     <label for="lead-telefone">WhatsApp</label>
     <input id="lead-telefone" name="telefone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(11) 99999-9999" required value="{{ lead_telefone }}">
 
+    {% include "partials/turnstile_widget.html" %}
     <div class="lead-gate__error" id="lead-error"></div>
     <button type="submit" class="lead-gate__submit">Continuar</button>
     <span class="lead-gate__consent">Ao continuar, você aceita receber atendimento e novidades da Barrs Store pelo WhatsApp.</span>

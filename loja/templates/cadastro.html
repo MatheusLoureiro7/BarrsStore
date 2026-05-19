@@ -143,6 +143,11 @@
   transition: color var(--duration) var(--ease);
 }
 .auth-link a:hover { color: var(--color-ink-soft); text-decoration: underline; }
+.turnstile-wrap {
+  margin: var(--space-4) 0 var(--space-2);
+  display: flex;
+  justify-content: center;
+}
 </style>
 </head>
 <body>
@@ -193,6 +198,7 @@
         <label>Confirmar senha</label>
         <input type="password" name="senha2" placeholder="••••••••" minlength="8" required autocomplete="new-password">
       </div>
+      {% include "partials/turnstile_widget.html" %}
       <button type="submit" class="auth-btn">Criar conta</button>
     </form>
 

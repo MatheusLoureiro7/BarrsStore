@@ -367,6 +367,11 @@
 }
 .coupon-btn:hover { background: var(--color-ink-soft); box-shadow: var(--shadow-button); transform: translateY(-1px); }
 .coupon-btn:active { transform: translateY(0) scale(0.98); }
+.coupon-box .turnstile-wrap {
+  margin-top: var(--space-3);
+  display: flex;
+  justify-content: flex-start;
+}
 .coupon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .coupon-status {
   font-size: 0.6875rem;
@@ -645,6 +650,7 @@
           <input type="text" name="cupom_codigo" id="cupom_codigo" placeholder="Digite seu cupom" value="{{ request.POST.cupom_codigo }}">
           <button type="button" class="coupon-btn" id="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
         </div>
+        {% include "partials/turnstile_widget.html" %}
         <div class="coupon-status" id="cupom-status"></div>
       </div>
 
@@ -849,6 +855,15 @@
 
     const body = new URLSearchParams();
     body.append('cupom_codigo', codigo);
+    {% if turnstile_site_key %}
+    const turnstileToken = document.querySelector('.coupon-box input[name="cf-turnstile-response"]')?.value || '';
+    if (!turnstileToken) {
+      status.textContent = 'Confirme a verificação de segurança e tente novamente.';
+      status.className = 'coupon-status erro';
+      return;
+    }
+    body.append('cf-turnstile-response', turnstileToken);
+    {% endif %}
     botao.disabled = true;
     botao.textContent = 'Aplicando...';
 
@@ -883,6 +898,7 @@
     } finally {
       botao.disabled = false;
       botao.textContent = 'Aplicar';
+      if (window.turnstile) window.turnstile.reset();
     }
   }
 </script>

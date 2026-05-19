@@ -68,14 +68,19 @@ class AdminRateLimitMiddleware:
 
 
 class ContentSecurityPolicyReportOnlyMiddleware:
-    """Adiciona CSP em modo observacao para endurecer XSS sem bloquear integrações."""
+    """Adiciona CSP em modo observacao ou bloqueio conforme a env CSP_ENFORCE."""
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
-        policy = getattr(settings, 'CONTENT_SECURITY_POLICY_REPORT_ONLY', '')
-        if policy and 'Content-Security-Policy-Report-Only' not in response:
-            response['Content-Security-Policy-Report-Only'] = policy
+        policy = getattr(settings, 'CONTENT_SECURITY_POLICY', '')
+        if policy:
+            header = 'Content-Security-Policy' if getattr(settings, 'CSP_ENFORCE', False) else 'Content-Security-Policy-Report-Only'
+            if header not in response:
+                response[header] = policy
+        path = request.path_info or request.path
+        if path.startswith(('/pagamento/', '/finalizar/', '/minha-conta/')):
+            response['X-Robots-Tag'] = 'noindex, nofollow'
         return response

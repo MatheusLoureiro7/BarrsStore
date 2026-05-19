@@ -8,4 +8,6 @@ def marketing_tags(request):
         'lead_nome': request.session.get('lead_nome', ''),
         'lead_telefone': request.session.get('lead_telefone', ''),
         'lead_capturado': request.session.get('lead_capturado', False),
+        'turnstile_site_key': getattr(settings, 'TURNSTILE_SITE_KEY', ''),
+        'turnstile_required': getattr(settings, 'TURNSTILE_REQUIRED', False),
     }

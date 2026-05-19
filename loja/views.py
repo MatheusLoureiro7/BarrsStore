@@ -178,6 +178,38 @@ def resposta_externa_segura_para_log(response):
     }
 
 
+def verificar_turnstile(request):
+    """Valida Cloudflare Turnstile quando as chaves estiverem configuradas."""
+    if not getattr(settings, 'TURNSTILE_REQUIRED', False):
+        return True
+
+    token = request.POST.get('cf-turnstile-response', '').strip()
+    if not token:
+        return False
+
+    try:
+        resposta = http_requests.post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            data={
+                'secret': settings.TURNSTILE_SECRET_KEY,
+                'response': token,
+                'remoteip': request.META.get('REMOTE_ADDR', ''),
+            },
+            timeout=6,
+        )
+        data = resposta.json()
+        if data.get('success'):
+            return True
+        logger.warning('[TURNSTILE] Validacao recusada. codes=%s', data.get('error-codes'))
+    except Exception as exc:
+        logger.warning('[TURNSTILE] Falha ao validar desafio: %s', exc)
+    return False
+
+
+def turnstile_error_json():
+    return JsonResponse({'ok': False, 'erro': 'Confirme a verificacao de seguranca e tente novamente.'}, status=400)
+
+
 def baixar_estoque_pedido(pedido):
     """Baixa o estoque uma unica vez quando o pagamento e confirmado."""
     with transaction.atomic():
@@ -1483,6 +1515,9 @@ def salvar_lead_cliente(request):
     nome = request.POST.get('nome', '').strip()
     telefone = apenas_digitos(request.POST.get('telefone', ''))
 
+    if not verificar_turnstile(request):
+        return turnstile_error_json()
+
     if len(nome) < 2:
         return JsonResponse({'ok': False, 'erro': 'Informe seu nome.'}, status=400)
     if len(telefone) < 10:
@@ -1855,6 +1890,9 @@ def salvar_contato_carrinho(request):
 @require_POST
 @ratelimit(key='ip', rate='20/m', method='POST', block=True)
 def aplicar_cupom_ajax(request):
+    if not verificar_turnstile(request):
+        return turnstile_error_json()
+
     carrinho_id = request.session.get('carrinho_id')
     if not carrinho_id:
         return JsonResponse({'ok': False, 'erro': 'Carrinho nao encontrado.'}, status=404)
@@ -2401,6 +2439,12 @@ def cadastro(request):
         return redirect('minha_conta')
 
     if request.method == 'POST':
+        if not verificar_turnstile(request):
+            messages.error(request, 'Confirme a verificacao de seguranca e tente novamente.')
+            context = {'qtd_carrinho': get_carrinho_info(request)}
+            context.update(noindex_context(request, 'Criar conta - Barrs Store'))
+            return render(request, 'cadastro.html', context)
+
         nome = request.POST.get('nome', '').strip()
         email = request.POST.get('email', '').strip()
         senha = request.POST.get('senha', '')
@@ -2447,6 +2491,12 @@ def login_view(request):
         return redirect('minha_conta')
 
     if request.method == 'POST':
+        if not verificar_turnstile(request):
+            messages.error(request, 'Confirme a verificacao de seguranca e tente novamente.')
+            context = {'qtd_carrinho': get_carrinho_info(request)}
+            context.update(noindex_context(request, 'Login - Barrs Store'))
+            return render(request, 'login.html', context)
+
         email = request.POST.get('email', '').strip()
         senha = request.POST.get('senha', '')
         user = authenticate(request, username=email, password=senha)
