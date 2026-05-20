@@ -8,6 +8,8 @@
 </style>{% endblock %}
 
 {% block content %}
+<div class="home-page-shell">
+<main class="home-main">
 <!-- NAVEGAÇÃO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
@@ -152,7 +154,7 @@
        data-next-page="{{ next_page_number }}"
        data-base-query="{{ base_query }}"
        aria-hidden="true"
-       style="height:1px;margin-top:var(--space-6)"></div>
+       style="height:1px;margin-top:8px"></div>
 
   <div id="infinite-loader" class="load-more" hidden aria-live="polite" aria-busy="true">
     <span class="load-more__spinner" aria-hidden="true"></span>
@@ -199,25 +201,574 @@
   </div>
   {% endif %}
 </section>
+</main>
 
 <!-- FOOTER -->
-<footer class="footer">
-  <div class="footer__inner">
-    <span class="footer__brand">Barrs Store</span>
-    <nav class="footer__links" aria-label="Links institucionais">
-      <a href="/sobre/">Sobre</a>
-      <a href="/contato/">Contato</a>
-      <a href="/entrega/">Entrega e trocas</a>
-      <a href="/garantia/">Garantia</a>
-      <a href="/politica/">Privacidade</a>
-    </nav>
-    <a href="https://www.instagram.com/barrsstore" target="_blank" rel="noopener" aria-label="Instagram Barrs Store"
-       style="display:inline-flex;align-items:center;gap:8px;color:var(--color-ink-muted);text-decoration:none;transition:color var(--duration) var(--ease)">
-      <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-instagram"/></svg>
-    </a>
-    <span style="font-size:0.75rem">© 2026 · Desenvolvido por Bicodex</span>
+<style>
+  .home-page-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg);
+  }
+
+  .home-main {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-main > .section {
+    width: 100%;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    padding-bottom: clamp(14px, 2vw, 24px);
+  }
+
+  .home-main .load-more {
+    margin-top: 14px;
+  }
+
+  /* ── PREMIUM FOOTER ─────────────────────────────────────────────
+     Identidade Barrs Store: marrom escuro com champagne dourado.
+     Inspirado em editoriais de joalheria contemporânea.
+  ─────────────────────────────────────────────────────────────── */
+  .premium-footer {
+    --ft-bg-top:    #1F1810;
+    --ft-bg-bot:    #2B2218;
+    --ft-text:      #E6DCC9;
+    --ft-muted:     #9C8F7C;
+    --ft-gold:      #D4B881;
+    --ft-gold-soft: #A89A7A;
+    --ft-line:      rgba(212, 184, 129, 0.16);
+    --ft-line-soft: rgba(212, 184, 129, 0.08);
+    --ft-pad-x:     clamp(24px, 5vw, 64px);
+
+    position: relative;
+    flex-shrink: 0;
+    margin-top: clamp(72px, 9vw, 128px);
+    background:
+      radial-gradient(120% 100% at 50% 0%, rgba(212, 184, 129, 0.06) 0%, transparent 55%),
+      linear-gradient(180deg, var(--ft-bg-top) 0%, var(--ft-bg-bot) 100%);
+    color: var(--ft-text);
+    font-family: var(--font-body);
+  }
+
+  /* Fade suave do fundo claro pro footer escuro (respiro visual) */
+  .premium-footer::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: -64px;
+    height: 64px;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(245, 242, 236, 0) 0%,
+      rgba(31, 24, 16, 0.04) 50%,
+      rgba(31, 24, 16, 0.16) 100%
+    );
+  }
+
+  /* Filete dourado central no topo */
+  .premium-footer::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 0;
+    transform: translateX(-50%);
+    width: min(220px, 38vw);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ft-gold) 50%, transparent);
+    opacity: 0.55;
+  }
+
+  .premium-footer__inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: clamp(40px, 5vw, 64px) var(--ft-pad-x) clamp(24px, 3.5vw, 40px);
+  }
+
+  /* ── Crest minimalista (só monograma) ── */
+  .premium-footer__crest {
+    text-align: center;
+    margin: 0 auto clamp(28px, 3.5vw, 44px);
+  }
+
+  .premium-footer__monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border: 1px solid var(--ft-gold);
+    border-radius: 50%;
+    color: var(--ft-gold);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  /* ── Grid principal ── */
+  .premium-footer__grid {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(3, 1fr);
+    gap: clamp(28px, 4vw, 64px);
+    padding-bottom: clamp(36px, 4.5vw, 56px);
+    border-bottom: 1px solid var(--ft-line);
+  }
+
+  .premium-footer__brand-col {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .premium-footer__brand {
+    margin: 0 0 14px;
+    color: #FFFFFF;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .premium-footer__desc {
+    max-width: 340px;
+    margin: 0;
+    color: var(--ft-muted);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  .premium-footer__social {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .premium-footer__social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--ft-line);
+    border-radius: 50%;
+    color: var(--ft-gold);
+    background: transparent;
+    transition: border-color 0.4s ease, background 0.4s ease, transform 0.4s ease;
+  }
+  .premium-footer__social a:hover,
+  .premium-footer__social a:focus-visible {
+    border-color: var(--ft-gold);
+    background: rgba(212, 184, 129, 0.06);
+    transform: translateY(-1px);
+    outline: none;
+  }
+  .premium-footer__social svg {
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ── Colunas de links ── */
+  .premium-footer__col h2 {
+    margin: 0;
+  }
+
+  .premium-footer__title {
+    margin: 0 0 22px;
+    color: var(--ft-gold);
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .premium-footer__links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .premium-footer__links a {
+    position: relative;
+    display: inline-block;
+    color: var(--ft-text);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    transition: color 0.3s ease, padding-left 0.3s ease;
+  }
+  .premium-footer__links a::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    width: 0;
+    height: 1px;
+    background: var(--ft-gold);
+    transform: translateY(-50%);
+    transition: width 0.3s ease;
+  }
+  .premium-footer__links a:hover,
+  .premium-footer__links a:focus-visible {
+    color: var(--ft-gold);
+    padding-left: 16px;
+    outline: none;
+  }
+  .premium-footer__links a:hover::before,
+  .premium-footer__links a:focus-visible::before {
+    width: 8px;
+  }
+
+  /* ── Selos de confiança (refinados, sem cartões pesados) ── */
+  .premium-footer__trust {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(18px, 3.2vw, 44px);
+    padding: clamp(28px, 3.5vw, 40px) 0;
+    border-bottom: 1px solid var(--ft-line-soft);
+  }
+
+  .premium-footer__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ft-muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .premium-footer__badge svg {
+    width: 15px;
+    height: 15px;
+    color: var(--ft-gold);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  /* ── Bottom bar ── */
+  .premium-footer__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding-top: clamp(24px, 3vw, 36px);
+  }
+
+  .premium-footer__legal {
+    color: var(--ft-muted);
+    font-size: 0.75rem;
+    line-height: 1.65;
+    letter-spacing: 0.02em;
+  }
+  .premium-footer__legal small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    opacity: 0.78;
+  }
+
+  .premium-footer__pays {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    color: var(--ft-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .premium-footer__pays span {
+    position: relative;
+    padding-right: 22px;
+  }
+  .premium-footer__pays span + span::before {
+    content: "·";
+    position: absolute;
+    left: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ft-gold-soft);
+    opacity: 0.55;
+  }
+  .premium-footer__pays span:last-child {
+    padding-right: 0;
+  }
+
+  .premium-footer__credit {
+    margin: 22px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--ft-line-soft);
+    color: var(--ft-muted);
+    font-size: 0.7rem;
+    text-align: center;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.82;
+  }
+  .premium-footer__credit strong {
+    color: var(--ft-gold-soft);
+    font-weight: 600;
+  }
+
+  /* ── TABLET ── */
+  @media (max-width: 1024px) {
+    .premium-footer__grid {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .premium-footer__brand-col {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px 32px;
+      padding-bottom: 32px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--ft-line-soft);
+    }
+    .premium-footer__brand-col > div {
+      flex: 1 1 320px;
+    }
+    .premium-footer__desc {
+      max-width: 480px;
+    }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 720px) {
+    .premium-footer {
+      margin-top: clamp(56px, 14vw, 88px);
+    }
+    .premium-footer::before {
+      top: -40px;
+      height: 40px;
+    }
+    .premium-footer::after {
+      width: 140px;
+    }
+    .premium-footer__inner {
+      padding-top: clamp(36px, 9vw, 56px);
+    }
+
+    .premium-footer__monogram {
+      width: 42px;
+      height: 42px;
+      font-size: 1.05rem;
+    }
+    .premium-footer__crest {
+      margin-bottom: clamp(24px, 6vw, 36px);
+    }
+
+    .premium-footer__grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      text-align: center;
+    }
+
+    .premium-footer__brand-col {
+      align-items: center;
+      flex-direction: column;
+      gap: 18px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--ft-line-soft);
+    }
+    .premium-footer__brand-col > div {
+      flex: 0 1 auto;
+    }
+    .premium-footer__desc {
+      max-width: 340px;
+      text-align: center;
+    }
+    .premium-footer__social {
+      justify-content: center;
+    }
+
+    .premium-footer__title {
+      margin-bottom: 18px;
+    }
+    .premium-footer__links {
+      align-items: center;
+      gap: 14px;
+    }
+    .premium-footer__links a {
+      font-size: 0.9rem;
+    }
+    .premium-footer__links a:hover,
+    .premium-footer__links a:focus-visible {
+      padding-left: 0;
+    }
+    .premium-footer__links a:hover::before,
+    .premium-footer__links a:focus-visible::before {
+      width: 0;
+    }
+
+    .premium-footer__trust {
+      gap: 18px 28px;
+    }
+
+    .premium-footer__bottom {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 18px;
+    }
+    .premium-footer__pays {
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .premium-footer__badge {
+      font-size: 0.65rem;
+      gap: 8px;
+    }
+    .premium-footer__badge svg {
+      width: 13px;
+      height: 13px;
+    }
+    .premium-footer__trust {
+      gap: 14px 22px;
+    }
+    .premium-footer__pays {
+      font-size: 0.65rem;
+      gap: 6px 18px;
+    }
+    .premium-footer__pays span {
+      padding-right: 18px;
+    }
+    .premium-footer__pays span + span::before {
+      left: -12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .premium-footer__social a,
+    .premium-footer__links a,
+    .premium-footer__links a::before {
+      transition: none;
+    }
+  }
+</style>
+
+<footer class="premium-footer" aria-label="Rodapé Barrs Store">
+  <div class="premium-footer__inner">
+
+    <div class="premium-footer__crest">
+      <span class="premium-footer__monogram" aria-hidden="true">B</span>
+    </div>
+
+    <div class="premium-footer__grid">
+      <div class="premium-footer__brand-col">
+        <div>
+          <p class="premium-footer__brand">Barrs Store</p>
+          <p class="premium-footer__desc">Semijoias modernas e exclusivas, pensadas para acompanhar você todos os dias. Envio rápido para todo o Brasil.</p>
+        </div>
+        <nav class="premium-footer__social" aria-label="Redes sociais">
+          <a href="https://www.instagram.com/barrsstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram Barrs Store">
+            <svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg>
+          </a>
+          <a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp Barrs Store">
+            <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@barrs.store1" target="_blank" rel="noopener noreferrer" aria-label="TikTok Barrs Store">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M14 3v10.2a4.3 4.3 0 1 1-4.3-4.3"/>
+              <path d="M14 5.2c1.2 2.6 3 4 5.4 4.2"/>
+            </svg>
+          </a>
+        </nav>
+      </div>
+
+      <div class="premium-footer__col">
+        <h2 class="premium-footer__title">Atendimento</h2>
+        <nav class="premium-footer__links" aria-label="Atendimento">
+          <a href="https://wa.me/5511913225256" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a href="mailto:contato.barrsstore@gmail.com">E-mail</a>
+          <a href="/garantia/">Perguntas frequentes</a>
+          <a href="/rastrear/">Rastrear pedido</a>
+        </nav>
+      </div>
+
+      <div class="premium-footer__col">
+        <h2 class="premium-footer__title">Informações</h2>
+        <nav class="premium-footer__links" aria-label="Informações">
+          <a href="/sobre/">Sobre a Barrs</a>
+          <a href="/entrega/">Trocas e devoluções</a>
+          <a href="/politica/">Política de privacidade</a>
+          <a href="/entrega/">Prazo de entrega</a>
+          <a href="/garantia/">Cuidados com as peças</a>
+        </nav>
+      </div>
+
+      <div class="premium-footer__col">
+        <h2 class="premium-footer__title">Coleção</h2>
+        <nav class="premium-footer__links" aria-label="Coleção">
+          <a href="/?categoria=brinco#produtos">Brincos</a>
+          <a href="/?categoria=anel#produtos">Anéis</a>
+          <a href="/?categoria=pulseira#produtos">Pulseiras</a>
+          <a href="/?categoria=colar#produtos">Colares</a>
+          <a href="/#produtos">Novidades</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="premium-footer__trust" aria-label="Compromissos da Barrs Store">
+      <span class="premium-footer__badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.6"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>
+        Site 100% Seguro
+      </span>
+      <span class="premium-footer__badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.6 3.2 8.3 8 9.2 4.8-.9 8-4.6 8-9.2V6l-8-3z"/><path d="m9 12.5 2 2 4-4.5"/></svg>
+        Compra Protegida
+      </span>
+      <span class="premium-footer__badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h11v9H3z"/><path d="M14 11h4l3 3v3h-7"/><circle cx="7.5" cy="18" r="1.7"/><circle cx="17.5" cy="18" r="1.7"/></svg>
+        Envio para Todo o Brasil
+      </span>
+      <span class="premium-footer__badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 4v5h-5"/></svg>
+        Troca em 7 Dias
+      </span>
+    </div>
+
+    <div class="premium-footer__bottom">
+      <div class="premium-footer__legal">
+        Barrs Store LTDA · CNPJ 66.332.614/0001-89
+        <small>© 2026 Barrs Store · Todos os direitos reservados</small>
+      </div>
+      <div class="premium-footer__pays" aria-label="Formas de pagamento aceitas">
+        <span>Pix</span>
+        <span>Cartão</span>
+        <span>Mercado Pago</span>
+      </div>
+    </div>
+
+    <p class="premium-footer__credit">Desenvolvido por <strong>Bicodex</strong></p>
+
   </div>
 </footer>
+</div>
 
 <!-- WHATSAPP FLOAT -->
 <a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20produtos."
