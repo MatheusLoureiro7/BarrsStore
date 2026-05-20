@@ -30,6 +30,9 @@
   gap: var(--space-8);
   align-items: start;
 }
+.product > div:not(.product__gallery) {
+  min-height: calc(100vh - 88px);
+}
 
 /* GALERIA */
 .product__gallery {
@@ -518,6 +521,7 @@
     padding: 0 var(--space-4);
   }
   .product__gallery { position: static; }
+  .product > div:not(.product__gallery) { min-height: auto; }
   .product-gallery__nav {
     width: 34px;
     height: 34px;
