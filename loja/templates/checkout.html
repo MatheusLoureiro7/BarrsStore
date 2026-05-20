@@ -13,7 +13,7 @@
 <!-- NAVEGAÇÃO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
-    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" width="40" height="40" decoding="async">
     Barrs Store
   </a>
   <div class="nav__right">
@@ -157,7 +157,7 @@
       <div class="summary-item">
         <div class="summary-item__media">
           {% if item.produto.imagem %}
-            <img src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" loading="lazy" decoding="async">
+            <img src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" width="52" height="52" loading="lazy" decoding="async">
           {% else %}
             <div class="summary-item__placeholder">
               <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-gem"/></svg>

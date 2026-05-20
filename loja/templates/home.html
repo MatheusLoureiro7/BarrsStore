@@ -13,7 +13,7 @@
 <!-- NAVEGAÇÃO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
-    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" width="40" height="40" decoding="async">
     Barrs Store
   </a>
   <ul class="nav__links">
@@ -43,7 +43,7 @@
 <section class="hero">
   <picture class="hero__bg" aria-hidden="true">
     <source media="(max-width: 767px)" srcset="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778616354/ChatGPT_Image_12_de_mai._de_2026_17_05_01_fpgqbc.png">
-    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778588404/ChatGPT_Image_12_05_2026_09_19_44_ntbqwn.png" alt="" decoding="async" fetchpriority="high">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778588404/ChatGPT_Image_12_05_2026_09_19_44_ntbqwn.png" alt="" width="2162" height="727" decoding="async" fetchpriority="high">
   </picture>
   <div class="hero__inner">
     <div class="hero__eyebrow">COLEÇÃO ETERNO AMOR</div>
@@ -558,58 +558,70 @@
   /* ── MOBILE ── */
   @media (max-width: 720px) {
     .premium-footer {
-      margin-top: clamp(56px, 14vw, 88px);
+      margin-top: clamp(40px, 10vw, 72px);
     }
     .premium-footer::before {
-      top: -40px;
-      height: 40px;
+      top: -32px;
+      height: 32px;
     }
     .premium-footer::after {
-      width: 140px;
+      width: 120px;
     }
     .premium-footer__inner {
-      padding-top: clamp(36px, 9vw, 56px);
+      padding: clamp(28px, 7vw, 44px) var(--ft-pad-x) clamp(28px, 6vw, 40px);
     }
 
     .premium-footer__monogram {
-      width: 42px;
-      height: 42px;
-      font-size: 1.05rem;
+      width: 40px;
+      height: 40px;
+      font-size: 1rem;
     }
     .premium-footer__crest {
-      margin-bottom: clamp(24px, 6vw, 36px);
+      margin-bottom: clamp(18px, 4.5vw, 26px);
     }
 
     .premium-footer__grid {
       grid-template-columns: 1fr;
-      gap: 32px;
+      gap: 22px;
       text-align: center;
+      padding-bottom: clamp(22px, 4vw, 30px);
     }
 
     .premium-footer__brand-col {
       align-items: center;
       flex-direction: column;
-      gap: 18px;
-      padding-bottom: 28px;
+      gap: 14px;
+      padding-bottom: 20px;
+      margin-bottom: 4px;
       border-bottom: 1px solid var(--ft-line-soft);
     }
     .premium-footer__brand-col > div {
       flex: 0 1 auto;
     }
+    .premium-footer__brand {
+      margin-bottom: 8px;
+    }
     .premium-footer__desc {
       max-width: 340px;
       text-align: center;
+      line-height: 1.6;
     }
     .premium-footer__social {
       justify-content: center;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .premium-footer__social a {
+      width: 38px;
+      height: 38px;
     }
 
     .premium-footer__title {
-      margin-bottom: 18px;
+      margin-bottom: 12px;
     }
     .premium-footer__links {
       align-items: center;
-      gap: 14px;
+      gap: 10px;
     }
     .premium-footer__links a {
       font-size: 0.9rem;
@@ -624,21 +636,43 @@
     }
 
     .premium-footer__trust {
-      gap: 18px 28px;
+      gap: 14px 22px;
+      padding: 20px 0;
     }
 
     .premium-footer__bottom {
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 18px;
+      gap: 12px;
+      padding-top: 20px;
+    }
+    .premium-footer__legal {
+      font-size: 0.72rem;
+    }
+    .premium-footer__legal small {
+      margin-top: 3px;
     }
     .premium-footer__pays {
       justify-content: center;
+      gap: 6px 18px;
+    }
+
+    .premium-footer__credit {
+      margin-top: 16px;
+      padding-top: 14px;
     }
   }
 
   @media (max-width: 420px) {
+    .premium-footer__inner {
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 64px; /* clear do botao flutuante do WhatsApp */
+    }
+    .premium-footer__grid {
+      gap: 20px;
+    }
     .premium-footer__badge {
       font-size: 0.65rem;
       gap: 8px;
@@ -648,17 +682,18 @@
       height: 13px;
     }
     .premium-footer__trust {
-      gap: 14px 22px;
+      gap: 12px 20px;
+      padding: 18px 0;
     }
     .premium-footer__pays {
       font-size: 0.65rem;
-      gap: 6px 18px;
+      gap: 6px 16px;
     }
     .premium-footer__pays span {
-      padding-right: 18px;
+      padding-right: 16px;
     }
     .premium-footer__pays span + span::before {
-      left: -12px;
+      left: -10px;
     }
   }
 

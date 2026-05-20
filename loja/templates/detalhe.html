@@ -15,7 +15,7 @@
 <!-- NAVEGAÇÃO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
-    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" decoding="async">
+    <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" width="40" height="40" decoding="async">
     Barrs Store
   </a>
   <ul class="nav__links">
@@ -61,6 +61,7 @@
                    src="{{ produto.imagem|cloudinary_url:'c_fill,w_900,h_900,q_auto,f_auto' }}"
                    srcset="{{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w, {{ produto.imagem|cloudinary_url:'c_fill,w_1100,h_1100,q_auto,f_auto' }} 1100w"
                    sizes="(max-width: 720px) 100vw, 52vw"
+                   width="900" height="900"
                    alt="{{ produto.alt_text }}"
                    loading="eager"
                    decoding="async">
@@ -71,6 +72,7 @@
                    src="{{ produto.imagem_2|cloudinary_url:'c_fill,w_900,h_900,q_auto,f_auto' }}"
                    srcset="{{ produto.imagem_2|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_1100,h_1100,q_auto,f_auto' }} 1100w"
                    sizes="(max-width: 720px) 100vw, 52vw"
+                   width="900" height="900"
                    alt="{{ produto.alt_text }} - foto 2"
                    loading="lazy"
                    decoding="async">
@@ -82,6 +84,7 @@
                    src="{{ produto.imagem_3|cloudinary_url:'c_fill,w_900,h_900,q_auto,f_auto' }}"
                    srcset="{{ produto.imagem_3|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem_3|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w, {{ produto.imagem_3|cloudinary_url:'c_fill,w_1100,h_1100,q_auto,f_auto' }} 1100w"
                    sizes="(max-width: 720px) 100vw, 52vw"
+                   width="900" height="900"
                    alt="{{ produto.alt_text }} - foto 3"
                    loading="lazy"
                    decoding="async">
@@ -237,7 +240,7 @@
     {% for p in relacionados %}
     <a href="{% url 'detalhe_produto' p.slug %}" class="related__card">
       {% if p.imagem %}
-        <img src="{{ p.imagem.url }}" alt="{{ p.alt_text }}" loading="lazy" decoding="async">
+        <img src="{{ p.imagem.url }}" alt="{{ p.alt_text }}" width="520" height="520" loading="lazy" decoding="async">
       {% endif %}
       <div class="related__card-body">
         <div class="related__card-name">{{ p.nome }}</div>

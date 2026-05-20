@@ -7,6 +7,7 @@
         src="{{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }}"
         srcset="{{ produto.imagem|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }} 360w, {{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w"
         sizes="(max-width: 640px) 46vw, (max-width: 1024px) 33vw, 280px"
+        width="520" height="520"
         alt="{{ produto.alt_text }}"
         loading="lazy"
         decoding="async">
