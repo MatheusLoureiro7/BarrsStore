@@ -4,6 +4,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from loja import views as loja_views
 from django.views.generic.base import RedirectView
+from django_otp.admin import OTPAdminSite
+
+# Exige 2FA (TOTP) para acessar o painel. Login pede usuario + senha + codigo de 6 digitos.
+admin.site.__class__ = OTPAdminSite
 
 handler404 = loja_views.pagina_404
 
