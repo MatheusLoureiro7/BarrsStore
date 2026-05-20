@@ -2291,7 +2291,7 @@ def processar_pagamento_brick(request, pedido_id, token):
     payer = dados_pagador_mercadopago(pedido)
     # A API de pagamento direto do Brick rejeita payer.name; usa first_name/last_name.
     payer.pop('name', None)
-    payer['email'] = payer_front.get('email') or payer.get('email')
+    # Sempre usa o email do pedido (token UUID ja garante autoria); ignora o que vier do front.
     if not payer.get('identification') and isinstance(payer_front.get('identification'), dict):
         payer['identification'] = payer_front['identification']
 
