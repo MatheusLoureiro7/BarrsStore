@@ -264,9 +264,9 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 dias
 JAZZMIN_SETTINGS = {
     "site_title": "Barrs Store Admin",
     "site_header": "Barrs Store",
-    "site_brand": "ðŸ’Ž Barrs Store",
+    "site_brand": "💎 Barrs Store",
     "welcome_sign": "Bem-vinda ao painel da Barrs Store",
-    "copyright": "Barrs Store Â© 2026",
+    "copyright": "Barrs Store © 2026",
     "search_model": ["loja.Produto", "loja.Pedido"],
     "topmenu_links": [
         {"name": "Ver site", "url": "/", "new_window": True},
