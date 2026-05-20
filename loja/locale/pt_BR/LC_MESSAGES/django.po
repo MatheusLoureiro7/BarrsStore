@@ -1,0 +1,76 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: pt_BR\n"
+
+msgid "OTP Device:"
+msgstr "Dispositivo OTP:"
+
+msgid "OTP Token:"
+msgstr "Código OTP:"
+
+msgid "Get OTP Challenge"
+msgstr "Solicitar código OTP"
+
+msgid "Log in"
+msgstr "Entrar"
+
+msgid "Forgotten your password or username?"
+msgstr "Esqueceu sua senha ou nome de usuário?"
+
+msgid "Please correct the error below."
+msgstr "Corrija o erro abaixo."
+
+msgid "Please correct the errors below."
+msgstr "Corrija os erros abaixo."
+
+msgid "You are authenticated as %(username)s, but are not authorized to access this page. Would you like to login to a different account?"
+msgstr "Você está autenticado como %(username)s, mas não tem permissão para acessar esta página. Deseja entrar com outra conta?"
+
+msgid "TOTP device"
+msgstr "Dispositivo TOTP"
+
+msgid "TOTP devices"
+msgstr "Dispositivos TOTP"
+
+msgid "Static device"
+msgstr "Token de emergência"
+
+msgid "Static devices"
+msgstr "Tokens de emergência"
+
+msgid "The user that this device belongs to."
+msgstr "O usuário ao qual este dispositivo pertence."
+
+msgid "The human-readable name of this device."
+msgstr "Nome amigável para identificar o dispositivo."
+
+msgid "A hex-encoded secret key of up to 40 bytes."
+msgstr "Chave secreta em formato hexadecimal (até 40 bytes)."
+
+msgid "The time step in seconds."
+msgstr "Intervalo (em segundos) entre cada código gerado."
+
+msgid "The Unix time at which to begin counting steps."
+msgstr "Timestamp Unix inicial para contagem dos intervalos."
+
+msgid "The number of digits to expect in a token."
+msgstr "Quantidade de dígitos esperada no código."
+
+msgid "The number of time steps in the past or future to allow."
+msgstr "Quantos intervalos antes ou depois do atual também são aceitos."
+
+msgid "The number of time steps the prover is known to deviate from our clock."
+msgstr "Diferença conhecida entre o relógio do dispositivo e o servidor (em intervalos)."
+
+msgid "The t value of the latest verified token. The next token must be at a higher time step."
+msgstr "Último intervalo aceito. O próximo código deve ser de um intervalo mais novo."
+
+msgid "Number of successive failed attempts."
+msgstr "Tentativas malsucedidas consecutivas."
+
+msgid "The time the device was created."
+msgstr "Data e hora de criação do dispositivo."
+
+msgid "The most recent date and time this device was used."
+msgstr "Última data e hora em que o dispositivo foi usado."

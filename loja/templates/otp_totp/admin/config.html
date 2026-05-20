@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div style="text-align: center;">
+  <h2 style="margin-bottom: 16px">Escaneie o QR code com seu app autenticador</h2>
+  <p style="color:#666;max-width:520px;margin:0 auto 20px">
+    Use o Google Authenticator, Authy, 1Password, Microsoft Authenticator ou similar.
+    Depois de adicionar, volte ao dispositivo e confirme um código de 6 dígitos para ativar.
+  </p>
+  <p id="qrcode">
+    <img width="220" height="220"
+         style="background-color: white; padding: 8px; border:1px solid #ddd"
+         src="{% url "admin:otp_totp_totpdevice_qrcode" pk=device.pk %}"
+         onerror="document.getElementById('qrcode').style.display = 'none'; document.getElementById('no-qrcode').style.display = 'block';"
+    >
+  </p>
+  <p id="no-qrcode" style="display: none">
+    Não foi possível gerar a imagem do QR code. Use a URL abaixo ou copie a chave secreta no seu app:
+  </p>
+  <p style="word-break: break-all; max-width: 520px; margin: 0 auto; font-family: monospace; font-size: 12px; color:#555">
+    {{ device.config_url }}
+  </p>
+</div>
+{% endblock %}

@@ -360,3 +360,24 @@ class EmailPendente(models.Model):
 
     def __str__(self):
         return f'{self.assunto} -> {self.destinatario_email}'
+
+
+# ── PROXIES PARA TRADUZIR django-otp NO ADMIN ─────────────────────
+from django_otp.plugins.otp_totp.models import TOTPDevice as _TOTPDevice
+from django_otp.plugins.otp_static.models import StaticDevice as _StaticDevice
+
+
+class DispositivoTOTP(_TOTPDevice):
+    class Meta:
+        proxy = True
+        app_label = 'loja'
+        verbose_name = 'Dispositivo TOTP (2FA)'
+        verbose_name_plural = 'Dispositivos TOTP (2FA)'
+
+
+class TokenEmergencia(_StaticDevice):
+    class Meta:
+        proxy = True
+        app_label = 'loja'
+        verbose_name = 'Token de emergência'
+        verbose_name_plural = 'Tokens de emergência'

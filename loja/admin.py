@@ -2,7 +2,10 @@ from django.contrib import admin
 from django import forms
 from django.utils.html import format_html, format_html_join
 from django.contrib import messages
-from .models import Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel, Cupom, EmailPendente
+from .models import (
+    Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel, Cupom, EmailPendente,
+    DispositivoTOTP, TokenEmergencia,
+)
 
 
 @admin.register(Categoria)
@@ -231,3 +234,87 @@ class EmailPendenteAdmin(admin.ModelAdmin):
     list_filter = ('status', 'criado_em')
     search_fields = ('assunto', 'destinatario_email')
     readonly_fields = ('dedupe_key', 'payload', 'tentativas', 'ultimo_erro', 'criado_em', 'atualizado_em', 'enviado_em')
+
+
+# ── 2FA: re-registra OTP com nomes em portugues ───────────────────
+from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
+from django_otp.plugins.otp_static.admin import StaticDeviceAdmin
+from django_otp.plugins.otp_totp.models import TOTPDevice as _TOTPDeviceModel
+from django_otp.plugins.otp_static.models import StaticDevice as _StaticDeviceModel
+
+try:
+    admin.site.unregister(_TOTPDeviceModel)
+except admin.sites.NotRegistered:
+    pass
+try:
+    admin.site.unregister(_StaticDeviceModel)
+except admin.sites.NotRegistered:
+    pass
+
+
+_LABELS_PT_TOTP = {
+    'user': ('Usuário', 'O usuário ao qual este dispositivo pertence.'),
+    'name': ('Nome', 'Nome amigável para identificar o dispositivo (ex.: Meu celular).'),
+    'confirmed': ('Confirmado', 'Marque para indicar que este dispositivo está pronto para uso.'),
+    'key': ('Chave secreta', 'Chave hexadecimal usada para gerar os códigos. Não compartilhe.'),
+    'step': ('Intervalo (segundos)', 'Tempo de vida de cada código (padrão 30s).'),
+    't0': ('Tempo de referência (T0)', 'Timestamp Unix inicial da contagem. Padrão 0.'),
+    'digits': ('Quantidade de dígitos', 'Tamanho do código gerado (6 ou 8).'),
+    'tolerance': ('Tolerância', 'Quantos passos antes/depois também são aceitos (recomendado 1).'),
+    'drift': ('Desvio', 'Desvio atual do relógio do dispositivo (em passos).'),
+    'last_t': ('Último passo usado', 'Último intervalo aceito; previne reuso do mesmo código.'),
+    'throttling_failure_count': ('Falhas consecutivas', 'Tentativas malsucedidas seguidas. Zera no acerto.'),
+    'last_used_at': ('Último uso', 'Quando foi usado pela última vez.'),
+    'created_at': ('Criado em', 'Data de criação do dispositivo.'),
+}
+
+_LABELS_PT_STATIC = {
+    'user': ('Usuário', 'O usuário ao qual este token pertence.'),
+    'name': ('Nome', 'Nome amigável para identificar o conjunto de tokens.'),
+    'confirmed': ('Confirmado', 'Marque para indicar que este conjunto está pronto para uso.'),
+    'throttling_failure_count': ('Falhas consecutivas', 'Tentativas malsucedidas seguidas.'),
+}
+
+
+def _aplicar_labels_pt(form, mapa):
+    for nome, (label, help_text) in mapa.items():
+        if nome in form.base_fields:
+            form.base_fields[nome].label = label
+            form.base_fields[nome].help_text = help_text
+    return form
+
+
+_TRADUCAO_FIELDSET = {
+    'Identity': 'Identidade',
+    'Timestamps': 'Datas',
+    'Configuration': 'Configuração',
+    'State': 'Estado',
+    'Throttling': 'Bloqueio por tentativas',
+}
+
+
+def _traduzir_fieldsets(fieldsets):
+    return [
+        (_TRADUCAO_FIELDSET.get(nome, nome) if nome else nome, opts)
+        for nome, opts in fieldsets
+    ]
+
+
+@admin.register(DispositivoTOTP)
+class DispositivoTOTPAdmin(TOTPDeviceAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        return _aplicar_labels_pt(form, _LABELS_PT_TOTP)
+
+    def get_fieldsets(self, request, obj=None):
+        return _traduzir_fieldsets(super().get_fieldsets(request, obj))
+
+
+@admin.register(TokenEmergencia)
+class TokenEmergenciaAdmin(StaticDeviceAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        return _aplicar_labels_pt(form, _LABELS_PT_STATIC)
+
+    def get_fieldsets(self, request, obj=None):
+        return _traduzir_fieldsets(super().get_fieldsets(request, obj))
