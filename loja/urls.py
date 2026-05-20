@@ -32,7 +32,6 @@ urlpatterns = [
     path('medidas/', views.medidas, name='medidas'),
     path('garantia/', views.garantia, name='garantia'),
     path('rastrear/', views.rastrear_pedido, name='rastrear_pedido'),
-    path('frete/calcular/', views.calcular_frete_ajax, name='calcular_frete'),
     path('frete/melhor-envio/', views.calcular_frete_melhor_envio, name='calcular_frete_me'),
 
     # Mercado Pago

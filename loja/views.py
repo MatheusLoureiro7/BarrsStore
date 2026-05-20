@@ -179,10 +179,14 @@ def resposta_externa_segura_para_log(response):
     }
 
 
-def enfileirar_email_pendente(payload, motivo=''):
+def enfileirar_email_pendente(payload, motivo='', pedido_id=None, tipo=''):
     destinatarios = payload.get('to') or [{}]
     destinatario = destinatarios[0] if destinatarios else {}
-    dedupe_raw = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    if pedido_id and tipo:
+        # Chave estavel: garante dedupe em retentativas do webhook MP, mesmo que o payload varie.
+        dedupe_raw = f'pedido:{pedido_id}:tipo:{tipo}'
+    else:
+        dedupe_raw = json.dumps(payload, sort_keys=True, ensure_ascii=False)
     dedupe_key = hashlib.sha256(dedupe_raw.encode('utf-8')).hexdigest()
     email_pendente, criado = EmailPendente.objects.get_or_create(
         dedupe_key=dedupe_key,
@@ -1156,7 +1160,7 @@ def enviar_email_confirmacao(pedido):
         ok, erro, resposta = enviar_brevo_payload(payload)
         logger.info('[BREVO] Confirmacao pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta) if resposta else erro)
         if not ok:
-            enfileirar_email_pendente(payload, erro)
+            enfileirar_email_pendente(payload, erro, pedido_id=pedido.id, tipo='confirmacao')
             logger.warning('E-mail do pedido %s enfileirado para reenvio. erro=%s', pedido.id, erro)
             return False
         return True
@@ -1185,7 +1189,7 @@ def enviar_email_pagamento_pendente(pedido):
             pedido.email_pagamento_pendente_enviado = True
             pedido.save(update_fields=['email_pagamento_pendente_enviado'])
             return True
-        enfileirar_email_pendente(payload, erro)
+        enfileirar_email_pendente(payload, erro, pedido_id=pedido.id, tipo='pagamento_pendente')
         logger.warning('E-mail de pagamento pendente do pedido %s enfileirado. erro=%s', pedido.id, erro)
     except Exception as exc:
         logger.exception('Erro ao enviar e-mail de pagamento pendente do pedido %s: %s', pedido.id, exc)
@@ -1217,7 +1221,7 @@ def enviar_email_rastreio(pedido):
         ok, erro, resposta = enviar_brevo_payload(payload)
         logger.info('[BREVO] Rastreio pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta) if resposta else erro)
         if not ok:
-            enfileirar_email_pendente(payload, erro)
+            enfileirar_email_pendente(payload, erro, pedido_id=pedido.id, tipo='rastreio')
             logger.warning('E-mail de rastreio do pedido %s enfileirado. erro=%s', pedido.id, erro)
             return False
         pedido.email_rastreio_enviado = True
@@ -1687,15 +1691,6 @@ def ver_carrinho(request):
     }
     context.update(seo)
     return render(request, 'carrinho.html', context)
-
-
-# ── CALCULAR FRETE VIA CEP (AJAX) ─────────────────────────────────
-@ratelimit(key='ip', rate='30/m', method='GET', block=True)
-def calcular_frete_ajax(request):
-    """Frete fixo/regional desativado. Use sempre o Melhor Envio."""
-    return JsonResponse({
-        'erro': 'Frete fixo desativado. Calcule o frete no carrinho pelo Melhor Envio.'
-    }, status=410)
 
 
 # ── CALCULAR FRETE VIA MELHOR ENVIO ───────────────────────────────
@@ -2415,6 +2410,7 @@ def pagamento_sucesso(request, pedido_id, token):
     return render(request, 'pagamento_sucesso.html', context)
 
 
+@ratelimit(key='ip', rate='30/m', method='GET', block=False)
 def pagamento_falha(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
     context = {'pedido': pedido}
