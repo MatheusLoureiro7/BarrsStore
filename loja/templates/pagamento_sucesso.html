@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static inline_static %}
+{% load static inline_static cloudinary_extras %}
 
 {% block title %}Pedido confirmado — Barrs Store{% endblock %}
 
@@ -119,7 +119,7 @@
             <div class="su-item">
               {% if item.produto and item.produto.imagem %}
                 <img class="su-item__img"
-                     src="{{ item.produto.imagem.url }}"
+                     src="{{ item.produto.imagem|cloudinary_url:'c_fill,w_128,h_128,q_auto,f_auto' }}"
                      alt="{{ item.nome_produto }}"
                      width="64" height="64"
                      loading="lazy">

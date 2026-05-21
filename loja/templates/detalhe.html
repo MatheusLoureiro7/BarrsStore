@@ -116,7 +116,7 @@
     {% elif produto.estoque_baixo %}
       <span class="product__tag product__tag--last">Últimas unidades</span>
     {% elif produto.destaque %}
-      <span class="product__tag product__tag--featured">Mais vendido</span>
+      <span class="product__tag product__tag--featured">Mais vendidos</span>
     {% elif produto.is_novo %}
       <span class="product__tag product__tag--new">Novo</span>
     {% endif %}
@@ -237,7 +237,7 @@
     {% for p in relacionados %}
     <a href="{% url 'detalhe_produto' p.slug %}" class="related__card">
       {% if p.imagem %}
-        <img src="{{ p.imagem.url }}" alt="{{ p.get_image_alt }}" loading="lazy" decoding="async">
+        <img src="{{ p.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }}" alt="{{ p.get_image_alt }}" loading="lazy" decoding="async">
       {% endif %}
       <div class="related__card-body">
         <div class="related__card-name">{{ p.nome }}</div>

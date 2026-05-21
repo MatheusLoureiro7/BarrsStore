@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static inline_static %}
+{% load static inline_static cloudinary_extras %}
 
 {% block title %}Carrinho — Barrs Store{% endblock %}
 
@@ -44,7 +44,7 @@
       <article class="cart-item">
         <div class="cart-item__media">
           {% if item.produto.imagem %}
-            <img src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" width="84" height="84" loading="lazy" decoding="async">
+            <img src="{{ item.produto.imagem|cloudinary_url:'c_fill,w_168,h_168,q_auto,f_auto' }}" alt="{{ item.produto.alt_text }}" width="84" height="84" loading="lazy" decoding="async">
           {% else %}
             <div class="cart-item__placeholder">
               <svg class="icon" style="width:28px;height:28px" aria-hidden="true"><use href="#i-gem"/></svg>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static inline_static %}
+{% load static inline_static cloudinary_extras %}
 
 {% block title %}Finalizar Compra — Barrs Store{% endblock %}
 
@@ -171,7 +171,7 @@
       <div class="summary-item">
         <div class="summary-item__media">
           {% if item.produto.imagem %}
-            <img src="{{ item.produto.imagem.url }}" alt="{{ item.produto.alt_text }}" width="52" height="52" loading="lazy" decoding="async">
+            <img src="{{ item.produto.imagem|cloudinary_url:'c_fill,w_104,h_104,q_auto,f_auto' }}" alt="{{ item.produto.alt_text }}" width="52" height="52" loading="lazy" decoding="async">
           {% else %}
             <div class="summary-item__placeholder">
               <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-gem"/></svg>
