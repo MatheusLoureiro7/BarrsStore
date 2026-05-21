@@ -144,6 +144,119 @@ def dados_pagador_mercadopago(pedido):
     return payer
 
 
+# Tabela de erros do Mercado Pago no estilo das grandes marcas (Stripe, Magalu, Amazon):
+# - 'categoria': "transient" (instabilidade), "cartao" (dado errado do cliente), "banco" (banco recusou).
+# - 'pode_tentar': True se o cliente deve tentar de novo com os mesmos dados.
+# - 'mensagem': texto curto, claro, sem jargao tecnico.
+# - 'sugestao': proximo passo concreto.
+_MP_ERROS = {
+    'cc_rejected_insufficient_amount': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Saldo insuficiente no cartao.',
+        'sugestao': 'Use outro cartao ou pague no Pix.',
+    },
+    'cc_rejected_bad_filled_security_code': {
+        'categoria': 'cartao',
+        'pode_tentar': True,
+        'mensagem': 'Codigo de seguranca invalido.',
+        'sugestao': 'Confira o CVV (3 ou 4 numeros no verso do cartao).',
+    },
+    'cc_rejected_bad_filled_date': {
+        'categoria': 'cartao',
+        'pode_tentar': True,
+        'mensagem': 'Data de validade incorreta.',
+        'sugestao': 'Confira mes e ano de vencimento impressos no cartao.',
+    },
+    'cc_rejected_bad_filled_card_number': {
+        'categoria': 'cartao',
+        'pode_tentar': True,
+        'mensagem': 'Numero do cartao invalido.',
+        'sugestao': 'Revise os 16 digitos do cartao e tente novamente.',
+    },
+    'cc_rejected_bad_filled_other': {
+        'categoria': 'cartao',
+        'pode_tentar': True,
+        'mensagem': 'Algum dado do cartao esta incorreto.',
+        'sugestao': 'Revise os campos do cartao e tente de novo.',
+    },
+    'cc_rejected_high_risk': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Pagamento recusado por seguranca.',
+        'sugestao': 'Use outro cartao ou pague no Pix.',
+    },
+    'cc_rejected_card_disabled': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Cartao desabilitado.',
+        'sugestao': 'Entre em contato com seu banco ou use outro cartao.',
+    },
+    'cc_rejected_call_for_authorize': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Seu banco precisa autorizar essa compra.',
+        'sugestao': 'Ligue para o telefone no verso do cartao e libere o valor.',
+    },
+    'cc_rejected_duplicated_payment': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Pagamento ja identificado.',
+        'sugestao': 'Confira no app do seu banco antes de tentar novamente.',
+    },
+    'cc_rejected_card_type_not_allowed': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Esse tipo de cartao nao e aceito.',
+        'sugestao': 'Use outro cartao ou pague no Pix.',
+    },
+    'cc_rejected_max_attempts': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Limite de tentativas atingido neste cartao.',
+        'sugestao': 'Aguarde 30 minutos ou use outro cartao.',
+    },
+    'cc_rejected_other_reason': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Pagamento recusado pelo banco.',
+        'sugestao': 'Use outro cartao ou pague no Pix.',
+    },
+    'cc_rejected_blacklist': {
+        'categoria': 'banco',
+        'pode_tentar': False,
+        'mensagem': 'Pagamento recusado.',
+        'sugestao': 'Use outro cartao ou pague no Pix.',
+    },
+}
+
+_MP_ERRO_TRANSIENT = {
+    'categoria': 'transient',
+    'pode_tentar': True,
+    'mensagem': 'Instabilidade momentanea no pagamento.',
+    'sugestao': 'Aguarde alguns segundos e clique em Tentar novamente.',
+}
+
+_MP_ERRO_GENERICO = {
+    'categoria': 'banco',
+    'pode_tentar': True,
+    'mensagem': 'Pagamento nao aprovado.',
+    'sugestao': 'Confira os dados ou use outro cartao. Voce tambem pode pagar no Pix.',
+}
+
+
+def interpretar_erro_mp(status_code, payment):
+    """Traduz erros do Mercado Pago em mensagem amigavel + categoria + sugestao."""
+    detail = (payment or {}).get('status_detail') or ''
+    if detail and detail in _MP_ERROS:
+        return _MP_ERROS[detail]
+    # 5xx ou message='internal_error' = instabilidade do MP.
+    message = ((payment or {}).get('message') or '').lower()
+    if status_code >= 500 or 'internal_error' in message or 'timeout' in message:
+        return _MP_ERRO_TRANSIENT
+    return _MP_ERRO_GENERICO
+
+
 def resumir_erro_mercadopago(payment):
     """Evita gravar dados sensiveis do payload completo do Mercado Pago nos logs."""
     causes = payment.get('cause') or []
@@ -605,6 +718,7 @@ def criar_envio_melhor_envio(pedido):
             pedido.melhor_envio_status = 'erro'
             pedido.melhor_envio_erro = texto
             pedido.save(update_fields=['melhor_envio_status', 'melhor_envio_erro'])
+            enviar_whatsapp_alerta_melhor_envio(pedido, texto)
             return False
 
         data = resposta.json()
@@ -624,6 +738,7 @@ def criar_envio_melhor_envio(pedido):
         pedido.melhor_envio_erro = str(exc)
         pedido.save(update_fields=['melhor_envio_status', 'melhor_envio_erro'])
         logger.exception('Erro ao criar envio Melhor Envio do pedido %s: %s', pedido.id, exc)
+        enviar_whatsapp_alerta_melhor_envio(pedido, str(exc))
         return False
 
 
@@ -1472,34 +1587,48 @@ def enviar_email_abandono_3(carrinho):
 
 
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
-def enviar_whatsapp_pedido(pedido):
-    """Envia notificação no WhatsApp quando chegar um novo pedido."""
+def _enviar_whatsapp_admin(mensagem):
+    """Helper interno: envia mensagem ao admin via CallMeBot. Nunca propaga erro."""
     try:
-        painel_url = site_url(f'/painel/loja/pedido/{pedido.id}/change/')
-        mensagem = (
-            f"Novo pedido #{pedido.id}\n\n"
-            f"Total: R$ {pedido.total}\n"
-            f"Status: {pedido.get_status_display()}\n"
-            f"Ver no painel: {painel_url}"
-        )
-
         whatsapp_phone = os.environ.get('WHATSAPP_ADMIN_PHONE', '5511913225256').strip()
         callmebot_key = os.environ.get('CALLMEBOT_API_KEY', '').strip()
         if not callmebot_key:
-            logger.warning('CALLMEBOT_API_KEY nao configurada. WhatsApp do pedido %s nao foi enviado.', pedido.id)
-            return
-
+            logger.warning('CALLMEBOT_API_KEY nao configurada. Alerta WhatsApp ignorado.')
+            return False
         http_requests.get(
             'https://api.callmebot.com/whatsapp.php',
-            params={
-                'phone': whatsapp_phone,
-                'text': mensagem,
-                'apikey': callmebot_key,
-            },
+            params={'phone': whatsapp_phone, 'text': mensagem, 'apikey': callmebot_key},
             timeout=10,
         )
+        return True
     except Exception:
-        pass  # Nunca quebra o pedido se o WhatsApp falhar
+        return False
+
+
+def enviar_whatsapp_pedido(pedido):
+    """Envia notificação no WhatsApp quando chegar um novo pedido."""
+    painel_url = site_url(f'/painel/loja/pedido/{pedido.id}/change/')
+    mensagem = (
+        f"Novo pedido #{pedido.id}\n\n"
+        f"Total: R$ {pedido.total}\n"
+        f"Status: {pedido.get_status_display()}\n"
+        f"Ver no painel: {painel_url}"
+    )
+    _enviar_whatsapp_admin(mensagem)
+
+
+def enviar_whatsapp_alerta_melhor_envio(pedido, erro_texto):
+    """Alerta urgente: pedido pago mas Melhor Envio nao criou etiqueta."""
+    painel_url = site_url(f'/painel/loja/pedido/{pedido.id}/change/')
+    resumo_erro = (erro_texto or '')[:200]
+    mensagem = (
+        f"[URGENTE] Melhor Envio FALHOU no pedido #{pedido.id}\n\n"
+        f"Cliente pagou mas etiqueta nao foi gerada.\n"
+        f"Total: R$ {pedido.total}\n"
+        f"Erro: {resumo_erro}\n\n"
+        f"Painel: {painel_url}"
+    )
+    _enviar_whatsapp_admin(mensagem)
 
 
 # ── HELPER: dados do carrinho para navbar ──────────────────────────
@@ -2417,8 +2546,12 @@ def processar_pagamento_brick(request, pedido_id, token):
             pedido.id,
             payload_pagamento_seguro_para_log(payment_data),
         )
+        info = interpretar_erro_mp(status_code, payment)
         return JsonResponse({
-            'erro': payment.get('message') or 'Pagamento nao aprovado. Confira os dados e tente novamente.',
+            'erro': info['mensagem'],
+            'sugestao': info['sugestao'],
+            'categoria': info['categoria'],
+            'pode_tentar': info['pode_tentar'],
             'detalhe': payment.get('status_detail', ''),
         }, status=400)
 

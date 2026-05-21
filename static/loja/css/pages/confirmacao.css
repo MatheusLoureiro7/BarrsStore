@@ -287,6 +287,21 @@ body {
   line-height: 1.55;
   margin-bottom: 1rem;
 }
+.co-error__title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.co-error__hint {
+  color: var(--color-ink-soft);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+.co-error__retry {
+  display: inline-block;
+  margin-top: 0.25rem;
+}
 .co-error a {
   color: var(--color-error);
   font-weight: 700;

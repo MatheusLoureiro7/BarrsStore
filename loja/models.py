@@ -1,13 +1,15 @@
 import json
+import uuid
+from decimal import Decimal
 
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.text import slugify
-from decimal import Decimal
-import uuid
+from django_otp.plugins.otp_static.models import StaticDevice as _StaticDevice
+from django_otp.plugins.otp_totp.models import TOTPDevice as _TOTPDevice
 
 
 # ── CONFIGURAÇÃO DE FRETE POR REGIÃO ──────────────────────────────
@@ -305,7 +307,7 @@ class Carrinho(models.Model):
     email_abandono_1_enviado = models.BooleanField(default=False)
     email_abandono_2_enviado = models.BooleanField(default=False)
     email_abandono_3_enviado = models.BooleanField(default=False)
-    atualizado_em = models.DateTimeField(auto_now=True)
+    atualizado_em = models.DateTimeField(auto_now=True, db_index=True)
 
     def total(self):
         return sum(item.subtotal() for item in self.itens.all())
@@ -348,7 +350,7 @@ class Pedido(models.Model):
 
     cliente = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='pedidos')
     nome = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(db_index=True)
     telefone = models.CharField(max_length=20, blank=True, default='')
     cpf = models.CharField(max_length=14, blank=True, default='')
     cep = models.CharField(max_length=9)
@@ -359,13 +361,13 @@ class Pedido(models.Model):
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=2)
     forma_pagamento = models.CharField(max_length=20, choices=PAGAMENTO_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', db_index=True)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     cupom_codigo = models.CharField(max_length=30, blank=True, default='')
     frete = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
-    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_em = models.DateTimeField(auto_now_add=True, db_index=True)
     codigo_rastreio = models.CharField(max_length=100, blank=True, default='', help_text='Código de rastreio dos Correios')
     email_rastreio_enviado = models.BooleanField(default=False, help_text='Email de rastreio já foi enviado')
     melhor_envio_service_id = models.PositiveIntegerField(null=True, blank=True)
@@ -504,10 +506,6 @@ class EmailPendente(models.Model):
 
 
 # ── PROXIES PARA TRADUZIR django-otp NO ADMIN ─────────────────────
-from django_otp.plugins.otp_totp.models import TOTPDevice as _TOTPDevice
-from django_otp.plugins.otp_static.models import StaticDevice as _StaticDevice
-
-
 class DispositivoTOTP(_TOTPDevice):
     class Meta:
         proxy = True

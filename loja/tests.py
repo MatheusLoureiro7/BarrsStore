@@ -396,6 +396,34 @@ class BaixaEstoqueIdempotenciaTests(TestCase):
         self.assertTrue(pedido.estoque_baixado)
 
 
+class InterpretarErroMPTests(TestCase):
+    def test_status_500_internal_error_e_transient(self):
+        from .views import interpretar_erro_mp
+        info = interpretar_erro_mp(500, {'message': 'internal_error', 'status_detail': None, 'cause': []})
+        self.assertEqual(info['categoria'], 'transient')
+        self.assertTrue(info['pode_tentar'])
+        self.assertIn('Instabilidade', info['mensagem'])
+
+    def test_cvv_invalido_aponta_para_cartao(self):
+        from .views import interpretar_erro_mp
+        info = interpretar_erro_mp(400, {'status_detail': 'cc_rejected_bad_filled_security_code'})
+        self.assertEqual(info['categoria'], 'cartao')
+        self.assertTrue(info['pode_tentar'])
+        self.assertIn('CVV', info['sugestao'])
+
+    def test_saldo_insuficiente_sugere_outro_metodo(self):
+        from .views import interpretar_erro_mp
+        info = interpretar_erro_mp(400, {'status_detail': 'cc_rejected_insufficient_amount'})
+        self.assertEqual(info['categoria'], 'banco')
+        self.assertFalse(info['pode_tentar'])
+        self.assertIn('Pix', info['sugestao'])
+
+    def test_status_detail_desconhecido_cai_no_generico(self):
+        from .views import interpretar_erro_mp
+        info = interpretar_erro_mp(400, {'status_detail': 'algo_inesperado'})
+        self.assertEqual(info['categoria'], 'banco')
+
+
 class CarrinhoAuthorizationTests(TestCase):
     def test_remover_item_de_carrinho_alheio_retorna_404(self):
         produto = Produto.objects.create(nome='Anel Auth', preco=Decimal('50'), estoque=5)
