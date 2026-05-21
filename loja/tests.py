@@ -149,6 +149,48 @@ class ProdutoSeoTests(TestCase):
         self.assertContains(response, '"availability": "https://schema.org/InStock"', html=False)
 
 
+class HomeOrderingTests(TestCase):
+    def test_produto_destacado_aparece_antes_do_mais_recente(self):
+        destaque = Produto.objects.create(
+            nome='Colar Destaque',
+            preco=Decimal('89.90'),
+            estoque=5,
+            destaque=True,
+        )
+        comum = Produto.objects.create(
+            nome='Brinco Recente',
+            preco=Decimal('39.90'),
+            estoque=5,
+            destaque=False,
+        )
+
+        response = Client().get('/')
+        html = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(html.index(destaque.nome), html.index(comum.nome))
+
+    def test_produto_destacado_continua_primeiro_com_ordem_menor_preco(self):
+        destaque = Produto.objects.create(
+            nome='Colar Destaque Caro',
+            preco=Decimal('199.90'),
+            estoque=5,
+            destaque=True,
+        )
+        comum = Produto.objects.create(
+            nome='Brinco Barato',
+            preco=Decimal('19.90'),
+            estoque=5,
+            destaque=False,
+        )
+
+        response = Client().get('/?ordem=menor')
+        html = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(html.index(destaque.nome), html.index(comum.nome))
+
+
 class ValidadorCPFTests(TestCase):
     def test_cpf_valido_com_mascara(self):
         self.assertTrue(cpf_valido('529.982.247-25'))

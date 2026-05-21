@@ -1730,13 +1730,13 @@ def home(request):
         produtos = produtos.filter(categoria__slug=categoria_slug)
 
     if ordem == 'menor':
-        produtos = produtos.order_by('preco')
+        produtos = produtos.order_by('-destaque', 'preco', '-criado_em')
     elif ordem == 'maior':
-        produtos = produtos.order_by('-preco')
+        produtos = produtos.order_by('-destaque', '-preco', '-criado_em')
     elif ordem == 'nome':
-        produtos = produtos.order_by('nome')
+        produtos = produtos.order_by('-destaque', 'nome', '-criado_em')
     else:
-        produtos = produtos.order_by('-criado_em')
+        produtos = produtos.order_by('-destaque', '-criado_em')
 
     # Cache do count() (query potencialmente cara em catalogo grande). TTL 60s.
     # Vary por filtros que mudam o resultado.
