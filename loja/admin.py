@@ -92,6 +92,10 @@ class PedidoAdmin(admin.ModelAdmin):
         ('Pagamento', {
             'fields': ('forma_pagamento', 'status', 'subtotal', 'desconto', 'cupom_codigo', 'frete', 'total')
         }),
+        ('Observações do cliente', {
+            'fields': ('observacoes',),
+            'classes': ('wide',),
+        }),
         ('Rastreio e Melhor Envio', {
             'fields': (
                 'codigo_rastreio',

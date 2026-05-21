@@ -33,7 +33,11 @@
   <div class="product-card__actions">
     <a href="{% url 'detalhe_produto' produto.slug %}" class="product-card__view">Ver produto</a>
     {% if produto.disponivel %}
-    <form method="POST" action="{% url 'add_carrinho' produto.id %}" style="margin:0">
+    <form method="POST" action="{% url 'add_carrinho' produto.id %}" style="margin:0"
+          data-pixel-add="1"
+          data-pixel-id="{{ produto.id }}"
+          data-pixel-name="{{ produto.nome|escapejs }}"
+          data-pixel-value="{{ produto.preco|stringformat:'0.2f' }}">
       {% csrf_token %}
       <input type="hidden" name="next" value="home">
       <button type="submit" class="product-card__add" title="Adicionar ao carrinho" aria-label="Adicionar {{ produto.nome }} ao carrinho">+</button>

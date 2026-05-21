@@ -53,6 +53,107 @@ def order_success_url(pedido):
     return f'{base}{path}'
 
 
+def _post_capi(event_name, event_id, source_url, user_data, custom_data):
+    """Helper interno: envia 1 evento para a Meta Conversions API. Nunca propaga erro."""
+    pixel_id = getattr(settings, 'META_PIXEL_ID', '').strip()
+    access_token = getattr(settings, 'META_ACCESS_TOKEN', '').strip()
+    test_event_code = getattr(settings, 'META_TEST_EVENT_CODE', '').strip()
+    if not pixel_id or not access_token:
+        return False
+
+    payload = {
+        'data': [
+            {
+                'event_name': event_name,
+                'event_time': int(time.time()),
+                'event_id': event_id,
+                'action_source': 'website',
+                'event_source_url': source_url,
+                'user_data': user_data,
+                'custom_data': custom_data,
+            }
+        ],
+        'access_token': access_token,
+    }
+    if test_event_code:
+        payload['test_event_code'] = test_event_code
+
+    url = f'https://graph.facebook.com/v22.0/{pixel_id}/events'
+    try:
+        response = requests.post(url, json=payload, timeout=8)
+        if response.status_code >= 400:
+            logger.warning('[META CAPI] %s falhou status=%s resposta=%s',
+                           event_name, response.status_code, response.text[:300])
+            return False
+        logger.info('[META CAPI] %s enviado event_id=%s', event_name, event_id)
+        return True
+    except requests.RequestException as exc:
+        logger.warning('[META CAPI] Erro %s event_id=%s: %s', event_name, event_id, exc)
+        return False
+
+
+def _user_data_from_request(request):
+    """Monta user_data a partir da sessao/cookies para AddToCart/InitiateCheckout.
+
+    Sem PII obrigatoria (usuario nao logado), mas inclui IP, user-agent e
+    fbp/fbc se disponiveis para o Meta tentar identificar o visitante.
+    """
+    ud = {}
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR', '')
+    if ip:
+        ud['client_ip_address'] = ip
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    if user_agent:
+        ud['client_user_agent'] = user_agent[:500]
+    fbp = request.COOKIES.get('_fbp')
+    if fbp:
+        ud['fbp'] = fbp
+    fbc = request.COOKIES.get('_fbc')
+    if fbc:
+        ud['fbc'] = fbc
+    # Se Meta deu fbclid recente, sintetiza fbc no formato oficial.
+    utm = (request.session.get('utm') or {}) if hasattr(request, 'session') else {}
+    if not fbc and utm.get('fbclid'):
+        ud['fbc'] = f'fb.1.{int(time.time())}.{utm["fbclid"]}'
+    # Email do usuario logado tambem ajuda matching.
+    user = getattr(request, 'user', None)
+    if user and getattr(user, 'is_authenticated', False) and getattr(user, 'email', ''):
+        email_hash = normalize_and_hash(user.email)
+        if email_hash:
+            ud['em'] = [email_hash]
+    return ud
+
+
+def send_add_to_cart_event(produto, request, event_id):
+    """AddToCart server-side. Use o MESMO event_id do Pixel para dedupe."""
+    value = produto.preco if isinstance(produto.preco, Decimal) else Decimal(str(produto.preco or '0'))
+    custom = {
+        'content_ids': [str(produto.id)],
+        'content_type': 'product',
+        'content_name': produto.nome,
+        'value': float(value),
+        'currency': 'BRL',
+    }
+    source_url = request.build_absolute_uri(produto.get_absolute_url())
+    return _post_capi('AddToCart', event_id, source_url, _user_data_from_request(request), custom)
+
+
+def send_initiate_checkout_event(carrinho, request, event_id):
+    """InitiateCheckout server-side. Use o MESMO event_id do Pixel para dedupe."""
+    itens = list(carrinho.itens.select_related('produto').all())
+    content_ids = [str(item.produto_id) for item in itens if item.produto_id]
+    total = sum((item.subtotal() for item in itens), Decimal('0'))
+    custom = {
+        'content_ids': content_ids,
+        'content_type': 'product',
+        'value': float(total),
+        'currency': 'BRL',
+        'num_items': sum(item.quantidade for item in itens),
+    }
+    source_url = request.build_absolute_uri(reverse('finalizar_compra'))
+    return _post_capi('InitiateCheckout', event_id, source_url, _user_data_from_request(request), custom)
+
+
 def send_purchase_event(pedido):
     """Envia Purchase para Meta Conversions API sem expor token no frontend."""
     pixel_id = getattr(settings, 'META_PIXEL_ID', '').strip()

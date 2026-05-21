@@ -1,0 +1,33 @@
+{
+  "name": "Barrs Store",
+  "short_name": "Barrs",
+  "description": "Acessórios modernos e exclusivos da Barrs Store.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "background_color": "#F6F3ED",
+  "theme_color": "#3D2D20",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/dsw5fkmwp/image/upload/c_fill,w_192,h_192,q_auto,f_png/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/dsw5fkmwp/image/upload/c_fill,w_512,h_512,q_auto,f_png/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/dsw5fkmwp/image/upload/c_pad,w_512,h_512,b_white,q_auto,f_png/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"]
+}

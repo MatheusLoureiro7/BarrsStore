@@ -92,6 +92,27 @@
 })();
 
 
+// Meta Pixel: AddToCart quando clicar no "+" de qualquer card de produto.
+// Usa event delegation para cobrir tambem cards adicionados via infinite scroll.
+(function () {
+  if (typeof document === 'undefined') return;
+  document.addEventListener('submit', function (event) {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    if (form.dataset.pixelAdd !== '1') return;
+    if (typeof fbq !== 'function') return;
+    const valor = Number(String(form.dataset.pixelValue || '0').replace(',', '.')) || 0;
+    fbq('track', 'AddToCart', {
+      content_ids: [String(form.dataset.pixelId || '')],
+      content_type: 'product',
+      content_name: form.dataset.pixelName || '',
+      value: valor,
+      currency: 'BRL',
+    });
+  }, true);
+})();
+
+
 // Infinite scroll: substitui o "Carregar mais" sem causar scroll-to-top nem reload.
 (function () {
   const sentinel = document.getElementById('infinite-sentinel');

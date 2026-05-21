@@ -16,12 +16,17 @@ from django.urls import reverse
 from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom, EmailPendente
 from .mercadopago_security import validar_assinatura_mercadopago
 from .validators import cpf_valido
-from .integrations.meta_capi import send_purchase_event
+from .integrations.meta_capi import (
+    send_add_to_cart_event,
+    send_initiate_checkout_event,
+    send_purchase_event,
+)
 import mercadopago
 import json
 import requests as http_requests
 import os
 import logging
+import time
 import uuid
 import hashlib
 from decimal import Decimal, InvalidOperation
@@ -2104,6 +2109,14 @@ def adicionar_carrinho(request, produto_id):
     request.session.modified = True
     request.session.save()
 
+    # Meta CAPI AddToCart (server-side). Pixel ja disparou client-side com o mesmo event_id;
+    # Meta deduplica os dois. Se o front nao enviou event_id (adblocker ou JS off), o CAPI cobre.
+    try:
+        event_id = request.POST.get('meta_event_id') or f'addtocart_{produto.id}_{int(time.time())}_{carrinho.id}'
+        send_add_to_cart_event(produto, request, event_id)
+    except Exception:
+        pass  # Tracking nao pode quebrar o fluxo de carrinho.
+
     next_url = request.POST.get('next', 'carrinho')
     if next_url == 'detalhe':
         url = produto.get_absolute_url() + '?added=1'
@@ -2220,6 +2233,14 @@ def checkout(request):
         frete_valor = request.POST.get('frete_valor') or request.GET.get('frete_valor', '')
         frete_nome = request.POST.get('frete_nome') or request.GET.get('frete_nome', '')
         frete_service_id = request.POST.get('frete_service_id') or request.GET.get('frete_service_id', '')
+        # Meta CAPI InitiateCheckout server-side com mesmo event_id do Pixel client-side
+        # (deduplicacao no Meta). So dispara no GET inicial; POST nao retransmite.
+        meta_event_id = f'initcheckout_{carrinho.id}_{int(time.time())}'
+        if request.method == 'GET':
+            try:
+                send_initiate_checkout_event(carrinho, request, meta_event_id)
+            except Exception:
+                pass  # Tracking nao pode quebrar o checkout.
         context = {
             'itens': itens,
             'total': carrinho.total(),
@@ -2232,6 +2253,7 @@ def checkout(request):
             'frete_valor_selecionado': frete_valor,
             'frete_nome_selecionado': frete_nome,
             'frete_service_id_selecionado': frete_service_id,
+            'meta_event_id': meta_event_id,
         }
         context.update(noindex_context(request, 'Checkout - Barrs Store'))
         return render(request, 'checkout.html', context)
@@ -2391,6 +2413,7 @@ def checkout(request):
             total=total,
             melhor_envio_service_id=frete_service_id,
             origem_utm=request.session.get('utm') or {},
+            observacoes=request.POST.get('observacoes', '').strip()[:500],
         )
 
         for item in itens:

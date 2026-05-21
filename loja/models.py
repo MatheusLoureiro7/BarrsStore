@@ -386,6 +386,7 @@ class Pedido(models.Model):
     meta_purchase_sent = models.BooleanField(default=False)
     # Atribuição: UTM e gclid/fbclid capturados no momento do pedido (last-touch).
     origem_utm = models.JSONField(default=dict, blank=True, help_text='Parâmetros utm_*, gclid e fbclid da última visita.')
+    observacoes = models.TextField(blank=True, default='', max_length=500, help_text='Instruções do cliente: embrulho de presente, observações de entrega, etc.')
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'
