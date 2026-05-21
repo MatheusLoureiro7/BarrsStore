@@ -75,6 +75,22 @@ def send_purchase_event(pedido):
         user_data['ph'] = [phone_hash]
 
     value = pedido.total if isinstance(pedido.total, Decimal) else Decimal(str(pedido.total or '0'))
+    custom_data = {
+        'currency': 'BRL',
+        'value': float(value),
+        'order_id': str(pedido.id),
+        'content_ids': content_ids,
+        'content_type': 'product',
+    }
+    # Inclui UTM/gclid/fbclid no custom_data para atribuicao server-side no Meta.
+    utm = getattr(pedido, 'origem_utm', None) or {}
+    for chave in ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'):
+        if utm.get(chave):
+            custom_data[chave] = utm[chave]
+    fbc = utm.get('fbclid')
+    if fbc:
+        user_data['fbc'] = f'fb.1.{int(time.time())}.{fbc}'
+
     payload = {
         'data': [
             {
@@ -84,13 +100,7 @@ def send_purchase_event(pedido):
                 'action_source': 'website',
                 'event_source_url': order_success_url(pedido),
                 'user_data': user_data,
-                'custom_data': {
-                    'currency': 'BRL',
-                    'value': float(value),
-                    'order_id': str(pedido.id),
-                    'content_ids': content_ids,
-                    'content_type': 'product',
-                },
+                'custom_data': custom_data,
             }
         ],
         'access_token': access_token,

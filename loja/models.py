@@ -384,6 +384,8 @@ class Pedido(models.Model):
     email_poscompra_5_enviado = models.BooleanField(default=False)
     estoque_baixado = models.BooleanField(default=False)
     meta_purchase_sent = models.BooleanField(default=False)
+    # Atribuição: UTM e gclid/fbclid capturados no momento do pedido (last-touch).
+    origem_utm = models.JSONField(default=dict, blank=True, help_text='Parâmetros utm_*, gclid e fbclid da última visita.')
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'

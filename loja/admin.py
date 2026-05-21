@@ -77,6 +77,7 @@ class PedidoAdmin(admin.ModelAdmin):
         'melhor_envio_order_id',
         'melhor_envio_status',
         'melhor_envio_erro',
+        'origem_utm',
     )
     fieldsets = (
         ('Resumo do pedido', {
@@ -101,6 +102,10 @@ class PedidoAdmin(admin.ModelAdmin):
                 'melhor_envio_status',
                 'melhor_envio_erro',
             )
+        }),
+        ('Origem (atribuição)', {
+            'fields': ('origem_utm',),
+            'classes': ('collapse',),
         }),
         ('Controle interno', {
             'fields': ('access_token', 'criado_em')

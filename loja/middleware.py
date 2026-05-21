@@ -68,6 +68,29 @@ class AdminRateLimitMiddleware:
         return self.get_response(request)
 
 
+UTM_KEYS = ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid')
+
+
+class CaptureUtmMiddleware:
+    """Captura parametros UTM (e gclid/fbclid) em qualquer GET e persiste na sessao.
+
+    Estrategia last-touch wins (igual GA4): a cada clique vindo de campanha,
+    sobrescreve a origem anterior. O dicionario fica em `request.session['utm']`
+    e e salvo no Pedido quando o checkout finalizar (campo origem_utm).
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.method == 'GET':
+            captados = {k: request.GET[k][:120] for k in UTM_KEYS if k in request.GET}
+            if captados:
+                request.session['utm'] = {**(request.session.get('utm') or {}), **captados}
+                request.session.modified = True
+        return self.get_response(request)
+
+
 class ContentSecurityPolicyReportOnlyMiddleware:
     """Adiciona CSP em modo observacao ou bloqueio conforme a env CSP_ENFORCE.
 

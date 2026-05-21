@@ -2390,6 +2390,7 @@ def checkout(request):
             frete=frete,
             total=total,
             melhor_envio_service_id=frete_service_id,
+            origem_utm=request.session.get('utm') or {},
         )
 
         for item in itens:

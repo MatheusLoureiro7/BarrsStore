@@ -396,6 +396,35 @@ class BaixaEstoqueIdempotenciaTests(TestCase):
         self.assertTrue(pedido.estoque_baixado)
 
 
+class CaptureUtmMiddlewareTests(TestCase):
+    def test_utm_acumula_e_persiste_na_sessao(self):
+        client = Client()
+        # Primeira visita: vem com utm_source + utm_medium.
+        client.get('/?utm_source=instagram&utm_medium=stories')
+        session = client.session
+        self.assertEqual(session['utm']['utm_source'], 'instagram')
+        self.assertEqual(session['utm']['utm_medium'], 'stories')
+
+        # Segunda visita: vem com fbclid; mantém utm_source anterior.
+        client.get('/?fbclid=ABC123')
+        session = client.session
+        self.assertEqual(session['utm']['fbclid'], 'ABC123')
+        self.assertEqual(session['utm']['utm_source'], 'instagram')
+
+        # Terceira visita com novo utm_source: last-touch sobrescreve.
+        client.get('/?utm_source=google&utm_campaign=blackfriday')
+        session = client.session
+        self.assertEqual(session['utm']['utm_source'], 'google')
+        self.assertEqual(session['utm']['utm_campaign'], 'blackfriday')
+        self.assertEqual(session['utm']['fbclid'], 'ABC123')  # mantém
+
+    def test_visita_sem_utm_nao_quebra_sessao(self):
+        client = Client()
+        resp = client.get('/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn('utm', client.session)
+
+
 class InterpretarErroMPTests(TestCase):
     def test_status_500_internal_error_e_transient(self):
         from .views import interpretar_erro_mp

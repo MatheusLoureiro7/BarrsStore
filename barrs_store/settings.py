@@ -85,6 +85,7 @@ MIDDLEWARE = [
     'loja.middleware.BlockScannerPathsMiddleware',
     'loja.middleware.AdminRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'loja.middleware.CaptureUtmMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
