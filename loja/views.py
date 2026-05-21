@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -2983,3 +2984,74 @@ def politica(request):
         **seo_context(request, 'Politica de privacidade - Barrs Store', 'Leia a politica de privacidade da Barrs Store e entenda como seus dados sao protegidos.'),
     }
     return render(request, 'politica.html', context)
+
+
+# ── DASHBOARD ADMIN DE SAÚDE OPERACIONAL ─────────────────────────
+@staff_member_required(login_url='/painel/login/')
+def dashboard_saude(request):
+    """Painel rapido com pedidos pendentes, falhas de envio, fila de emails
+    e receita do periodo. Visivel apenas para staff."""
+    from datetime import timedelta
+    from django.utils import timezone
+    from django.db.models import Sum, Count
+
+    agora = timezone.now()
+    hoje = agora.date()
+    inicio_dia = timezone.make_aware(timezone.datetime.combine(hoje, timezone.datetime.min.time())) if timezone.is_naive(timezone.now()) else agora.replace(hour=0, minute=0, second=0, microsecond=0)
+    inicio_semana = inicio_dia - timedelta(days=hoje.weekday())
+    inicio_mes = inicio_dia.replace(day=1)
+
+    # PEDIDOS DE ATENÇÃO
+    pedidos_pendentes = Pedido.objects.filter(
+        status='pendente', criado_em__lte=agora - timedelta(hours=1),
+    ).order_by('-criado_em')[:20]
+
+    pedidos_sem_etiqueta = Pedido.objects.filter(
+        status='confirmado'
+    ).filter(
+        Q(melhor_envio_status='erro') | Q(melhor_envio_order_id='')
+    ).order_by('-criado_em')[:20]
+
+    # FILA DE EMAILS
+    emails_erro = EmailPendente.objects.filter(status='erro').order_by('-atualizado_em')[:20]
+    emails_pendentes_count = EmailPendente.objects.filter(status='pendente').count()
+    emails_erro_count = EmailPendente.objects.filter(status='erro').count()
+
+    # CARRINHOS ABANDONADOS (com email + atualizado entre 1h e 7d)
+    carrinhos_abandonados = Carrinho.objects.filter(
+        email_cliente__isnull=False,
+        atualizado_em__lte=agora - timedelta(hours=1),
+        atualizado_em__gte=agora - timedelta(days=7),
+    ).exclude(email_cliente='').order_by('-atualizado_em')[:15]
+
+    # RECEITA CONFIRMADA
+    def receita(desde):
+        return Pedido.objects.filter(
+            status__in=['confirmado', 'enviado', 'entregue'],
+            criado_em__gte=desde,
+        ).aggregate(total=Sum('total'), n=Count('id'))
+
+    receita_dia = receita(inicio_dia)
+    receita_semana = receita(inicio_semana)
+    receita_mes = receita(inicio_mes)
+
+    # TOP 5 PRODUTOS POR CLIQUES
+    top_produtos = Produto.objects.filter(visivel=True, cliques__gt=0).order_by('-cliques')[:5]
+
+    context = {
+        'pedidos_pendentes': pedidos_pendentes,
+        'pedidos_pendentes_count': pedidos_pendentes.count() if hasattr(pedidos_pendentes, 'count') else len(pedidos_pendentes),
+        'pedidos_sem_etiqueta': pedidos_sem_etiqueta,
+        'pedidos_sem_etiqueta_count': len(pedidos_sem_etiqueta),
+        'emails_erro': emails_erro,
+        'emails_pendentes_count': emails_pendentes_count,
+        'emails_erro_count': emails_erro_count,
+        'carrinhos_abandonados': carrinhos_abandonados,
+        'carrinhos_count': len(carrinhos_abandonados),
+        'receita_dia': receita_dia,
+        'receita_semana': receita_semana,
+        'receita_mes': receita_mes,
+        'top_produtos': top_produtos,
+        'agora': agora,
+    }
+    return render(request, 'admin/dashboard_saude.html', context)

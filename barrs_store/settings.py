@@ -265,6 +265,7 @@ JAZZMIN_SETTINGS = {
     "copyright": "Barrs Store © 2026",
     "search_model": ["loja.Produto", "loja.Pedido"],
     "topmenu_links": [
+        {"name": "Saúde da loja", "url": "/painel/saude/", "icon": "fas fa-heart-pulse"},
         {"name": "Ver site", "url": "/", "new_window": True},
     ],
     "icons": {

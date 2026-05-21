@@ -1,0 +1,204 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Saúde da loja | Barrs Store{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Barrs Store — Saúde da loja</a></h1>
+{% endblock %}
+
+{% block content %}
+<style>
+  .dash { display: grid; gap: 18px; max-width: 1200px; margin: 0 auto; padding: 12px 0 40px; }
+  .dash-row { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { background: #fff; border: 1px solid #e4ddd0; border-radius: 14px; padding: 18px 20px; box-shadow: 0 1px 2px rgba(43,37,32,.04); }
+  .card h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: #6B5E53; letter-spacing: 0.04em; text-transform: uppercase; }
+  .card .big { font-size: 28px; font-weight: 700; color: #3D2D20; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .card .sub { font-size: 12px; color: #9E9488; margin-top: 4px; }
+  .card.warning { border-color: #E5B97F; background: linear-gradient(180deg, #FFFBEF, #fff); }
+  .card.danger { border-color: #D9938A; background: linear-gradient(180deg, #FFF1EE, #fff); }
+  .card.ok { border-color: #B5C6A4; background: linear-gradient(180deg, #F3F7EE, #fff); }
+  .panel { background: #fff; border: 1px solid #e4ddd0; border-radius: 14px; padding: 18px 22px; }
+  .panel h2 { margin: 0 0 14px; font-size: 16px; font-weight: 700; color: #3D2D20; display: flex; align-items: center; gap: 8px; }
+  .panel h2 .badge { background: #B27265; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .panel h2 .badge--neutral { background: #6B5E53; }
+  .panel h2 .badge--ok { background: #738269; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #f0ebe1; }
+  .tbl th { font-weight: 600; color: #9E9488; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .tbl tr:last-child td { border-bottom: 0; }
+  .tbl a { color: #3D2D20; text-decoration: none; font-weight: 600; }
+  .tbl a:hover { text-decoration: underline; }
+  .empty { color: #9E9488; font-style: italic; padding: 14px 0; font-size: 13px; }
+  .grid-2 { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  .updated { font-size: 12px; color: #9E9488; margin-top: 16px; text-align: right; }
+</style>
+
+<div class="dash">
+
+  <!-- RECEITA -->
+  <div class="dash-row">
+    <div class="card ok">
+      <h3>Receita hoje</h3>
+      <div class="big">R$ {{ receita_dia.total|default:"0,00" }}</div>
+      <div class="sub">{{ receita_dia.n|default:0 }} pedido(s) confirmado(s)</div>
+    </div>
+    <div class="card">
+      <h3>Receita semana</h3>
+      <div class="big">R$ {{ receita_semana.total|default:"0,00" }}</div>
+      <div class="sub">{{ receita_semana.n|default:0 }} pedido(s)</div>
+    </div>
+    <div class="card">
+      <h3>Receita mês</h3>
+      <div class="big">R$ {{ receita_mes.total|default:"0,00" }}</div>
+      <div class="sub">{{ receita_mes.n|default:0 }} pedido(s)</div>
+    </div>
+    <div class="card {% if pedidos_pendentes_count > 0 %}warning{% endif %}">
+      <h3>Pendentes &gt; 1h</h3>
+      <div class="big">{{ pedidos_pendentes_count }}</div>
+      <div class="sub">aguardam pagamento</div>
+    </div>
+    <div class="card {% if pedidos_sem_etiqueta_count > 0 %}danger{% endif %}">
+      <h3>Sem etiqueta ME</h3>
+      <div class="big">{{ pedidos_sem_etiqueta_count }}</div>
+      <div class="sub">pagos sem envio criado</div>
+    </div>
+    <div class="card {% if emails_erro_count > 0 %}danger{% endif %}">
+      <h3>E-mails com erro</h3>
+      <div class="big">{{ emails_erro_count }}</div>
+      <div class="sub">{{ emails_pendentes_count }} pendente(s) na fila</div>
+    </div>
+  </div>
+
+  <!-- DETALHES EM 2 COLUNAS -->
+  <div class="grid-2">
+
+    <!-- PEDIDOS SEM ETIQUETA -->
+    <div class="panel">
+      <h2>
+        Pedidos pagos sem etiqueta
+        {% if pedidos_sem_etiqueta_count > 0 %}<span class="badge">{{ pedidos_sem_etiqueta_count }}</span>{% endif %}
+      </h2>
+      {% if pedidos_sem_etiqueta %}
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Erro</th></tr></thead>
+          <tbody>
+            {% for p in pedidos_sem_etiqueta %}
+            <tr>
+              <td><a href="{% url 'admin:loja_pedido_change' p.id %}">#{{ p.id }}</a></td>
+              <td>{{ p.nome }}</td>
+              <td>R$ {{ p.total }}</td>
+              <td title="{{ p.melhor_envio_erro }}">{{ p.melhor_envio_erro|default:"-"|truncatechars:40 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty">Tudo em ordem. Nenhum pedido pago sem etiqueta.</div>
+      {% endif %}
+    </div>
+
+    <!-- PEDIDOS PENDENTES -->
+    <div class="panel">
+      <h2>
+        Pedidos pendentes (&gt; 1h)
+        {% if pedidos_pendentes_count > 0 %}<span class="badge badge--neutral">{{ pedidos_pendentes_count }}</span>{% endif %}
+      </h2>
+      {% if pedidos_pendentes %}
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Criado</th></tr></thead>
+          <tbody>
+            {% for p in pedidos_pendentes %}
+            <tr>
+              <td><a href="{% url 'admin:loja_pedido_change' p.id %}">#{{ p.id }}</a></td>
+              <td>{{ p.nome }}</td>
+              <td>R$ {{ p.total }}</td>
+              <td>{{ p.criado_em|date:"d/m H:i" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty">Nenhum pedido pendente há mais de 1h.</div>
+      {% endif %}
+    </div>
+
+    <!-- EMAILS COM ERRO -->
+    <div class="panel">
+      <h2>
+        E-mails com erro
+        {% if emails_erro_count > 0 %}<span class="badge">{{ emails_erro_count }}</span>{% endif %}
+      </h2>
+      {% if emails_erro %}
+        <table class="tbl">
+          <thead><tr><th>Assunto</th><th>Destinatário</th><th>Tentativas</th></tr></thead>
+          <tbody>
+            {% for e in emails_erro %}
+            <tr>
+              <td><a href="{% url 'admin:loja_emailpendente_change' e.id %}">{{ e.assunto|truncatechars:40 }}</a></td>
+              <td>{{ e.destinatario_email }}</td>
+              <td>{{ e.tentativas }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty">Fila limpa. Nenhum e-mail com erro.</div>
+      {% endif %}
+    </div>
+
+    <!-- CARRINHOS ABANDONADOS -->
+    <div class="panel">
+      <h2>
+        Carrinhos abandonados
+        {% if carrinhos_count > 0 %}<span class="badge badge--neutral">{{ carrinhos_count }}</span>{% endif %}
+      </h2>
+      {% if carrinhos_abandonados %}
+        <table class="tbl">
+          <thead><tr><th>E-mail</th><th>Telefone</th><th>Última atividade</th></tr></thead>
+          <tbody>
+            {% for c in carrinhos_abandonados %}
+            <tr>
+              <td><a href="{% url 'admin:loja_carrinho_change' c.id %}">{{ c.email_cliente|truncatechars:32 }}</a></td>
+              <td>{{ c.telefone_cliente|default:"-" }}</td>
+              <td>{{ c.atualizado_em|date:"d/m H:i" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty">Sem carrinhos abandonados com e-mail.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- TOP PRODUTOS -->
+  <div class="panel">
+    <h2>
+      Top produtos por cliques
+      {% if top_produtos %}<span class="badge badge--ok">{{ top_produtos|length }}</span>{% endif %}
+    </h2>
+    {% if top_produtos %}
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Produto</th><th>Categoria</th><th>Cliques</th><th>Estoque</th></tr></thead>
+        <tbody>
+          {% for p in top_produtos %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><a href="{% url 'admin:loja_produto_change' p.id %}">{{ p.nome }}</a></td>
+            <td>{{ p.categoria.nome|default:"-" }}</td>
+            <td><strong>{{ p.cliques }}</strong></td>
+            <td>{{ p.estoque }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty">Ainda sem dados de cliques.</div>
+    {% endif %}
+  </div>
+
+  <div class="updated">Atualizado em {{ agora|date:"d/m/Y H:i:s" }}</div>
+</div>
+{% endblock %}

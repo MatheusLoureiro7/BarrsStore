@@ -8,6 +8,7 @@ from django.views.generic.base import RedirectView
 handler404 = loja_views.pagina_404
 
 urlpatterns = [
+    path('painel/saude/', loja_views.dashboard_saude, name='dashboard_saude'),
     path('painel/', admin.site.urls),
     path('favicon.ico', RedirectView.as_view(
         url='https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png',
