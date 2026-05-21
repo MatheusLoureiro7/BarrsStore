@@ -225,7 +225,9 @@ CONTENT_SECURITY_POLICY = os.environ.get(
     "base-uri 'self'; "
     "object-src 'none'; "
     "frame-ancestors 'none'; "
-    "script-src 'self' 'nonce-{nonce}' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com; "
+    # Sem 'unsafe-inline' (nonces cobrem todos os scripts inline proprios).
+    # 'unsafe-eval' mantido pois o SDK do Mercado Pago precisa.
+    "script-src 'self' 'nonce-{nonce}' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' data: https://fonts.gstatic.com; "
     "img-src 'self' data: blob: https://res.cloudinary.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com; "

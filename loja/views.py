@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from django.core.cache import cache
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User
@@ -1588,9 +1589,26 @@ def enviar_email_abandono_3(carrinho):
 
 # ── WHATSAPP: NOTIFICAÇÃO DE NOVO PEDIDO ──────────────────────────
 def _enviar_whatsapp_admin(mensagem):
-    """Helper interno: envia mensagem ao admin via CallMeBot. Nunca propaga erro."""
+    """Helper interno: envia mensagem ao admin.
+
+    Prefere Evolution API (WHATSAPP_API_URL + WHATSAPP_API_KEY). Cai em
+    CallMeBot quando Evolution nao esta configurada ou falha. Nunca propaga erro.
+    """
+    whatsapp_phone = os.environ.get('WHATSAPP_ADMIN_PHONE', '5511913225256').strip()
+
+    # 1) Evolution API (preferida, sem TOS fragil do CallMeBot).
+    if os.environ.get('WHATSAPP_API_URL', '').strip() and os.environ.get('WHATSAPP_API_KEY', '').strip():
+        try:
+            from .whatsapp import enviar_whatsapp
+            resultado = enviar_whatsapp(whatsapp_phone, mensagem)
+            if resultado.get('ok'):
+                return True
+            logger.warning('[WHATSAPP] Evolution falhou; tentando CallMeBot. detalhe=%s', resultado.get('body', '')[:200])
+        except Exception as exc:
+            logger.warning('[WHATSAPP] Erro Evolution; tentando CallMeBot. erro=%s', exc)
+
+    # 2) Fallback CallMeBot.
     try:
-        whatsapp_phone = os.environ.get('WHATSAPP_ADMIN_PHONE', '5511913225256').strip()
         callmebot_key = os.environ.get('CALLMEBOT_API_KEY', '').strip()
         if not callmebot_key:
             logger.warning('CALLMEBOT_API_KEY nao configurada. Alerta WhatsApp ignorado.')
@@ -1720,7 +1738,13 @@ def home(request):
     else:
         produtos = produtos.order_by('-criado_em')
 
-    total_produtos = produtos.count()
+    # Cache do count() (query potencialmente cara em catalogo grande). TTL 60s.
+    # Vary por filtros que mudam o resultado.
+    total_cache_key = f'home:count:v=1:q={busca}:o={ordem}:c={categoria_slug}'
+    total_produtos = cache.get(total_cache_key)
+    if total_produtos is None:
+        total_produtos = produtos.count()
+        cache.set(total_cache_key, total_produtos, 60)
     try:
         page_number = max(1, int(request.GET.get('page') or 1))
     except (TypeError, ValueError):
@@ -1756,7 +1780,11 @@ def home(request):
         next_query['page'] = page_number + 1
         next_page_url = f'?{next_query.urlencode()}#produtos'
 
-    categorias = Categoria.objects.all()
+    # Lista de categorias raramente muda; cache 5min reduz query desnecessaria.
+    categorias = cache.get('home:categorias:v=1')
+    if categorias is None:
+        categorias = list(Categoria.objects.all())
+        cache.set('home:categorias:v=1', categorias, 300)
     # So noindex em buscas internas (q=); categoria e ordem continuam indexaveis.
     seo = seo_context(
         request,
@@ -1782,14 +1810,43 @@ def home(request):
     return render(request, 'home.html', context)
 
 
+def _registrar_clique_produto(produto_id):
+    """Incrementa o contador de cliques no cache (flush via management command).
+
+    Evita 1 UPDATE no DB por visita ao detalhe. O cron `flush_cliques_produtos`
+    consolida os buffers no banco periodicamente.
+    """
+    key = f'cliques:{produto_id}'
+    try:
+        cache.incr(key)
+    except ValueError:
+        # Chave nao existia: cria com TTL de 24h (longe o suficiente para o cron pegar).
+        cache.set(key, 1, 60 * 60 * 24)
+    pendentes = cache.get('cliques:pendentes') or set()
+    if produto_id not in pendentes:
+        pendentes = set(pendentes)
+        pendentes.add(produto_id)
+        cache.set('cliques:pendentes', pendentes, 60 * 60 * 24)
+
+
 # ── DETALHE DO PRODUTO ─────────────────────────────────────────────
 def detalhe_produto(request, slug):
     produto = get_object_or_404(Produto, slug=slug, visivel=True)
     if not request.user.is_staff:
-        Produto.objects.filter(pk=produto.pk).update(cliques=F('cliques') + 1)
-    relacionados = Produto.objects.filter(visivel=True, estoque__gt=0, categoria=produto.categoria).exclude(id=produto.id)[:4]
-    if not relacionados:
-        relacionados = Produto.objects.filter(visivel=True, estoque__gt=0).exclude(id=produto.id)[:4]
+        _registrar_clique_produto(produto.pk)
+    # Relacionados raramente mudam; cache 5min por produto reduz queries no detalhe.
+    rel_cache_key = f'detalhe:relacionados:v=1:cat={produto.categoria_id or 0}:exc={produto.id}'
+    relacionados = cache.get(rel_cache_key)
+    if relacionados is None:
+        relacionados = list(
+            Produto.objects.filter(visivel=True, estoque__gt=0, categoria=produto.categoria)
+            .exclude(id=produto.id)[:4]
+        )
+        if not relacionados:
+            relacionados = list(
+                Produto.objects.filter(visivel=True, estoque__gt=0).exclude(id=produto.id)[:4]
+            )
+        cache.set(rel_cache_key, relacionados, 300)
     image_url = site_url(produto.imagem.url) if produto.imagem else ''
     seo = seo_context(
         request,
