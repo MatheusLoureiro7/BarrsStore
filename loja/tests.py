@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 import time
 from decimal import Decimal
 
@@ -12,6 +13,7 @@ from .mercadopago_security import (
 )
 from .models import (
     Carrinho,
+    Categoria,
     Cupom,
     ItemCarrinho,
     ItemPedido,
@@ -21,6 +23,130 @@ from .models import (
 )
 from .validators import cpf_valido
 from .views import baixar_estoque_pedido
+
+
+class ProdutoSeoTests(TestCase):
+    def test_seo_manual_tem_prioridade(self):
+        produto = Produto.objects.create(
+            nome='Colar Manual',
+            preco=Decimal('89.90'),
+            estoque=5,
+            meta_description='Descrição manual premium para o Google.',
+            imagem_alt='Alt manual da imagem do colar',
+        )
+
+        self.assertEqual(produto.get_seo_title(), 'Colar Manual | Barrs Store')
+        self.assertEqual(produto.get_meta_description(), 'Descrição manual premium para o Google.')
+        self.assertEqual(produto.get_image_alt(), 'Alt manual da imagem do colar')
+
+    def test_save_preenche_campos_seo_vazios_no_admin(self):
+        produto = Produto.objects.create(
+            nome='Pulseira Automática',
+            preco=Decimal('69.90'),
+            estoque=5,
+        )
+
+        produto.refresh_from_db()
+        self.assertIn('Pulseira Automática', produto.meta_description)
+        self.assertLessEqual(len(produto.meta_description), 160)
+        self.assertEqual(produto.imagem_alt, 'Pulseira Automática feminino da Barrs Store')
+
+    def test_save_nao_sobrescreve_seo_manual(self):
+        produto = Produto.objects.create(
+            nome='Brinco Manual',
+            preco=Decimal('49.90'),
+            estoque=5,
+            meta_description='Texto manual do produto.',
+            imagem_alt='Alt manual do produto',
+        )
+        produto.nome = 'Brinco Manual Editado'
+        produto.save()
+        produto.refresh_from_db()
+
+        self.assertEqual(produto.meta_description, 'Texto manual do produto.')
+        self.assertEqual(produto.imagem_alt, 'Alt manual do produto')
+
+    def test_seo_automatico_usa_nome_categoria_e_descricao(self):
+        categoria = Categoria.objects.create(nome='Colares', slug='colar')
+        produto = Produto.objects.create(
+            nome='Colar Pérola',
+            categoria=categoria,
+            descricao='Peça delicada com brilho sofisticado para composições elegantes.',
+            preco=Decimal('129.90'),
+            estoque=3,
+        )
+
+        meta = produto.get_meta_description()
+        self.assertEqual(produto.get_seo_title(), 'Colar Pérola | Barrs Store')
+        self.assertIn('Colar Pérola', meta)
+        self.assertTrue('colo' in meta or 'decotes' in meta or 'produções delicadas' in meta)
+        self.assertLessEqual(len(meta), 160)
+        self.assertEqual(produto.get_image_alt(), 'Colar Pérola feminino da Barrs Store')
+
+    def test_meta_description_varia_por_categoria_sem_frases_repetitivas(self):
+        categorias = [
+            ('Colares', 'colar', 'Colar Coração Dourado'),
+            ('Anéis', 'anel', 'Anel Pérola'),
+            ('Pulseiras', 'pulseira', 'Pulseira Flor'),
+            ('Brincos', 'brinco', 'Brinco Pedra Verde'),
+            ('Riviera', 'riviera', 'Riviera Cristal'),
+            ('Choker', 'choker', 'Choker Miçangas Azuis'),
+        ]
+        metas = []
+        for nome_categoria, slug, nome_produto in categorias:
+            categoria = Categoria.objects.create(nome=nome_categoria, slug=slug)
+            produto = Produto.objects.create(
+                nome=nome_produto,
+                categoria=categoria,
+                preco=Decimal('79.90'),
+                estoque=4,
+            )
+            meta = produto.meta_description
+            metas.append(meta)
+            self.assertIn(nome_produto, meta)
+            self.assertLessEqual(len(meta), 160)
+            self.assertNotIn('semijoia elegante', meta.lower())
+            self.assertNotIn('acabamento premium', meta.lower())
+            self.assertNotIn('estilo versátil', meta.lower())
+
+        self.assertEqual(len(set(metas)), len(metas))
+
+    def test_schema_produto_sem_imagem_categoria_e_sem_estoque_nao_quebra(self):
+        produto = Produto.objects.create(
+            nome='Brinco Sem Estoque',
+            preco=Decimal('59.90'),
+            estoque=0,
+        )
+
+        schema = json.loads(produto.get_schema_json_ld(
+            absolute_url='https://www.barrsstore.com.br/produto/brinco-sem-estoque/'
+        ))
+
+        self.assertEqual(schema['@type'], 'Product')
+        self.assertEqual(schema['name'], 'Brinco Sem Estoque')
+        self.assertNotIn('image', schema)
+        self.assertEqual(schema['offers']['price'], '59.90')
+        self.assertEqual(schema['offers']['priceCurrency'], 'BRL')
+        self.assertEqual(schema['offers']['availability'], 'https://schema.org/OutOfStock')
+
+    @override_settings(SITE_URL='https://www.barrsstore.com.br')
+    def test_pagina_produto_renderiza_meta_og_alt_e_json_ld(self):
+        produto = Produto.objects.create(
+            nome='Anel SEO',
+            descricao='Anel delicado com acabamento premium.',
+            preco=Decimal('79.90'),
+            estoque=4,
+            imagem='produtos/anel-seo.jpg',
+        )
+
+        response = Client().get(produto.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<title>Anel SEO | Barrs Store</title>', html=False)
+        self.assertContains(response, '<meta property="og:type" content="product">', html=False)
+        self.assertContains(response, 'alt="Anel SEO feminino da Barrs Store"', html=False)
+        self.assertContains(response, '"@type": "Product"', html=False)
+        self.assertContains(response, '"availability": "https://schema.org/InStock"', html=False)
 
 
 class ValidadorCPFTests(TestCase):

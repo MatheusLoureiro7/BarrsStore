@@ -51,6 +51,9 @@ def site_url(path=''):
     base = getattr(settings, 'SITE_URL', 'https://www.barrsstore.com.br').rstrip('/')
     if not path:
         return base
+    path = str(path)
+    if path.startswith(('http://', 'https://')):
+        return path
     return f"{base}{path if path.startswith('/') else '/' + path}"
 
 
@@ -69,7 +72,7 @@ def pacote_envio_por_quantidade(total_itens):
 
 def seo_context(request, title, description, image_url='', robots='index, follow'):
     canonical_path = request.path
-    absolute_image = image_url or site_url('/static/loja/og-barrs-store.jpg')
+    absolute_image = site_url(image_url) if image_url else site_url('/static/loja/og-barrs-store.jpg')
     return {
         'seo_title': title,
         'seo_description': description,
@@ -77,6 +80,15 @@ def seo_context(request, title, description, image_url='', robots='index, follow
         'seo_robots': robots,
         'seo_image': absolute_image,
     }
+
+
+def json_ld_dumps(data):
+    return (
+        json.dumps(data, ensure_ascii=False)
+        .replace('&', '\\u0026')
+        .replace('<', '\\u003C')
+        .replace('>', '\\u003E')
+    )
 
 
 def noindex_context(request, title, description='Pagina operacional da Barrs Store.'):
@@ -1649,18 +1661,47 @@ def detalhe_produto(request, slug):
     relacionados = Produto.objects.filter(visivel=True, estoque__gt=0, categoria=produto.categoria).exclude(id=produto.id)[:4]
     if not relacionados:
         relacionados = Produto.objects.filter(visivel=True, estoque__gt=0).exclude(id=produto.id)[:4]
-    image_url = produto.imagem.url if produto.imagem else ''
+    image_url = site_url(produto.imagem.url) if produto.imagem else ''
     seo = seo_context(
         request,
-        f'{produto.nome} - Barrs Store',
-        produto.seo_description(),
+        produto.get_seo_title(),
+        produto.get_meta_description(),
         image_url=image_url,
     )
+    breadcrumb_schema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+            {
+                '@type': 'ListItem',
+                'position': 1,
+                'name': 'Inicio',
+                'item': site_url('/'),
+            },
+            {
+                '@type': 'ListItem',
+                'position': 2,
+                'name': 'Produtos',
+                'item': site_url('/#produtos'),
+            },
+            {
+                '@type': 'ListItem',
+                'position': 3,
+                'name': produto.nome,
+                'item': seo['seo_canonical'],
+            },
+        ],
+    }
     context = {
         'produto': produto,
         'relacionados': relacionados,
         'qtd_carrinho': get_carrinho_info(request),
         'preco_schema': str(produto.preco).replace(',', '.'),
+        'product_schema_json_ld': produto.get_schema_json_ld(
+            absolute_url=seo['seo_canonical'],
+            absolute_image_url=image_url,
+        ),
+        'breadcrumb_schema_json_ld': json_ld_dumps(breadcrumb_schema),
     }
     context.update(seo)
     return render(request, 'detalhe.html', context)
@@ -2184,7 +2225,9 @@ def checkout(request):
         # Notificacao interna de novo pedido pendente.
         logger.info('[CHECKOUT] Pedido %s criado. Aguardando pagamento.', pedido.id)
         enviar_whatsapp_pedido(pedido)
-        enviar_email_pagamento_pendente(pedido)
+        # E-mail "Finalize seu pagamento" foi movido para o cron
+        # `enviar_emails_pagamento_pendente` (dispara so apos 20min de pedido criado),
+        # evitando parecer SPAM para quem fechou a aba logo em seguida.
 
         return redirect('confirmacao', pedido_id=pedido.id, token=pedido.access_token)
 

@@ -1,7 +1,10 @@
+import json
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.utils.text import slugify
 from decimal import Decimal
 import uuid
@@ -89,17 +92,173 @@ class Produto(models.Model):
                 slug = f'{base_slug}-{contador}'
                 contador += 1
             self.slug = slug
+        if not self._clean_seo_text(self.meta_description):
+            self.meta_description = ''
+            self.meta_description = self.get_meta_description()
+        if not self._clean_seo_text(self.imagem_alt):
+            self.imagem_alt = ''
+            self.imagem_alt = self.get_image_alt()
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('detalhe_produto', kwargs={'slug': self.slug})
 
+    @staticmethod
+    def _clean_seo_text(text):
+        return ' '.join(strip_tags(str(text or '')).split())
+
+    @staticmethod
+    def _limit_seo_text(text, limit=160):
+        text = Produto._clean_seo_text(text)
+        if len(text) <= limit:
+            return text
+        shortened = text[:limit - 3].rsplit(' ', 1)[0].rstrip(',. ')
+        return f'{shortened}...' if shortened else text[:limit - 3] + '...'
+
+    @staticmethod
+    def _normalized_text(text):
+        return slugify(Produto._clean_seo_text(text)).replace('-', ' ')
+
+    @staticmethod
+    def _pick_by_name(nome, options):
+        if not options:
+            return ''
+        seed = sum(ord(char) for char in Produto._clean_seo_text(nome).lower())
+        return options[seed % len(options)]
+
+    def _seo_category_key(self):
+        parts = [self.tipo, self.nome]
+        if self.categoria_id and self.categoria:
+            parts.extend([self.categoria.nome, self.categoria.slug])
+        text = self._normalized_text(' '.join(parts))
+        for key in ('riviera', 'choker', 'colar', 'anel', 'pulseira', 'brinco'):
+            if key in text:
+                return key
+        return ''
+
+    def _seo_style_phrase(self):
+        name = self._normalized_text(self.nome)
+        if 'coracao' in name:
+            return 'design romântico e brilho delicado'
+        if 'perola' in name:
+            return 'toque clássico e luminosidade suave'
+        if 'flor' in name:
+            return 'traços delicados e inspiração feminina'
+        if 'dourado' in name or 'ouro' in name:
+            return 'banho dourado e presença sofisticada'
+        if 'prata' in name or 'prateado' in name:
+            return 'brilho prateado e acabamento clean'
+        if 'pedra' in name or 'zirconia' in name or 'ponto de luz' in name:
+            return 'pontos de luz e brilho na medida'
+        if 'gota' in name:
+            return 'forma delicada e caimento elegante'
+        return self._pick_by_name(self.nome, [
+            'brilho delicado e presença discreta',
+            'linhas leves e acabamento refinado',
+            'visual moderno e toque feminino',
+            'design clean para composições elegantes',
+        ])
+
+    def _auto_meta_description(self):
+        nome = self._clean_seo_text(self.nome) or 'Peça Barrs Store'
+        estilo = self._seo_style_phrase()
+        category = self._seo_category_key()
+        templates = {
+            'colar': [
+                f'{nome} com {estilo}. Ideal para valorizar decotes e compor looks modernos com um toque refinado.',
+                f'{nome} traz {estilo} para produções delicadas, do dia a dia a ocasiões especiais.',
+                f'Use {nome} para iluminar o colo com {estilo}, mantendo uma proposta feminina e atual.',
+            ],
+            'anel': [
+                f'{nome} com {estilo}. Um detalhe marcante para mãos delicadas e combinações elegantes.',
+                f'{nome} valoriza o visual com {estilo}, perfeito para usar sozinho ou em mix de anéis.',
+                f'{nome} com {estilo}, pensado para adicionar charme sem pesar na composição.',
+            ],
+            'pulseira': [
+                f'{nome} com {estilo}. Um toque delicado para o pulso e para combinações com relógios ou outras peças.',
+                f'{nome} completa o look com {estilo}, em uma proposta leve para usar todos os dias.',
+                f'{nome} com {estilo}, criada para trazer brilho sutil às produções femininas.',
+            ],
+            'brinco': [
+                f'{nome} com {estilo}. Leve brilho ao rosto com uma peça delicada e fácil de combinar.',
+                f'{nome} destaca o visual com {estilo}, perfeito para looks femininos e bem acabados.',
+                f'{nome} com {estilo}, uma escolha charmosa para iluminar a produção.',
+            ],
+            'riviera': [
+                f'{nome} com brilho contínuo e acabamento sofisticado. Uma peça de impacto para produções elegantes.',
+                f'{nome} traz presença e luminosidade em uma composição clássica, perfeita para ocasiões especiais.',
+                f'{nome} com brilho marcante e desenho refinado para elevar o visual com sofisticação.',
+            ],
+            'choker': [
+                f'{nome} com {estilo}. Uma choker moderna para destacar o colo com delicadeza.',
+                f'{nome} combina presença e leveza, ideal para looks atuais com um toque sofisticado.',
+                f'{nome} com {estilo}, perfeita para composições femininas e modernas.',
+            ],
+        }
+        fallback = [
+            f'{nome} com {estilo}. Uma escolha delicada para completar o look com brilho na medida.',
+            f'{nome} une beleza e leveza em uma peça fácil de combinar em diferentes ocasiões.',
+            f'{nome} traz um toque refinado para produções femininas, com visual clean e atual.',
+        ]
+        return self._limit_seo_text(self._pick_by_name(nome, templates.get(category, fallback)))
+
+    def get_seo_title(self):
+        nome = self._clean_seo_text(self.nome) or 'Semijoia'
+        return f'{nome} | Barrs Store'
+
+    def get_meta_description(self):
+        if self.meta_description:
+            return self._limit_seo_text(self.meta_description)
+        return self._auto_meta_description()
+
+    def get_image_alt(self):
+        if self.imagem_alt:
+            return self._clean_seo_text(self.imagem_alt)
+        nome = self._clean_seo_text(self.nome) or 'Semijoia'
+        return f'{nome} feminino da Barrs Store'
+
+    def get_og_title(self):
+        return self.get_seo_title()
+
+    def get_og_description(self):
+        return self.get_meta_description()
+
+    def get_schema_json_ld(self, absolute_url='', absolute_image_url=''):
+        nome = self._clean_seo_text(self.nome) or 'Semijoia Barrs Store'
+        schema = {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            'name': nome,
+            'description': self.get_meta_description(),
+            'sku': str(self.id or ''),
+            'brand': {
+                '@type': 'Brand',
+                'name': 'Barrs Store',
+            },
+            'offers': {
+                '@type': 'Offer',
+                'price': str(self.preco or Decimal('0.00')),
+                'priceCurrency': 'BRL',
+                'availability': 'https://schema.org/InStock' if self.disponivel() else 'https://schema.org/OutOfStock',
+                'url': absolute_url or self.get_absolute_url(),
+            },
+        }
+        if absolute_image_url:
+            schema['image'] = [absolute_image_url]
+        if self.categoria_id and self.categoria:
+            schema['category'] = self._clean_seo_text(self.categoria.nome)
+        return (
+            json.dumps(schema, ensure_ascii=False)
+            .replace('&', '\\u0026')
+            .replace('<', '\\u003C')
+            .replace('>', '\\u003E')
+        )
+
     def seo_description(self):
-        texto = self.meta_description or self.descricao or f'{self.nome} na Barrs Store.'
-        return texto[:157] + '...' if len(texto) > 160 else texto
+        return self.get_meta_description()
 
     def alt_text(self):
-        return self.imagem_alt or self.nome
+        return self.get_image_alt()
 
     def disponivel(self):
         return self.estoque > 0
@@ -277,11 +436,12 @@ class Cupom(models.Model):
 
     def calcular_desconto(self, subtotal, frete=Decimal('0')):
         if self.tipo == 'frete_gratis':
-            return min(frete, frete).quantize(Decimal('0.01'))
+            valor_frete = frete if isinstance(frete, Decimal) else Decimal(str(frete or 0))
+            return valor_frete.quantize(Decimal('0.01'))
         if self.tipo == 'percentual':
             desconto = subtotal * (self.valor / Decimal('100'))
         else:
-            desconto = self.valor
+            desconto = self.valor if isinstance(self.valor, Decimal) else Decimal(str(self.valor))
         return min(desconto.quantize(Decimal('0.01')), subtotal)
 
 

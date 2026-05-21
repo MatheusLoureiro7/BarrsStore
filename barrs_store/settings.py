@@ -143,7 +143,7 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-# Arquivos estÃ¡ticos
+# Arquivos estáticos
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
@@ -197,39 +197,28 @@ DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# â”€â”€ SEGURANÃ‡A â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-if not DEBUG:
-    # HTTPS obrigatÃ³rio
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-    # Cookies seguros
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
-
-    # ProteÃ§Ã£o HSTS (diz ao browser: sÃ³ HTTPS por 1 ano)
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-
-    # ProteÃ§Ã£o XSS e Clickjacking
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-
+# ── SEGURANÇA ─────────────────────────────────────────────────────
+# Settings comuns a dev e prod.
 SECURE_REFERRER_POLICY = 'same-origin'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-USE_X_FORWARDED_HOST = True
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False' if DEBUG else 'True') == 'True'
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 X_FRAME_OPTIONS = 'DENY'
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False' if DEBUG else 'True') == 'True'
+
+# Settings exclusivos de produção: HSTS, cookies Secure, XSS filter, etc.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_BROWSER_XSS_FILTER = True
 CONTENT_SECURITY_POLICY = os.environ.get(
     'CONTENT_SECURITY_POLICY',
     "default-src 'self'; "
@@ -253,15 +242,15 @@ TURNSTILE_REQUIRED = bool(TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY)
 
 if not DEBUG:
     # Compartilha os cookies entre barrsstore.com.br e www.barrsstore.com.br.
-    # Isso evita falha de CSRF quando o cliente navega entre as duas versÃµes do domÃ­nio.
+    # Isso evita falha de CSRF quando o cliente navega entre as duas versões do domínio.
     SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', '.barrsstore.com.br')
     CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', '.barrsstore.com.br')
 
-# Limitar tentativas de login (proteÃ§Ã£o brute force)
+# Limitar tentativas de login (proteção brute force)
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 ADMIN_RATE_LIMIT = os.environ.get('ADMIN_RATE_LIMIT', '60/5m')
 
-# SessÃ£o expira ao fechar o browser
+# Sessão expira ao fechar o browser? Não — mantemos por 14 dias para reduzir fricção.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 dias
 

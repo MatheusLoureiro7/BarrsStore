@@ -1,85 +1,10 @@
-{% if produto %}
+{% if product_schema_json_ld %}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">
-{
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "{{ produto.nome|escapejs }}",
-  "image": [{% if produto.imagem %}"{{ produto.imagem.url }}"{% else %}"https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png"{% endif %}],
-  "description": "{{ produto.seo_description|escapejs }}",
-  "sku": "{{ produto.id }}",
-  "category": "{% if produto.categoria %}{{ produto.categoria.nome|escapejs }}{% else %}Acessorios{% endif %}",
-  "brand": {
-    "@type": "Brand",
-    "name": "Barrs Store"
-  },
-  "offers": {
-    "@type": "Offer",
-    "url": "{{ seo_canonical }}",
-    "priceCurrency": "BRL",
-    "price": "{{ preco_schema }}",
-    "availability": "{% if produto.disponivel %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
-    "itemCondition": "https://schema.org/NewCondition",
-    "shippingDetails": {
-      "@type": "OfferShippingDetails",
-      "shippingDestination": {
-        "@type": "DefinedRegion",
-        "addressCountry": "BR"
-      },
-      "deliveryTime": {
-        "@type": "ShippingDeliveryTime",
-        "handlingTime": {
-          "@type": "QuantitativeValue",
-          "minValue": 1,
-          "maxValue": 2,
-          "unitCode": "DAY"
-        },
-        "transitTime": {
-          "@type": "QuantitativeValue",
-          "minValue": 2,
-          "maxValue": 7,
-          "unitCode": "DAY"
-        }
-      }
-    },
-    "hasMerchantReturnPolicy": {
-      "@type": "MerchantReturnPolicy",
-      "applicableCountry": "BR",
-      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-      "merchantReturnDays": 7,
-      "returnMethod": "https://schema.org/ReturnByMail",
-      "returnFees": "https://schema.org/ReturnFeesCustomerResponsibility"
-    },
-    "seller": {
-      "@type": "OnlineStore",
-      "name": "Barrs Store"
-    }
-  }
-}
+{{ product_schema_json_ld|safe }}
 </script>
+{% endif %}
+{% if breadcrumb_schema_json_ld %}
 <script type="application/ld+json" nonce="{{ csp_nonce }}">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Inicio",
-      "item": "https://www.barrsstore.com.br/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Produtos",
-      "item": "https://www.barrsstore.com.br/#produtos"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": "{{ produto.nome|escapejs }}",
-      "item": "{{ seo_canonical }}"
-    }
-  ]
-}
+{{ breadcrumb_schema_json_ld|safe }}
 </script>
 {% endif %}
