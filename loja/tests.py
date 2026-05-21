@@ -268,3 +268,28 @@ class BaixaEstoqueIdempotenciaTests(TestCase):
         self.assertFalse(segunda)
         self.assertEqual(produto.estoque, 8)
         self.assertTrue(pedido.estoque_baixado)
+
+
+class CarrinhoAuthorizationTests(TestCase):
+    def test_remover_item_de_carrinho_alheio_retorna_404(self):
+        produto = Produto.objects.create(nome='Anel Auth', preco=Decimal('50'), estoque=5)
+        carrinho_vitima = Carrinho.objects.create()
+        item_vitima = ItemCarrinho.objects.create(
+            carrinho=carrinho_vitima, produto=produto, quantidade=2,
+        )
+
+        # Atacante tem sessao com OUTRO carrinho.
+        carrinho_atacante = Carrinho.objects.create()
+        client = Client()
+        session = client.session
+        session['carrinho_id'] = carrinho_atacante.id
+        session.save()
+
+        response = client.post(f'/remover/{item_vitima.id}/')
+        self.assertEqual(response.status_code, 404)
+        item_vitima.refresh_from_db()
+        self.assertEqual(item_vitima.quantidade, 2)  # nao mexeu
+
+        response = client.post(f'/deletar/{item_vitima.id}/')
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(ItemCarrinho.objects.filter(id=item_vitima.id).exists())

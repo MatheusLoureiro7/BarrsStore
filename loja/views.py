@@ -1616,11 +1616,12 @@ def home(request):
         next_page_url = f'?{next_query.urlencode()}#produtos'
 
     categorias = Categoria.objects.all()
+    # So noindex em buscas internas (q=); categoria e ordem continuam indexaveis.
     seo = seo_context(
         request,
         'Barrs Store - Acessorios modernos e exclusivos',
         'Compre acessorios femininos modernos na Barrs Store: aneis, brincos, colares e pulseiras com envio para todo o Brasil.',
-        robots='noindex, follow' if request.GET else 'index, follow',
+        robots='noindex, follow' if request.GET.get('q') else 'index, follow',
     )
 
     context = {
@@ -1888,7 +1889,8 @@ def adicionar_carrinho(request, produto_id):
 # ── REMOVER 1 UNIDADE ──────────────────────────────────────────────
 @require_POST
 def remover_item(request, item_id):
-    item = get_object_or_404(ItemCarrinho, id=item_id)
+    carrinho_id = request.session.get('carrinho_id')
+    item = get_object_or_404(ItemCarrinho, id=item_id, carrinho_id=carrinho_id)
     carrinho = item.carrinho
     if item.quantidade > 1:
         item.quantidade -= 1
@@ -1902,7 +1904,8 @@ def remover_item(request, item_id):
 # ── DELETAR ITEM INTEIRO ───────────────────────────────────────────
 @require_POST
 def deletar_item(request, item_id):
-    item = get_object_or_404(ItemCarrinho, id=item_id)
+    carrinho_id = request.session.get('carrinho_id')
+    item = get_object_or_404(ItemCarrinho, id=item_id, carrinho_id=carrinho_id)
     carrinho = item.carrinho
     item.delete()
     carrinho.save(update_fields=['atualizado_em'])
@@ -2172,11 +2175,11 @@ def checkout(request):
                 tamanho=item.tamanho,
             )
 
-        # Salva email no carrinho antes de deletar (para possível recuperação futura)
+        # Mantem o carrinho preservado no DB para recuperacao (cliente que desiste pode voltar
+        # via link de pagamento pendente sem perder os itens). Apenas desvincula da sessao.
         carrinho.email_cliente = request.POST.get('email', '').strip().lower()
         carrinho.save(update_fields=['email_cliente'])
-        carrinho.delete()
-        del request.session['carrinho_id']
+        request.session.pop('carrinho_id', None)
 
         # Notificacao interna de novo pedido pendente.
         logger.info('[CHECKOUT] Pedido %s criado. Aguardando pagamento.', pedido.id)
