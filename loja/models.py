@@ -94,12 +94,12 @@ class Produto(models.Model):
                 slug = f'{base_slug}-{contador}'
                 contador += 1
             self.slug = slug
+        # Preenche SEO automatico apenas quando o admin nao definiu manualmente.
         if not self._clean_seo_text(self.meta_description):
-            self.meta_description = ''
-            self.meta_description = self.get_meta_description()
+            self.meta_description = self._auto_meta_description()
         if not self._clean_seo_text(self.imagem_alt):
-            self.imagem_alt = ''
-            self.imagem_alt = self.get_image_alt()
+            nome = self._clean_seo_text(self.nome) or 'Semijoia'
+            self.imagem_alt = f'{nome} feminino da Barrs Store'
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -310,7 +310,8 @@ class Carrinho(models.Model):
     atualizado_em = models.DateTimeField(auto_now=True, db_index=True)
 
     def total(self):
-        return sum(item.subtotal() for item in self.itens.all())
+        # select_related evita N+1 ao acessar item.produto.preco em item.subtotal().
+        return sum(item.subtotal() for item in self.itens.select_related('produto').all())
 
     def quantidade_total(self):
         return sum(item.quantidade for item in self.itens.all())

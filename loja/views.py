@@ -30,7 +30,11 @@ import logging
 import time
 import uuid
 import hashlib
+from datetime import timedelta
 from decimal import Decimal, InvalidOperation
+
+from django.db.models import Sum, Count
+from django.utils import timezone as django_timezone
 
 logger = logging.getLogger(__name__)
 
@@ -757,351 +761,6 @@ def _brevo_sender():
         'email': os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip(),
     }
 
-
-def _email_button(texto, url, cor='#738269'):
-    return f"""
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto">
-        <tr>
-          <td bgcolor="{cor}" style="border-radius:999px;background:{cor};box-shadow:0 10px 22px rgba(83,98,76,0.18)">
-            <a href="{url}" style="display:inline-block;padding:14px 26px;border-radius:999px;color:#ffffff;text-decoration:none;font-family:Montserrat,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">
-              {texto}
-            </a>
-          </td>
-        </tr>
-      </table>
-    """
-
-
-def _email_order_summary(pedido):
-    itens_html = ''.join([
-        f"""
-        <tr>
-          <td style="padding:13px 0;border-bottom:1px solid #E8E3D8;color:#3D342C;font-size:14px;line-height:1.35">
-            <strong style="font-family:Georgia,'Times New Roman',serif;font-size:15px">{item.nome_produto}</strong>
-            {f'<div style="color:#9E9488;font-size:12px;margin-top:3px">Tam. {item.tamanho}</div>' if getattr(item, 'tamanho', '') else ''}
-          </td>
-          <td style="padding:13px 0;border-bottom:1px solid #E8E3D8;color:#6B5E53;font-size:13px;text-align:center">{item.quantidade}</td>
-          <td style="padding:13px 0;border-bottom:1px solid #E8E3D8;color:#738269;font-size:14px;font-weight:700;text-align:right">R$ {item.preco_unitario}</td>
-        </tr>
-        """
-        for item in pedido.itens.all()
-    ])
-    frete_texto = f"R$ {pedido.frete}" if pedido.frete > 0 else "Grátis"
-    desconto_html = ''
-    if pedido.desconto > 0:
-        desconto_html = f"""
-        <tr>
-          <td colspan="2" style="padding-top:10px;color:#9E9488;font-size:13px">Desconto {pedido.cupom_codigo}</td>
-          <td style="padding-top:10px;color:#738269;font-size:13px;font-weight:700;text-align:right">- R$ {pedido.desconto}</td>
-        </tr>
-        """
-    return f"""
-      <div style="background:#FBFAF7;border:1px solid #E8E3D8;border-radius:18px;padding:20px;margin:24px 0">
-        <p style="margin:0 0 14px;color:#9E9488;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">Resumo do pedido #{pedido.id}</p>
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse">
-          <tr>
-            <th align="left" style="padding-bottom:8px;color:#9E9488;font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase">Produto</th>
-            <th align="center" style="padding-bottom:8px;color:#9E9488;font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase">Qtd</th>
-            <th align="right" style="padding-bottom:8px;color:#9E9488;font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase">Valor</th>
-          </tr>
-          {itens_html}
-          <tr>
-            <td colspan="2" style="padding-top:14px;color:#9E9488;font-size:13px">Subtotal</td>
-            <td style="padding-top:14px;color:#6B5E53;font-size:13px;text-align:right">R$ {pedido.subtotal}</td>
-          </tr>
-          <tr>
-            <td colspan="2" style="padding-top:8px;color:#9E9488;font-size:13px">Frete</td>
-            <td style="padding-top:8px;color:#6B5E53;font-size:13px;text-align:right">{frete_texto}</td>
-          </tr>
-          {desconto_html}
-          <tr>
-            <td colspan="2" style="padding-top:12px;color:#3D2D20;font-size:16px;font-weight:700">Total</td>
-            <td style="padding-top:12px;color:#738269;font-size:17px;font-weight:800;text-align:right">R$ {pedido.total}</td>
-          </tr>
-        </table>
-      </div>
-    """
-
-
-def _email_address_block(pedido):
-    return f"""
-      <div style="background:#F5F2EC;border-radius:16px;padding:18px;margin:20px 0">
-        <p style="margin:0 0 10px;color:#9E9488;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">Entrega</p>
-        <p style="margin:0;color:#6B5E53;font-size:14px;line-height:1.7">
-          {pedido.rua}, {pedido.numero}{f" - {pedido.complemento}" if pedido.complemento else ""}<br>
-          {pedido.bairro} - {pedido.cidade}/{pedido.estado}<br>
-          CEP {pedido.cep}
-        </p>
-      </div>
-    """
-
-
-def _email_wrapper(titulo, corpo_html, preheader=''):
-    preheader_html = preheader or titulo
-    return f"""<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    @media only screen and (max-width: 620px) {{
-      .email-shell {{ width: 100% !important; margin: 0 !important; border-radius: 0 !important; }}
-      .email-pad {{ padding-left: 22px !important; padding-right: 22px !important; }}
-      .email-title {{ font-size: 28px !important; }}
-    }}
-  </style>
-</head>
-<body style="margin:0;padding:0;background:#F5F2EC;font-family:Montserrat,Arial,sans-serif;color:#6B5E53">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">{preheader_html}</div>
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F5F2EC">
-    <tr>
-      <td align="center" style="padding:28px 12px">
-        <table role="presentation" class="email-shell" width="600" cellspacing="0" cellpadding="0" border="0" style="width:600px;max-width:600px;background:#FFFFFF;border-radius:24px;overflow:hidden;border:1px solid #E8E3D8;box-shadow:0 18px 52px rgba(61,45,32,0.10)">
-          <tr>
-            <td class="email-pad" style="padding:30px 38px;background:linear-gradient(135deg,#6F7E66 0%,#8A947C 100%);text-align:center">
-              <img src="{EMAIL_LOGO_URL}" width="58" height="58" alt="Barrs Store" style="display:block;margin:0 auto 12px;border-radius:50%">
-              <p style="margin:0 0 6px;color:#E8EDE3;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase">Barrs Store</p>
-              <h1 class="email-title" style="margin:0;color:#FFFFFF;font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:1.02;font-weight:700;letter-spacing:-0.03em">{titulo}</h1>
-            </td>
-          </tr>
-          <tr>
-            <td class="email-pad" style="padding:34px 38px 30px">
-              {corpo_html}
-            </td>
-          </tr>
-          <tr>
-            <td class="email-pad" style="padding:22px 38px;background:#FBFAF7;border-top:1px solid #E8E3D8;text-align:center">
-              <p style="margin:0 0 8px;color:#9E9488;font-size:12px;line-height:1.6">Dúvidas sobre seu pedido? Fale com a gente pelo WhatsApp.</p>
-              <p style="margin:0;color:#9E9488;font-size:11px;line-height:1.6">© 2026 Barrs Store · <a href="https://www.barrsstore.com.br" style="color:#738269;text-decoration:none">barrsstore.com.br</a></p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"""
-
-
-def enviar_email_confirmacao(pedido):
-    """Envia e-mail de confirmacao para o cliente via Brevo."""
-    try:
-        itens_html = ''.join([
-            f"""<tr>
-              <td style="padding:10px 0;border-bottom:1px solid #e8ede3;font-size:14px;color:#6B5E53">{item.nome_produto}</td>
-              <td style="padding:10px 0;border-bottom:1px solid #e8ede3;font-size:14px;color:#6B5E53;text-align:center">{item.quantidade}</td>
-              <td style="padding:10px 0;border-bottom:1px solid #e8ede3;font-size:14px;color:#8A947C;text-align:right;font-weight:600">R$ {item.preco_unitario}</td>
-            </tr>"""
-            for item in pedido.itens.all()
-        ])
-
-        frete_texto = f"R$ {pedido.frete}" if pedido.frete > 0 else "Grátis 🎉"
-        desconto_html = ''
-        if pedido.desconto > 0:
-            desconto_html = f"""
-                  <tr>
-                    <td colspan="2" style="padding-top:8px;font-size:13px;color:#9E9488">Desconto {pedido.cupom_codigo}</td>
-                    <td style="padding-top:8px;font-size:13px;color:#8A947C;text-align:right;font-weight:600">- R$ {pedido.desconto}</td>
-                  </tr>"""
-
-        html = f"""
-        <!DOCTYPE html>
-        <html>
-        <body style="margin:0;padding:0;background:#F5F2EC;font-family:'Arial',sans-serif">
-          <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(107,94,83,0.08)">
-            <div style="background:#8A947C;padding:32px 40px;text-align:center">
-              <h1 style="color:#fff;font-size:24px;margin:0;letter-spacing:-0.5px">Barrs Store</h1>
-              <p style="color:#E8EDE3;font-size:13px;margin:8px 0 0">Acessórios modernos e exclusivos</p>
-            </div>
-            <div style="padding:40px">
-              <div style="text-align:center;margin-bottom:28px">
-                <div style="width:64px;height:64px;background:#E8EDE3;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">{_email_icon("check", 30)}</div>
-                <h2 style="color:#3d2d20;font-size:22px;margin:0 0 8px">Pedido confirmado!</h2>
-                <p style="color:#9E9488;font-size:14px;margin:0">Obrigada pela sua compra, <strong style="color:#6B5E53">{pedido.nome}</strong>!</p>
-              </div>
-              <div style="background:#F5F2EC;border-radius:10px;padding:20px;margin-bottom:24px">
-                <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9E9488;margin:0 0 12px">PEDIDO #{pedido.id}</p>
-                <table style="width:100%;border-collapse:collapse">
-                  <tr>
-                    <th style="font-size:11px;text-transform:uppercase;color:#9E9488;text-align:left;padding-bottom:8px">Produto</th>
-                    <th style="font-size:11px;text-transform:uppercase;color:#9E9488;text-align:center;padding-bottom:8px">Qtd</th>
-                    <th style="font-size:11px;text-transform:uppercase;color:#9E9488;text-align:right;padding-bottom:8px">Valor</th>
-                  </tr>
-                  {itens_html}
-                  <tr>
-                    <td colspan="2" style="padding-top:12px;font-size:13px;color:#9E9488">Frete</td>
-                    <td style="padding-top:12px;font-size:13px;color:#8A947C;text-align:right;font-weight:600">{frete_texto}</td>
-                  </tr>
-                  {desconto_html}
-                  <tr>
-                    <td colspan="2" style="padding-top:8px;font-size:15px;font-weight:700;color:#3d2d20">Total</td>
-                    <td style="padding-top:8px;font-size:15px;font-weight:700;color:#8A947C;text-align:right">R$ {pedido.total}</td>
-                  </tr>
-                </table>
-              </div>
-              <div style="background:#F5F2EC;border-radius:10px;padding:20px;margin-bottom:24px">
-                <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#9E9488;margin:0 0 12px">ENDEREÇO DE ENTREGA</p>
-                <p style="font-size:14px;color:#6B5E53;margin:0;line-height:1.7">
-                  {pedido.rua}, {pedido.numero}{f" — {pedido.complemento}" if pedido.complemento else ""}<br>
-                  {pedido.bairro} — {pedido.cidade}/{pedido.estado}<br>
-                  CEP {pedido.cep}
-                </p>
-              </div>
-              <div style="text-align:center;padding:20px 0;border-top:1px solid #D9D3C7">
-                <p style="font-size:13px;color:#9E9488;margin:0 0 16px">Dúvidas? Fale conosco pelo WhatsApp</p>
-                <a href="https://wa.me/5511913225256" style="display:inline-block;padding:12px 28px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">WhatsApp</a>
-              </div>
-            </div>
-            <div style="background:#F5F2EC;padding:20px 40px;text-align:center">
-              <p style="font-size:12px;color:#9E9488;margin:0">© 2026 Barrs Store • barrsstore.com.br</p>
-            </div>
-          </div>
-        </body>
-        </html>
-        """
-
-        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-        if not brevo_api_key:
-            logger.warning('BREVO_API_KEY nao configurada. E-mail do pedido %s nao foi enviado.', pedido.id)
-            return False
-
-        logger.info('[BREVO] Iniciando envio do pedido %s. email_domain=%s', pedido.id, dominio_email_para_log(pedido.email))
-        brevo_from_email = os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip()
-        brevo_admin_email = os.environ.get('BREVO_ADMIN_EMAIL', brevo_from_email).strip()
-        payload = {
-            'sender': {
-                'name': 'Barrs Store',
-                'email': brevo_from_email,
-            },
-            'to': [{'email': pedido.email, 'name': pedido.nome}],
-            'subject': f'Pedido #{pedido.id} confirmado — Barrs Store',
-            'htmlContent': html,
-        }
-        if brevo_admin_email and brevo_admin_email.lower() != pedido.email.lower():
-            payload['bcc'] = [{'email': brevo_admin_email, 'name': 'Barrs Store'}]
-
-        resposta = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
-            headers={
-                'accept': 'application/json',
-                'api-key': brevo_api_key,
-                'Content-Type': 'application/json',
-            },
-            json=payload,
-            timeout=10,
-        )
-        logger.info('[BREVO] Resposta pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
-        if resposta.status_code >= 400:
-            logger.warning(
-                'Brevo recusou o e-mail do pedido %s: %s',
-                pedido.id,
-                resposta_externa_segura_para_log(resposta),
-            )
-            return False
-        return True
-    except Exception as exc:
-        logger.exception('Erro ao enviar e-mail Brevo do pedido %s: %s', pedido.id, exc)
-        return False
-
-
-def enviar_email_pagamento_pendente(pedido):
-    """Envia um lembrete simples com link para finalizar o pagamento."""
-    if pedido.email_pagamento_pendente_enviado:
-        return True
-    try:
-        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-        if not brevo_api_key:
-            logger.warning('BREVO_API_KEY nao configurada. E-mail de pagamento pendente do pedido %s nao foi enviado.', pedido.id)
-            return False
-        link_pagamento = site_url(reverse('confirmacao', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token}))
-        brevo_from_email = os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com').strip()
-        resposta = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
-            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
-            json={
-                'sender': {'name': 'Barrs Store', 'email': brevo_from_email},
-                'to': [{'email': pedido.email, 'name': pedido.nome}],
-                'subject': f'Finalize o pagamento do pedido #{pedido.id} - Barrs Store',
-                'htmlContent': f"""
-                <div style="font-family:Arial,sans-serif;background:#F5F2EC;padding:28px">
-                  <div style="max-width:560px;margin:auto;background:#fff;border-radius:14px;padding:28px;color:#6B5E53">
-                    <h2 style="color:#3d2d20;margin-top:0">Seu pedido foi reservado</h2>
-                    <p>Oi, {pedido.nome}! Recebemos seu pedido #{pedido.id} e estamos aguardando o pagamento.</p>
-                    <p><strong>Total:</strong> R$ {pedido.total}</p>
-                    <a href="{link_pagamento}" style="display:inline-block;background:#8A947C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Finalizar pagamento</a>
-                    <p style="font-size:13px;color:#9E9488;margin-top:22px">Se voce ja pagou, pode ignorar este e-mail. A confirmacao e automatica.</p>
-                  </div>
-                </div>
-                """,
-            },
-            timeout=10,
-        )
-        logger.info('[BREVO] Pagamento pendente pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
-        if resposta.status_code < 400:
-            pedido.email_pagamento_pendente_enviado = True
-            pedido.save(update_fields=['email_pagamento_pendente_enviado'])
-            return True
-        logger.warning(
-            'Brevo recusou o e-mail de pagamento pendente do pedido %s: %s',
-            pedido.id,
-            resposta_externa_segura_para_log(resposta),
-        )
-    except Exception as exc:
-        logger.exception('Erro ao enviar e-mail de pagamento pendente do pedido %s: %s', pedido.id, exc)
-    return False
-
-
-def enviar_email_rastreio(pedido):
-    """Envia o codigo de rastreio ao cliente quando o pedido for enviado."""
-    if not pedido.codigo_rastreio:
-        return False
-    try:
-        brevo_api_key = os.environ.get('BREVO_API_KEY', '').strip()
-        if not brevo_api_key:
-            logger.warning('BREVO_API_KEY nao configurada. E-mail de rastreio do pedido %s nao foi enviado.', pedido.id)
-            return False
-        rastreio_url = pedido.rastreio_url()
-        transportadora = pedido.rastreio_transportadora()
-        resposta = http_requests.post(
-            'https://api.brevo.com/v3/smtp/email',
-            headers={'accept': 'application/json', 'api-key': brevo_api_key, 'Content-Type': 'application/json'},
-            json={
-                'sender': {'name': 'Barrs Store', 'email': os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com')},
-                'to': [{'email': pedido.email, 'name': pedido.nome}],
-                'subject': f'Seu pedido #{pedido.id} foi enviado - Barrs Store',
-                'htmlContent': f"""
-                <div style="font-family:Arial,sans-serif;background:#F5F2EC;padding:28px">
-                  <div style="max-width:560px;margin:auto;background:#fff;border-radius:14px;padding:28px;color:#6B5E53">
-                    <h2 style="color:#3d2d20;margin-top:0">Seu pedido foi enviado</h2>
-                    <p>Oi, {pedido.nome}! O pedido #{pedido.id} já foi enviado.</p>
-                    <p><strong>Código de rastreio:</strong> {pedido.codigo_rastreio}</p>
-                    <p><strong>Transportadora:</strong> {transportadora}</p>
-                    <p>Você pode acompanhar a entrega pelo botão abaixo. Se for Loggi, cole o código de rastreio no site da transportadora.</p>
-                    <a href="{rastreio_url}" style="display:inline-block;background:#8A947C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">Acompanhar entrega</a>
-                    <p style="font-size:13px;color:#9E9488;margin-top:18px">Link de rastreio: <a href="{rastreio_url}" style="color:#8A947C">{rastreio_url}</a></p>
-                  </div>
-                </div>
-                """,
-            },
-            timeout=10,
-        )
-        logger.info('[BREVO] Rastreio pedido %s: %s', pedido.id, resposta_externa_segura_para_log(resposta))
-        if resposta.status_code >= 400:
-            logger.warning(
-                'Brevo recusou o e-mail de rastreio do pedido %s: %s',
-                pedido.id,
-                resposta_externa_segura_para_log(resposta),
-            )
-            return False
-        pedido.email_rastreio_enviado = True
-        pedido.save(update_fields=['email_rastreio_enviado'])
-        return True
-    except Exception as exc:
-        logger.exception('Erro ao enviar e-mail de rastreio do pedido %s: %s', pedido.id, exc)
-        return False
-
-
 # ── HELPERS DE EMAIL ──────────────────────────────────────────────
 def _brevo_send(assunto, html, destinatario_email, destinatario_nome):
     payload = _brevo_payload(destinatario_email, destinatario_nome, assunto, html)
@@ -1114,26 +773,6 @@ def _brevo_send(assunto, html, destinatario_email, destinatario_nome):
     else:
         logger.warning('[BREVO] E-mail "%s" enfileirado. email_domain=%s erro=%s', assunto, dominio_email_para_log(destinatario_email), erro)
     return False
-
-
-def _email_wrapper(titulo, corpo_html):
-    return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F2EC;font-family:Arial,sans-serif">
-  <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(107,94,83,0.08)">
-    <div style="background:#8A947C;padding:28px 40px;text-align:center">
-      <p style="color:#E8EDE3;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px">Barrs Store</p>
-      <h1 style="color:#fff;font-size:21px;margin:0;font-weight:600;letter-spacing:-0.3px">{titulo}</h1>
-    </div>
-    <div style="padding:36px 40px">{corpo_html}</div>
-    <div style="background:#F5F2EC;padding:20px 40px;text-align:center;border-top:1px solid #E8EDE3">
-      <p style="font-size:11px;color:#9E9488;margin:0">© 2026 Barrs Store · <a href="https://www.barrsstore.com.br" style="color:#8A947C;text-decoration:none">barrsstore.com.br</a></p>
-      <p style="font-size:11px;color:#9E9488;margin:6px 0 0">Dúvidas? <a href="https://wa.me/5511913225256" style="color:#8A947C;text-decoration:none">WhatsApp</a></p>
-    </div>
-  </div>
-</body></html>"""
-
-
-def _btn(texto, url, cor='#8A947C'):
-    return f'<a href="{url}" style="display:inline-block;padding:13px 28px;background:{cor};color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">{texto}</a>'
 
 
 def _paragrafo(texto):
@@ -2991,56 +2630,50 @@ def politica(request):
 def dashboard_saude(request):
     """Painel rapido com pedidos pendentes, falhas de envio, fila de emails
     e receita do periodo. Visivel apenas para staff."""
-    from datetime import timedelta
-    from django.utils import timezone
-    from django.db.models import Sum, Count
-
-    agora = timezone.now()
+    agora = django_timezone.now()
     hoje = agora.date()
-    inicio_dia = timezone.make_aware(timezone.datetime.combine(hoje, timezone.datetime.min.time())) if timezone.is_naive(timezone.now()) else agora.replace(hour=0, minute=0, second=0, microsecond=0)
+    inicio_dia = agora.replace(hour=0, minute=0, second=0, microsecond=0)
     inicio_semana = inicio_dia - timedelta(days=hoje.weekday())
     inicio_mes = inicio_dia.replace(day=1)
 
-    # PEDIDOS DE ATENÇÃO
-    pedidos_pendentes = Pedido.objects.filter(
-        status='pendente', criado_em__lte=agora - timedelta(hours=1),
-    ).order_by('-criado_em')[:20]
+    # Pedidos de atencao. list(...) materializa para usar len() abaixo sem queries extras.
+    pedidos_pendentes = list(
+        Pedido.objects.filter(
+            status='pendente', criado_em__lte=agora - timedelta(hours=1),
+        ).order_by('-criado_em')[:20]
+    )
+    pedidos_sem_etiqueta = list(
+        Pedido.objects.filter(status='confirmado')
+        .filter(Q(melhor_envio_status='erro') | Q(melhor_envio_order_id=''))
+        .order_by('-criado_em')[:20]
+    )
 
-    pedidos_sem_etiqueta = Pedido.objects.filter(
-        status='confirmado'
-    ).filter(
-        Q(melhor_envio_status='erro') | Q(melhor_envio_order_id='')
-    ).order_by('-criado_em')[:20]
-
-    # FILA DE EMAILS
-    emails_erro = EmailPendente.objects.filter(status='erro').order_by('-atualizado_em')[:20]
+    # Fila de emails
+    emails_erro = list(EmailPendente.objects.filter(status='erro').order_by('-atualizado_em')[:20])
     emails_pendentes_count = EmailPendente.objects.filter(status='pendente').count()
     emails_erro_count = EmailPendente.objects.filter(status='erro').count()
 
-    # CARRINHOS ABANDONADOS (com email + atualizado entre 1h e 7d)
-    carrinhos_abandonados = Carrinho.objects.filter(
-        email_cliente__isnull=False,
-        atualizado_em__lte=agora - timedelta(hours=1),
-        atualizado_em__gte=agora - timedelta(days=7),
-    ).exclude(email_cliente='').order_by('-atualizado_em')[:15]
+    # Carrinhos abandonados (com email, ultimos 7d)
+    carrinhos_abandonados = list(
+        Carrinho.objects.filter(
+            email_cliente__isnull=False,
+            atualizado_em__lte=agora - timedelta(hours=1),
+            atualizado_em__gte=agora - timedelta(days=7),
+        ).exclude(email_cliente='').order_by('-atualizado_em')[:15]
+    )
 
-    # RECEITA CONFIRMADA
+    # Receita confirmada
     def receita(desde):
         return Pedido.objects.filter(
             status__in=['confirmado', 'enviado', 'entregue'],
             criado_em__gte=desde,
         ).aggregate(total=Sum('total'), n=Count('id'))
 
-    receita_dia = receita(inicio_dia)
-    receita_semana = receita(inicio_semana)
-    receita_mes = receita(inicio_mes)
-
-    # TOP 5 PRODUTOS POR CLIQUES
     top_produtos = Produto.objects.filter(visivel=True, cliques__gt=0).order_by('-cliques')[:5]
 
     context = {
         'pedidos_pendentes': pedidos_pendentes,
-        'pedidos_pendentes_count': pedidos_pendentes.count() if hasattr(pedidos_pendentes, 'count') else len(pedidos_pendentes),
+        'pedidos_pendentes_count': len(pedidos_pendentes),
         'pedidos_sem_etiqueta': pedidos_sem_etiqueta,
         'pedidos_sem_etiqueta_count': len(pedidos_sem_etiqueta),
         'emails_erro': emails_erro,
@@ -3048,9 +2681,9 @@ def dashboard_saude(request):
         'emails_erro_count': emails_erro_count,
         'carrinhos_abandonados': carrinhos_abandonados,
         'carrinhos_count': len(carrinhos_abandonados),
-        'receita_dia': receita_dia,
-        'receita_semana': receita_semana,
-        'receita_mes': receita_mes,
+        'receita_dia': receita(inicio_dia),
+        'receita_semana': receita(inicio_semana),
+        'receita_mes': receita(inicio_mes),
         'top_produtos': top_produtos,
         'agora': agora,
     }
