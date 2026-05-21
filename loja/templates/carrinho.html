@@ -136,7 +136,7 @@
   {% endif %}
 </main>
 
-<script>
+<script nonce="{{ csp_nonce }}">
   const subtotal = parseFloat("{{ total }}".replace(',', '.'));
   let freteValorSelecionado = null;
 

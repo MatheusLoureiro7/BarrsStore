@@ -10,4 +10,5 @@ def marketing_tags(request):
         'lead_capturado': request.session.get('lead_capturado', False),
         'turnstile_site_key': getattr(settings, 'TURNSTILE_SITE_KEY', ''),
         'turnstile_required': getattr(settings, 'TURNSTILE_REQUIRED', False),
+        'csp_nonce': getattr(request, 'csp_nonce', ''),
     }

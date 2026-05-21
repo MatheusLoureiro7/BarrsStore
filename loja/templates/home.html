@@ -813,7 +813,7 @@
   </svg>
 </a>
 
-<script>
+<script nonce="{{ csp_nonce }}">
   (function () {
     const strip = document.querySelector('.proof-strip');
     const track = document.querySelector('.proof-strip__inner');
@@ -907,7 +907,7 @@
   })();
 </script>
 
-<script>
+<script nonce="{{ csp_nonce }}">
   // Infinite scroll: substitui o "Carregar mais" sem causar scroll-to-top nem reload.
   (function () {
     const sentinel = document.getElementById('infinite-sentinel');

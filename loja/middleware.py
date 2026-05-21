@@ -1,4 +1,5 @@
 import re
+import secrets
 import time
 
 from django.conf import settings
@@ -68,15 +69,23 @@ class AdminRateLimitMiddleware:
 
 
 class ContentSecurityPolicyReportOnlyMiddleware:
-    """Adiciona CSP em modo observacao ou bloqueio conforme a env CSP_ENFORCE."""
+    """Adiciona CSP em modo observacao ou bloqueio conforme a env CSP_ENFORCE.
+
+    Gera um nonce por request e o injeta no header CSP substituindo o
+    marcador `{nonce}`. Templates leem o nonce via context_processor
+    como `{{ csp_nonce }}` para colocar em scripts inline confiaveis.
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+        # Gera o nonce ANTES de processar a view, para os templates poderem usa-lo.
+        request.csp_nonce = secrets.token_urlsafe(16)
         response = self.get_response(request)
         policy = getattr(settings, 'CONTENT_SECURITY_POLICY', '')
         if policy:
+            policy = policy.replace('{nonce}', request.csp_nonce)
             header = 'Content-Security-Policy' if getattr(settings, 'CSP_ENFORCE', False) else 'Content-Security-Policy-Report-Only'
             if header not in response:
                 response[header] = policy

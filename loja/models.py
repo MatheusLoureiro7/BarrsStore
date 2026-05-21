@@ -154,25 +154,6 @@ class Carrinho(models.Model):
     def quantidade_total(self):
         return sum(item.quantidade for item in self.itens.all())
 
-    def frete(self, estado='SP'):
-        frete, _ = calcular_frete_por_estado(estado, self.total())
-        return frete
-
-    def total_com_frete(self, estado='SP'):
-        return self.total() + self.frete(estado)
-
-    def frete_gratis(self, estado='SP'):
-        return self.frete(estado) == Decimal('0')
-
-    def falta_para_frete_gratis(self, estado='SP'):
-        _, minimo = calcular_frete_por_estado(estado, self.total())
-        falta = minimo - self.total()
-        return max(falta, Decimal('0'))
-
-    def minimo_frete_gratis(self, estado='SP'):
-        _, minimo = calcular_frete_por_estado(estado, self.total())
-        return minimo
-
     def link_checkout(self):
         from django.conf import settings
 

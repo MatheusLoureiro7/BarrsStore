@@ -69,7 +69,7 @@ def pacote_envio_por_quantidade(total_itens):
 
 def seo_context(request, title, description, image_url='', robots='index, follow'):
     canonical_path = request.path
-    absolute_image = image_url or site_url('/static/og-barrs-store.jpg')
+    absolute_image = image_url or site_url('/static/loja/og-barrs-store.jpg')
     return {
         'seo_title': title,
         'seo_description': description,
@@ -81,6 +81,17 @@ def seo_context(request, title, description, image_url='', robots='index, follow
 
 def noindex_context(request, title, description='Pagina operacional da Barrs Store.'):
     return seo_context(request, title, description, robots='noindex, nofollow')
+
+
+def no_tracking_context(request, title, description='Pagina operacional da Barrs Store.'):
+    """Como noindex_context, mas tambem desativa Meta Pixel e Google Analytics.
+
+    Use em paginas FORA do funil de compra (login, cadastro, minha conta,
+    rastreamento, pagamento_falha) para nao poluir audiencias de campanha.
+    """
+    context = noindex_context(request, title, description)
+    context['seo_no_tracking'] = True
+    return context
 
 
 def get_pedido_por_token(pedido_id, token):
@@ -2414,7 +2425,7 @@ def pagamento_sucesso(request, pedido_id, token):
 def pagamento_falha(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
     context = {'pedido': pedido}
-    context.update(noindex_context(request, 'Pagamento nao aprovado - Barrs Store'))
+    context.update(no_tracking_context(request, 'Pagamento nao aprovado - Barrs Store'))
     return render(request, 'pagamento_falha.html', context)
 
 
@@ -2488,7 +2499,7 @@ def cadastro(request):
         if not verificar_turnstile(request):
             messages.error(request, 'Confirme a verificacao de seguranca e tente novamente.')
             context = {'qtd_carrinho': get_carrinho_info(request)}
-            context.update(noindex_context(request, 'Criar conta - Barrs Store'))
+            context.update(no_tracking_context(request, 'Criar conta - Barrs Store'))
             return render(request, 'cadastro.html', context)
 
         nome = request.POST.get('nome', '').strip()
@@ -2526,7 +2537,7 @@ def cadastro(request):
                 return redirect('minha_conta')
 
     context = {'qtd_carrinho': get_carrinho_info(request)}
-    context.update(noindex_context(request, 'Criar conta - Barrs Store'))
+    context.update(no_tracking_context(request, 'Criar conta - Barrs Store'))
     return render(request, 'cadastro.html', context)
 
 
@@ -2540,7 +2551,7 @@ def login_view(request):
         if not verificar_turnstile(request):
             messages.error(request, 'Confirme a verificacao de seguranca e tente novamente.')
             context = {'qtd_carrinho': get_carrinho_info(request)}
-            context.update(noindex_context(request, 'Login - Barrs Store'))
+            context.update(no_tracking_context(request, 'Login - Barrs Store'))
             return render(request, 'login.html', context)
 
         email = request.POST.get('email', '').strip()
@@ -2554,7 +2565,7 @@ def login_view(request):
             messages.error(request, 'E-mail ou senha incorretos.')
 
     context = {'qtd_carrinho': get_carrinho_info(request)}
-    context.update(noindex_context(request, 'Login - Barrs Store'))
+    context.update(no_tracking_context(request, 'Login - Barrs Store'))
     return render(request, 'login.html', context)
 
 
@@ -2593,7 +2604,7 @@ def minha_conta(request):
         'pedidos': pedidos,
         'qtd_carrinho': get_carrinho_info(request),
     }
-    context.update(noindex_context(request, 'Minha conta - Barrs Store'))
+    context.update(no_tracking_context(request, 'Minha conta - Barrs Store'))
     return render(request, 'minha_conta.html', context)
 
 
@@ -2605,7 +2616,7 @@ def detalhe_pedido(request, pedido_id):
         'pedido': pedido,
         'qtd_carrinho': get_carrinho_info(request),
     }
-    context.update(noindex_context(request, f'Pedido #{pedido.id} - Barrs Store'))
+    context.update(no_tracking_context(request, f'Pedido #{pedido.id} - Barrs Store'))
     return render(request, 'detalhe_pedido.html', context)
 
 

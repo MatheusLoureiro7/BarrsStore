@@ -180,7 +180,7 @@
 
 </main>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 function trocarAba(event, nome, el) {
   event.preventDefault();
   document.querySelectorAll('.tab').forEach(a => a.classList.remove('active'));

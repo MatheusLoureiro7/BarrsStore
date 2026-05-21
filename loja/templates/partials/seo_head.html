@@ -17,17 +17,19 @@
 {% if google_site_verification %}
 <meta name="google-site-verification" content="{{ google_site_verification }}">
 {% endif %}
+{% if not seo_no_tracking %}
 {% include "partials/meta_pixel.html" %}
 {% if google_analytics_id %}
 <script async src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id }}"></script>
-<script>
+<script nonce="{{ csp_nonce }}">
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', '{{ google_analytics_id }}');
 </script>
 {% endif %}
-<script type="application/ld+json">
+{% endif %}
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
 {
   "@context": "https://schema.org",
   "@type": "OnlineStore",

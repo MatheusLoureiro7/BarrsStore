@@ -235,7 +235,7 @@
   </div>
 </main>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   const mp = new MercadoPago('{{ mp_public_key }}', { locale: 'pt-BR' });
 

@@ -236,7 +236,7 @@ CONTENT_SECURITY_POLICY = os.environ.get(
     "base-uri 'self'; "
     "object-src 'none'; "
     "frame-ancestors 'none'; "
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com; "
+    "script-src 'self' 'nonce-{nonce}' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' data: https://fonts.gstatic.com; "
     "img-src 'self' data: blob: https://res.cloudinary.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com; "
@@ -263,7 +263,7 @@ ADMIN_RATE_LIMIT = os.environ.get('ADMIN_RATE_LIMIT', '60/5m')
 
 # SessÃ£o expira ao fechar o browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 dias
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 dias
 
 JAZZMIN_SETTINGS = {
     "site_title": "Barrs Store Admin",

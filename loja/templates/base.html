@@ -29,7 +29,7 @@
 {% include "partials/icon_sprite.html" %}
 {% block content %}{% endblock %}
 <script src="{% static 'loja/js/base.js' %}" defer></script>
-<script>
+<script nonce="{{ csp_nonce }}">
 {% inline_static 'loja/js/base.js' %}
 </script>
 {% block scripts %}{% endblock %}
