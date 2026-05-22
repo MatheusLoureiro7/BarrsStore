@@ -1265,6 +1265,7 @@ def _enviar_whatsapp_admin(mensagem):
         )
         return True
     except Exception:
+        logger.debug('[WHATSAPP] CallMeBot silencioso (nao quebra fluxo).', exc_info=True)
         return False
 
 
@@ -1755,7 +1756,7 @@ def adicionar_carrinho(request, produto_id):
         event_id = request.POST.get('meta_event_id') or f'addtocart_{produto.id}_{int(time.time())}_{carrinho.id}'
         send_add_to_cart_event(produto, request, event_id)
     except Exception:
-        pass  # Tracking nao pode quebrar o fluxo de carrinho.
+        logger.debug('[META CAPI] AddToCart silencioso (nao quebra fluxo de carrinho).', exc_info=True)
 
     next_url = request.POST.get('next', 'carrinho')
     if next_url == 'detalhe':
@@ -1880,7 +1881,7 @@ def checkout(request):
             try:
                 send_initiate_checkout_event(carrinho, request, meta_event_id)
             except Exception:
-                pass  # Tracking nao pode quebrar o checkout.
+                logger.debug('[META CAPI] InitiateCheckout silencioso (nao quebra checkout).', exc_info=True)
         context = {
             'itens': itens,
             'total': carrinho.total(),
