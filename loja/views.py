@@ -25,6 +25,7 @@ from .integrations.meta_capi import (
 import mercadopago
 import json
 import requests as http_requests
+from requests.exceptions import RetryError, RequestException
 import os
 import logging
 import time
@@ -513,7 +514,15 @@ def confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=''):
 
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
     logger.info('[PAGAMENTO] Consultando pagamento Mercado Pago payment_id=%s fallback=%s', payment_id, pedido_id_fallback)
-    payment_info = sdk.payment().get(payment_id)
+    try:
+        payment_info = sdk.payment().get(payment_id)
+    except (RetryError, RequestException) as exc:
+        logger.error(
+            '[PAGAMENTO] Falha de rede ao consultar Mercado Pago payment_id=%s: %s',
+            payment_id,
+            exc,
+        )
+        return False
     if payment_info.get("status", 500) >= 400:
         logger.warning('Falha ao consultar pagamento Mercado Pago %s: %s', payment_id, payment_info)
         return False
@@ -2383,11 +2392,17 @@ def webhook_mercadopago(request):
     logger.info('[MP] Webhook recebido: type=%s payment_id=%s', notification_type, payment_id)
 
     if notification_type == "payment" and payment_id:
-        confirmar_pagamento_mercadopago(payment_id)
+        try:
+            confirmar_pagamento_mercadopago(payment_id)
+        except Exception as exc:
+            logger.exception('[MP] Erro ao confirmar pagamento webhook payment_id=%s: %s', payment_id, exc)
     elif notification_type == "merchant_order" and payment_id:
-        confirmar_merchant_order_mercadopago(payment_id)
+        try:
+            confirmar_merchant_order_mercadopago(payment_id)
+        except Exception as exc:
+            logger.exception('[MP] Erro ao confirmar merchant_order webhook id=%s: %s', payment_id, exc)
 
-    return JsonResponse({"status": "ok"})
+    return HttpResponse(status=200)
 
 
 # ── CADASTRO ───────────────────────────────────────────────────────
