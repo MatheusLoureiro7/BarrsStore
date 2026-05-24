@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.urls import reverse
-from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom, EmailPendente
+from .models import Produto, TamanhoAnel, Carrinho, ItemCarrinho, Pedido, ItemPedido, PerfilCliente, Categoria, Cupom, EmailPendente, Lead
 from .mercadopago_security import validar_assinatura_mercadopago
 from .validators import cpf_valido
 from .integrations.meta_capi import (
@@ -1364,6 +1364,21 @@ def salvar_lead_cliente(request):
             aplicar_lead_no_carrinho(request, Carrinho.objects.get(id=carrinho_id))
         except Carrinho.DoesNotExist:
             request.session.pop('carrinho_id', None)
+
+    # Garante que a sessão tenha key persistida antes de gravar o Lead.
+    if not request.session.session_key:
+        request.session.save()
+    sessao_key = request.session.session_key
+
+    if not Lead.objects.filter(sessao_key=sessao_key, telefone=telefone).exists():
+        Lead.objects.create(
+            nome=nome,
+            telefone=telefone,
+            aceita_whatsapp=True,
+            origem='home',
+            sessao_key=sessao_key,
+        )
+        logger.info('[LEAD] Lead salvo no banco: nome=%s telefone=%s', nome, telefone)
 
     logger.info('[LEAD] Nome e telefone capturados para atendimento via WhatsApp.')
     return JsonResponse({'ok': True, 'nome': nome, 'telefone': telefone})

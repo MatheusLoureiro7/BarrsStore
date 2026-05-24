@@ -509,6 +509,27 @@ class EmailPendente(models.Model):
         return f'{self.assunto} -> {self.destinatario_email}'
 
 
+# ── LEAD (captura via popup da home) ──────────────────────────────
+class Lead(models.Model):
+    nome = models.CharField(max_length=120)
+    telefone = models.CharField(max_length=20)
+    aceita_whatsapp = models.BooleanField(default=True)
+    origem = models.CharField(max_length=50, default='home')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    sessao_key = models.CharField(max_length=40, blank=True, null=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Lead'
+        verbose_name_plural = 'Leads'
+        indexes = [
+            models.Index(fields=['sessao_key', 'telefone']),
+        ]
+
+    def __str__(self):
+        return f'{self.nome} ({self.telefone})'
+
+
 # ── PROXIES PARA TRADUZIR django-otp NO ADMIN ─────────────────────
 class DispositivoTOTP(_TOTPDevice):
     class Meta:

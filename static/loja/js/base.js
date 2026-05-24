@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
   const nav = document.querySelector('.nav');
   if (!nav || nav.dataset.mobileReady === 'true') return;
 
@@ -10,88 +10,125 @@
   const loginUrl = pageData.loginUrl || '/login/';
   const accountUrl = pageData.accountUrl || '/minha-conta/';
   const trackUrl = pageData.trackUrl || '/rastrear-pedido/';
-  const accountLink = pageData.userAuthenticated === 'true'
-    ? `<a class="mobile-menu__link" href="${accountUrl}">Minha conta</a>`
-    : `<a class="mobile-menu__link" href="${loginUrl}">Entrar</a>`;
+  const userAuthed = pageData.userAuthenticated === 'true';
   const logo = nav.querySelector('.nav__logo');
   const logoImg = logo ? logo.querySelector('img') : null;
   const logoSrc = logoImg ? logoImg.getAttribute('src') : '';
 
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'nav__mobile-toggle';
-  toggle.setAttribute('aria-label', 'Abrir menu');
-  toggle.setAttribute('aria-controls', 'mobile-menu');
-  toggle.setAttribute('aria-expanded', 'false');
-  toggle.innerHTML = '<svg class="icon" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>';
+  function el(tag, attrs, children) {
+    const node = document.createElement(tag);
+    if (attrs) {
+      for (const key in attrs) {
+        if (key === 'class') node.className = attrs[key];
+        else if (key === 'html') node.innerHTML = attrs[key];
+        else node.setAttribute(key, attrs[key]);
+      }
+    }
+    if (children) {
+      children.forEach(function (child) {
+        if (child == null) return;
+        node.appendChild(typeof child === 'string' ? document.createTextNode(child) : child);
+      });
+    }
+    return node;
+  }
+
+  const toggle = el('button', {
+    type: 'button',
+    class: 'nav__mobile-toggle',
+    'aria-label': 'Abrir menu',
+    'aria-controls': 'mobile-menu',
+    'aria-expanded': 'false',
+    html: '<svg class="icon" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>',
+  });
   nav.prepend(toggle);
 
-  const mobileCart = document.createElement('a');
-  mobileCart.href = cartUrl;
-  mobileCart.className = 'nav__mobile-cart';
-  mobileCart.setAttribute('aria-label', cartCount > 0 ? `Carrinho com ${cartCount} item(ns)` : 'Carrinho');
-  mobileCart.innerHTML = `
-    <svg class="icon" aria-hidden="true"><use href="#i-cart"></use></svg>
-    ${cartCount > 0 ? `<span class="badge-count">${cartCount}</span>` : ''}
-  `;
+  const mobileCart = el('a', {
+    href: cartUrl,
+    class: 'nav__mobile-cart',
+    'aria-label': cartCount > 0 ? 'Carrinho com ' + cartCount + ' item(ns)' : 'Carrinho',
+  });
+  mobileCart.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-cart"></use></svg>';
+  if (cartCount > 0) {
+    const badge = el('span', { class: 'badge-count' }, [String(cartCount)]);
+    mobileCart.appendChild(badge);
+  }
   nav.appendChild(mobileCart);
 
-  const overlay = document.createElement('div');
-  overlay.className = 'mobile-menu-overlay';
-  overlay.setAttribute('hidden', '');
+  const overlay = el('div', { class: 'mobile-menu-overlay', hidden: '' });
 
-  const drawer = document.createElement('aside');
-  drawer.id = 'mobile-menu';
-  drawer.className = 'mobile-menu';
-  drawer.setAttribute('aria-hidden', 'true');
-  drawer.setAttribute('hidden', '');
-  drawer.innerHTML = `
-    <div class="mobile-menu__head">
-      <a class="mobile-menu__brand" href="/">
-        ${logoSrc ? `<img src="${logoSrc}" alt="Barrs Store" decoding="async">` : ''}
-        <span>Barrs Store</span>
-      </a>
-      <button class="mobile-menu__close" type="button" aria-label="Fechar menu">
-        <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
-      </button>
-    </div>
-    <nav class="mobile-menu__nav" aria-label="Menu mobile">
-      <a class="mobile-menu__link" href="/">Início</a>
-      <details class="mobile-menu__group" open>
-        <summary class="mobile-menu__summary">
-          <span>Coleção</span>
-          <svg class="icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
-        </summary>
-        <div class="mobile-menu__sub">
-          <a href="/#produtos">Ver todos os produtos</a>
-          <a href="/medidas/">Guia de medidas</a>
-          <a href="/garantia/">Garantia Barrs</a>
-        </div>
-      </details>
-      <details class="mobile-menu__group">
-        <summary class="mobile-menu__summary">
-          <span>Atendimento</span>
-          <svg class="icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
-        </summary>
-        <div class="mobile-menu__sub">
-          <a href="/contato/">Contato</a>
-          <a href="/entrega/">Entrega e trocas</a>
-          <a href="${trackUrl}">Rastrear pedido</a>
-        </div>
-      </details>
-      <a class="mobile-menu__link" href="/sobre/">Sobre a Barrs</a>
-      ${accountLink}
-    </nav>
-    <div class="mobile-menu__foot">
-      <a class="mobile-menu__cta" href="${cartUrl}">Ver sacola</a>
-      <a class="mobile-menu__muted" href="https://www.instagram.com/barrsstore" target="_blank" rel="noopener">Instagram @barrsstore</a>
-    </div>
-  `;
+  const drawer = el('aside', {
+    id: 'mobile-menu',
+    class: 'mobile-menu',
+    'aria-hidden': 'true',
+    hidden: '',
+  });
+
+  const head = el('div', { class: 'mobile-menu__head' });
+  const brand = el('a', { class: 'mobile-menu__brand', href: '/' });
+  if (logoSrc) {
+    const img = el('img', { src: logoSrc, alt: 'Barrs Store', decoding: 'async' });
+    brand.appendChild(img);
+  }
+  brand.appendChild(el('span', null, ['Barrs Store']));
+  head.appendChild(brand);
+  const closeButton = el('button', {
+    class: 'mobile-menu__close',
+    type: 'button',
+    'aria-label': 'Fechar menu',
+    html: '<svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>',
+  });
+  head.appendChild(closeButton);
+  drawer.appendChild(head);
+
+  const menuNav = el('nav', { class: 'mobile-menu__nav', 'aria-label': 'Menu mobile' });
+  menuNav.appendChild(el('a', { class: 'mobile-menu__link', href: '/' }, ['Início']));
+
+  const grupoColecao = el('details', { class: 'mobile-menu__group', open: '' });
+  grupoColecao.innerHTML =
+    '<summary class="mobile-menu__summary">' +
+    '<span>Coleção</span>' +
+    '<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg>' +
+    '</summary>' +
+    '<div class="mobile-menu__sub">' +
+    '<a href="/#produtos">Ver todos os produtos</a>' +
+    '<a href="/medidas/">Guia de medidas</a>' +
+    '<a href="/garantia/">Garantia Barrs</a>' +
+    '</div>';
+  menuNav.appendChild(grupoColecao);
+
+  const grupoAtend = el('details', { class: 'mobile-menu__group' });
+  const summaryAtend = el('summary', {
+    class: 'mobile-menu__summary',
+    html: '<span>Atendimento</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg>',
+  });
+  const subAtend = el('div', { class: 'mobile-menu__sub' });
+  subAtend.appendChild(el('a', { href: '/contato/' }, ['Contato']));
+  subAtend.appendChild(el('a', { href: '/entrega/' }, ['Entrega e trocas']));
+  subAtend.appendChild(el('a', { href: trackUrl }, ['Rastrear pedido']));
+  grupoAtend.appendChild(summaryAtend);
+  grupoAtend.appendChild(subAtend);
+  menuNav.appendChild(grupoAtend);
+
+  menuNav.appendChild(el('a', { class: 'mobile-menu__link', href: '/sobre/' }, ['Sobre a Barrs']));
+  menuNav.appendChild(el('a', {
+    class: 'mobile-menu__link',
+    href: userAuthed ? accountUrl : loginUrl,
+  }, [userAuthed ? 'Minha conta' : 'Entrar']));
+  drawer.appendChild(menuNav);
+
+  const foot = el('div', { class: 'mobile-menu__foot' });
+  foot.appendChild(el('a', { class: 'mobile-menu__cta', href: cartUrl }, ['Ver sacola']));
+  foot.appendChild(el('a', {
+    class: 'mobile-menu__muted',
+    href: 'https://www.instagram.com/barrsstore',
+    target: '_blank',
+    rel: 'noopener',
+  }, ['Instagram @barrsstore']));
+  drawer.appendChild(foot);
 
   document.body.appendChild(overlay);
   document.body.appendChild(drawer);
-
-  const closeButton = drawer.querySelector('.mobile-menu__close');
 
   function openMenu() {
     overlay.removeAttribute('hidden');
@@ -127,4 +164,3 @@
     if (event.key === 'Escape' && document.body.classList.contains('mobile-menu-open')) closeMenu();
   });
 });
-

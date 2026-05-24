@@ -4,7 +4,7 @@ from django.utils.html import format_html, format_html_join
 from django.contrib import messages
 from .models import (
     Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel, Cupom, EmailPendente,
-    DispositivoTOTP, TokenEmergencia,
+    DispositivoTOTP, TokenEmergencia, Lead,
 )
 
 
@@ -235,6 +235,21 @@ class CarrinhoAdmin(admin.ModelAdmin):
     list_display = ('id', 'telefone_cliente', 'aceita_whatsapp', 'whatsapp_abandono_enviado', 'criado_em', 'atualizado_em')
     list_filter = ('aceita_whatsapp', 'whatsapp_abandono_enviado')
     search_fields = ('telefone_cliente',)
+
+
+@admin.register(Lead)
+class LeadAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'telefone', 'aceita_whatsapp', 'origem', 'criado_em')
+    list_filter = ('origem', 'aceita_whatsapp')
+    search_fields = ('nome', 'telefone')
+    ordering = ('-criado_em',)
+    readonly_fields = ('nome', 'telefone', 'aceita_whatsapp', 'origem', 'criado_em', 'sessao_key')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(EmailPendente)
