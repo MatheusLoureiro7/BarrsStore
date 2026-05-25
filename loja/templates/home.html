@@ -98,6 +98,9 @@
   <div class="proof-strip__dots" aria-label="Navegar diferenciais"></div>
 </section>
 
+{# ─── SWITCH: com query → modo lista atual · sem query → home premium ─── #}
+{% if busca or categoria_ativa or ordem or request.GET.ver or request.GET.page %}
+
 <!-- CONTROLES DE BUSCA -->
 <div class="controls" id="produtos">
   <form method="GET" action="/#produtos" class="controls__search" role="search">
@@ -184,6 +187,114 @@
   </div>
   {% endif %}
 </section>
+
+{% else %}
+
+{# ─── HOME PREMIUM (sem filtros) ─── #}
+
+<!-- COLEÇÕES (categorias) -->
+{% if categorias %}
+<section class="ph-section ph-collections">
+  <header class="ph-section__head">
+    <span class="ph-eyebrow">Curadoria</span>
+    <h2 class="ph-section__title">Nossas coleções</h2>
+    <p class="ph-section__lead">Peças pensadas para acompanhar você todos os dias — do café da manhã ao jantar de domingo.</p>
+  </header>
+  <div class="ph-collections__grid">
+    {% for cat in categorias|slice:":4" %}
+    <a href="/?categoria={{ cat.slug }}#produtos" class="ph-collection-card">
+      <span class="ph-collection-card__icon" aria-hidden="true">{{ cat.icone|default:"◆" }}</span>
+      <span class="ph-collection-card__name">{{ cat.nome }}</span>
+      <span class="ph-collection-card__cta">Ver coleção <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg></span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- EDITORIAL: produto em destaque (1 grande) -->
+{% with destaque=produtos|slice:":1" %}{% for produto in destaque %}
+<section class="ph-section ph-editorial">
+  <div class="ph-editorial__media">
+    <a href="{% url 'detalhe_produto' produto.slug %}" aria-label="{{ produto.nome }}">
+      {% if produto.imagem %}
+        <img src="{{ produto.imagem|cloudinary_url:'w_900,q_auto,f_auto' }}"
+             alt="{{ produto.get_image_alt }}"
+             loading="lazy" decoding="async">
+      {% endif %}
+    </a>
+  </div>
+  <div class="ph-editorial__body">
+    <span class="ph-eyebrow">Peça em destaque</span>
+    <h2 class="ph-editorial__title">{{ produto.nome }}</h2>
+    <p class="ph-editorial__desc">{{ produto.get_meta_description }}</p>
+    <div class="ph-editorial__price">R$ {{ produto.preco|floatformat:2 }}</div>
+    <a href="{% url 'detalhe_produto' produto.slug %}" class="ph-btn ph-btn--primary">
+      Descobrir peça
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+    </a>
+  </div>
+</section>
+{% endfor %}{% endwith %}
+
+<!-- CURADORIA: 6 produtos selecionados -->
+{% if produtos %}
+<section class="ph-section ph-curadoria" id="produtos">
+  <header class="ph-section__head ph-section__head--centered">
+    <span class="ph-eyebrow">Selecionadas a dedo</span>
+    <h2 class="ph-section__title">Mais amadas</h2>
+    <p class="ph-section__lead">As favoritas que mais saem da Barrs — eleitas pelas nossas clientes.</p>
+  </header>
+  <div class="ph-curadoria__grid">
+    {% for produto in produtos|slice:":6" %}
+    <a href="{% url 'detalhe_produto' produto.slug %}" class="ph-product-card">
+      <div class="ph-product-card__media">
+        {% if produto.imagem %}
+          <img src="{{ produto.imagem|cloudinary_url:'w_600,q_auto,f_auto' }}"
+               alt="{{ produto.get_image_alt }}"
+               loading="lazy" decoding="async">
+        {% endif %}
+      </div>
+      <div class="ph-product-card__body">
+        <span class="ph-product-card__name">{{ produto.nome }}</span>
+        <span class="ph-product-card__price">R$ {{ produto.preco|floatformat:2 }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- MANIFESTO -->
+<section class="ph-section ph-manifesto">
+  <div class="ph-manifesto__inner">
+    <span class="ph-eyebrow ph-eyebrow--on-soft">Barrs Store</span>
+    <p class="ph-manifesto__quote">
+      Acreditamos que uma peça delicada pode mudar o jeito que você se enxerga no espelho.
+    </p>
+    <p class="ph-manifesto__sub">
+      Cada semijoia é escolhida pensando em durabilidade, brilho e em quem vai usar — com banhos protetores, materiais antialérgicos e garantia de 1 ano.
+    </p>
+    <a href="/sobre/" class="ph-link ph-link--on-soft">
+      Conheça nossa história
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="ph-section ph-cta-final">
+  <div class="ph-cta-final__inner">
+    <h2 class="ph-cta-final__title">Toda a coleção,<br>no seu tempo.</h2>
+    <p class="ph-cta-final__lead">Explore o catálogo completo da Barrs Store, com filtros, busca e novidades semanais.</p>
+    <a href="/?ver=todos" class="ph-btn ph-btn--primary ph-btn--lg">
+      Ver toda a coleção
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+    </a>
+  </div>
+</section>
+
+{% endif %}
 </main>
 
 <!-- FOOTER -->
