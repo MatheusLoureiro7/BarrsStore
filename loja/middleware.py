@@ -8,7 +8,14 @@ from django.http import HttpResponse, HttpResponseForbidden
 
 
 SUSPICIOUS_PATH_RE = re.compile(
-    r'(\.sql$|\.zip$|\.rar$|\.7z$|\.tar\.gz$|backup|dump|source|/src/|/wp-admin/|/wp-includes/|/xmlrpc\.php)',
+    r'('
+    r'\.sql$|\.zip$|\.rar$|\.7z$|\.tar\.gz$|backup|dump|source|'
+    r'/src/|/wp-admin/|/wp-includes/|/xmlrpc\.php|'
+    # Scanners observados em produção (Railway logs) — devolve 403 silencioso
+    r'^/meta\.json$|'
+    r'/twint_ch\.js$|/qr_modal\.js$|/lkk_ch\.js$|/support_parent\.css$|'
+    r'^/static/style/sys_files/'
+    r')',
     re.IGNORECASE,
 )
 
