@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static inline_static cloudinary_extras %}
+{% load static inline_static cloudinary_extras l10n %}
 
 {% block title %}Finalizar Compra — Barrs Store{% endblock %}
 
@@ -283,8 +283,18 @@
   document.querySelector('input[name="email"]')?.addEventListener('blur', () => salvarContatoCarrinho(true));
   window.addEventListener('beforeunload', () => salvarContatoCarrinho(true));
 
-  const subtotal = parseFloat("{{ total }}".replace(',', '.'));
-  const freteGet = parseFloat("{{ frete_valor_selecionado|default:'0' }}".replace(',', '.')) || 0;
+  function parseMoney(value) {
+    if (typeof value === 'number') return value;
+    const raw = String(value || '0').trim();
+    const normalized = raw.includes(',')
+      ? raw.replace(/\./g, '').replace(',', '.')
+      : raw;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  const subtotal = parseMoney("{{ total|unlocalize }}");
+  const freteGet = parseMoney("{{ frete_valor_selecionado|default:'0'|unlocalize }}");
   let descontoCupom = 0;
 
   function trackMetaPixel(eventName, data) {
@@ -449,7 +459,7 @@
         return;
       }
 
-      descontoCupom = data.tipo === 'frete_gratis' ? freteGet : parseFloat(data.desconto || 0);
+      descontoCupom = data.tipo === 'frete_gratis' ? freteGet : parseMoney(data.desconto);
       input.value = data.codigo;
       document.getElementById('desconto-label').textContent = data.tipo === 'frete_gratis' ? `Frete grátis ${data.codigo}` : `Desconto ${data.codigo}`;
       document.getElementById('desconto-display').textContent = '- ' + formatarMoeda(descontoCupom);

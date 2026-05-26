@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static inline_static cloudinary_extras %}
+{% load static inline_static cloudinary_extras l10n %}
 
 {% block title %}Carrinho — Barrs Store{% endblock %}
 
@@ -137,7 +137,17 @@
 </main>
 
 <script nonce="{{ csp_nonce }}">
-  const subtotal = parseFloat("{{ total }}".replace(',', '.'));
+  function parseMoney(value) {
+    if (typeof value === 'number') return value;
+    const raw = String(value || '0').trim();
+    const normalized = raw.includes(',')
+      ? raw.replace(/\./g, '').replace(',', '.')
+      : raw;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  const subtotal = parseMoney("{{ total|unlocalize }}");
   let freteValorSelecionado = null;
 
   function mascaraCepFrete(input) {
@@ -190,21 +200,25 @@
       status.className = 'shipping-status ok';
 
       data.opcoes.forEach((op, i) => {
+        const preco = parseMoney(op.preco);
+        const nomeFrete = `${op.nome || ''} ${op.empresa || ''}`.trim();
         const div = document.createElement('div');
         div.className = 'opcao-frete' + (i === 0 ? ' selecionado' : '');
         div.innerHTML = `
           <input type="radio" name="frete-opcao" value="${op.id}" ${i === 0 ? 'checked' : ''}
-            onchange="selecionarFrete(${op.preco}, '${op.nome} ${op.empresa}', ${op.id}, this.closest('.opcao-frete'))">
+            aria-label="Selecionar frete ${nomeFrete}">
           <div class="opcao-info">
             <div class="opcao-nome">${op.nome}</div>
             <div class="opcao-prazo">${op.empresa} · ${op.prazo} dias úteis</div>
           </div>
-          <div class="opcao-preco">R$ ${op.preco.toFixed(2).replace('.', ',')}</div>
+          <div class="opcao-preco">R$ ${preco.toFixed(2).replace('.', ',')}</div>
         `;
+        div.addEventListener('click', () => selecionarFrete(preco, nomeFrete, op.id, div));
+        div.querySelector('input[type="radio"]').addEventListener('change', () => selecionarFrete(preco, nomeFrete, op.id, div));
         opcoes.appendChild(div);
 
         if (i === 0) {
-          selecionarFrete(op.preco, `${op.nome} ${op.empresa}`, op.id, div);
+          selecionarFrete(preco, nomeFrete, op.id, div);
         }
       });
 
@@ -218,13 +232,16 @@
   function selecionarFrete(preco, nome, serviceId, el) {
     document.querySelectorAll('.opcao-frete').forEach(d => d.classList.remove('selecionado'));
     el.classList.add('selecionado');
-    freteValorSelecionado = preco;
+    const precoNumerico = parseMoney(preco);
+    freteValorSelecionado = precoNumerico;
+    const radio = el.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
 
-    const total = subtotal + preco;
-    document.getElementById('frete-display').textContent = `R$ ${preco.toFixed(2).replace('.', ',')}`;
+    const total = subtotal + precoNumerico;
+    document.getElementById('frete-display').textContent = `R$ ${precoNumerico.toFixed(2).replace('.', ',')}`;
     document.getElementById('frete-display').className = '';
     document.getElementById('total-display').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    document.getElementById('hidden-frete-valor').value = preco.toFixed(2);
+    document.getElementById('hidden-frete-valor').value = precoNumerico.toFixed(2);
     document.getElementById('hidden-frete-nome').value = nome;
     document.getElementById('hidden-frete-service-id').value = serviceId;
     document.getElementById('btn-finalizar').disabled = false;
