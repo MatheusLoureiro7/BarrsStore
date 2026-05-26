@@ -7,8 +7,8 @@
   "display": "standalone",
   "orientation": "portrait",
   "lang": "pt-BR",
-  "background_color": "#F6F3ED",
-  "theme_color": "#3D2D20",
+  "background_color": "#FAF9F6",
+  "theme_color": "#6B7A64",
   "icons": [
     {
       "src": "https://res.cloudinary.com/dsw5fkmwp/image/upload/c_fill,w_192,h_192,q_auto,f_png/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png",

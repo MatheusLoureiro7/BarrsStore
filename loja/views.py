@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.db.models import Q, F
 from django.http import JsonResponse, HttpResponse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
@@ -49,6 +50,35 @@ CAIXA_ENVIO = {
     'weight': 0.5,
 }
 
+# Peso realista de semijoias: 60g de embalagem + peso unitario por peca.
+# Quando o produto nao tem peso_gramas cadastrado, assumimos 8g por item.
+PESO_EMBALAGEM_GRAMAS = 60
+PESO_PADRAO_ITEM_GRAMAS = 8
+
+
+def _peso_unitario_gramas(produto):
+    """Peso em gramas de uma unidade do produto, com fallback seguro."""
+    peso = getattr(produto, 'peso_gramas', None) if produto is not None else None
+    try:
+        peso = int(peso) if peso else 0
+    except (TypeError, ValueError):
+        peso = 0
+    return peso if peso > 0 else PESO_PADRAO_ITEM_GRAMAS
+
+
+def calcular_peso_envio_kg(itens):
+    """Peso total do envio em kg: embalagem fixa + soma dos pesos dos itens."""
+    peso_total_g = PESO_EMBALAGEM_GRAMAS
+    for item in itens or []:
+        try:
+            quantidade = int(getattr(item, 'quantidade', 0) or 0)
+        except (TypeError, ValueError):
+            quantidade = 0
+        if quantidade <= 0:
+            continue
+        peso_total_g += _peso_unitario_gramas(getattr(item, 'produto', None)) * quantidade
+    return round(peso_total_g / 1000, 3)
+
 try:
     from django_ratelimit.decorators import ratelimit
 except ImportError:
@@ -69,16 +99,23 @@ def site_url(path=''):
     return f"{base}{path if path.startswith('/') else '/' + path}"
 
 
-def pacote_envio_por_quantidade(total_itens):
-    """Ajusta peso e altura da caixa sem alterar a embalagem padrao da loja."""
+def pacote_envio_por_quantidade(total_itens, peso_kg=None):
+    """Ajusta peso e altura da caixa sem alterar a embalagem padrao da loja.
+
+    Quando `peso_kg` nao e informado, usa o fallback 60g embalagem + 8g por item.
+    """
     total_itens = max(int(total_itens or 1), 1)
-    peso = max(Decimal('0.20'), Decimal('0.10') * total_itens)
+    if peso_kg is None or peso_kg <= 0:
+        peso_kg = round(
+            (PESO_EMBALAGEM_GRAMAS + PESO_PADRAO_ITEM_GRAMAS * total_itens) / 1000,
+            3,
+        )
     altura_extra = max(total_itens - 1, 0) // 4
     return {
         'width': CAIXA_ENVIO['width'],
         'length': CAIXA_ENVIO['length'],
         'height': min(CAIXA_ENVIO['height'] + altura_extra, 18),
-        'weight': float(peso),
+        'weight': float(peso_kg),
     }
 
 
@@ -582,9 +619,27 @@ def confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=''):
             logger.info('[PAGAMENTO] Pedido %s marcado como pendente. detail=%s', pedido.id, status_detail)
         return True
     if status in ["cancelled", "rejected"]:
+        # Guard critico: webhook tardio de uma tentativa rejeitada nao pode
+        # sobrescrever um pedido que ja foi confirmado por outra tentativa.
+        if pedido.status == 'confirmado':
+            logger.warning(
+                '[PAGAMENTO] Webhook %s ignorado: pedido %s ja esta confirmado. payment_id=%s detail=%s',
+                status, pedido.id, payment_id, status_detail,
+            )
+            return True
         pedido.status = "cancelado"
         pedido.save(update_fields=['status'])
         logger.warning('[PAGAMENTO] Pedido %s cancelado/rejeitado. status=%s detail=%s', pedido.id, status, status_detail)
+        return True
+
+    if status in ["refunded", "charged_back"]:
+        # Estorno ou chargeback de pedido confirmado: precisa atencao manual
+        # (verificar envio, restaurar estoque, etc). Logamos ERROR para alertar.
+        logger.error(
+            '[PAGAMENTO] Pedido %s recebeu evento %s (payment_id=%s detail=%s). '
+            'ACAO MANUAL NECESSARIA: verificar envio, estorno e estoque.',
+            pedido.id, status, payment_id, status_detail,
+        )
         return True
 
     logger.info('Pagamento Mercado Pago %s recebido com status %s detail=%s.', payment_id, status, status_detail)
@@ -675,8 +730,11 @@ def criar_envio_melhor_envio(pedido):
 
     service_id = inferir_servico_melhor_envio(pedido)
     subtotal_declarado = max(pedido.subtotal - pedido.desconto, Decimal('1.00'))
-    itens_pedido = list(pedido.itens.all())
-    pacote = pacote_envio_por_quantidade(sum(item.quantidade for item in itens_pedido))
+    itens_pedido = list(pedido.itens.select_related('produto').all())
+    pacote = pacote_envio_por_quantidade(
+        sum(item.quantidade for item in itens_pedido),
+        peso_kg=calcular_peso_envio_kg(itens_pedido),
+    )
 
     payload = {
         'service': int(service_id),
@@ -1388,6 +1446,21 @@ def home(request):
     busca = request.GET.get('q', '').strip()
     ordem = request.GET.get('ordem', '')
     categoria_slug = request.GET.get('categoria', '')
+    categoria_aliases = {
+        'aneis': ['anel', 'aneis'],
+        'anel': ['anel', 'aneis'],
+        'brincos': ['brinco', 'brincos'],
+        'brinco': ['brinco', 'brincos'],
+        'colares': ['colar', 'colares'],
+        'colar': ['colar', 'colares'],
+        'pulseiras': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
+        'pulseira': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
+        'braceletes-e-pulseiras': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
+        'chokers': ['choker', 'chokers'],
+        'choker': ['choker', 'chokers'],
+        'conjuntos': ['conjunto', 'conjuntos'],
+        'conjunto': ['conjunto', 'conjuntos'],
+    }
 
     produtos = Produto.objects.filter(visivel=True)
 
@@ -1396,8 +1469,10 @@ def home(request):
             Q(nome__icontains=busca) | Q(descricao__icontains=busca)
         )
 
-    if categoria_slug:
-        produtos = produtos.filter(categoria__slug=categoria_slug)
+    if categoria_slug == 'mais-vendidos':
+        produtos = produtos.filter(destaque=True)
+    elif categoria_slug:
+        produtos = produtos.filter(categoria__slug__in=categoria_aliases.get(categoria_slug, [categoria_slug]))
 
     if ordem == 'menor':
         produtos = produtos.order_by('-destaque', 'preco', '-criado_em')
@@ -1629,8 +1704,12 @@ def calcular_frete_melhor_envio(request):
         pacote = pacote_envio_por_quantidade(1)
         if carrinho:
             subtotal_declarado = max(carrinho.total(), Decimal('1.00'))
-            total_itens = sum(item.quantidade for item in carrinho.itens.all())
-            pacote = pacote_envio_por_quantidade(total_itens)
+            itens_carrinho = list(carrinho.itens.select_related('produto').all())
+            total_itens = sum(item.quantidade for item in itens_carrinho)
+            pacote = pacote_envio_por_quantidade(
+                total_itens,
+                peso_kg=calcular_peso_envio_kg(itens_carrinho),
+            )
             # A cotacao do Melhor Envio usa produtos com dimensoes e valor segurado.
             # Como a loja envia tudo em uma caixa padrao, cotamos um volume unico.
             produtos_cotacao = [{
@@ -1782,12 +1861,35 @@ def adicionar_carrinho(request, produto_id):
     except Exception:
         logger.debug('[META CAPI] AddToCart silencioso (nao quebra fluxo de carrinho).', exc_info=True)
 
-    next_url = request.POST.get('next', 'carrinho')
+    messages.success(request, f'{produto.nome} adicionado ao carrinho.')
+
+    next_url = (request.POST.get('next') or '').strip()
+    allowed = {request.get_host()}
+    require_https = request.is_secure()
+
+    # Detalhe → volta para a pagina do produto com flag pra toast existente
     if next_url == 'detalhe':
-        url = produto.get_absolute_url() + '?added=1'
-        return redirect(url)
-    if next_url == 'home':
-        return redirect('home')
+        return redirect(produto.get_absolute_url() + '?added=1')
+    # Explicito: ir para o carrinho
+    if next_url == 'carrinho':
+        return redirect('carrinho')
+    # URL relativa segura → mantem o usuario no mesmo contexto (categoria/busca/ordem)
+    if next_url.startswith('/') and url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts=allowed, require_https=require_https,
+    ):
+        if '#' in next_url:
+            base, frag = next_url.split('#', 1)
+            sep = '&' if '?' in base else '?'
+            return redirect(f'{base}{sep}added=1#{frag}')
+        sep = '&' if '?' in next_url else '?'
+        return redirect(f'{next_url}{sep}added=1')
+    # Fallback: HTTP_REFERER do mesmo host
+    referer = request.META.get('HTTP_REFERER', '')
+    if referer and url_has_allowed_host_and_scheme(
+        referer, allowed_hosts=allowed, require_https=require_https,
+    ):
+        return redirect(referer)
+    # Ultimo fallback
     return redirect('carrinho')
 
 
@@ -1889,7 +1991,9 @@ def checkout(request):
         return redirect('carrinho')
 
     carrinho = get_object_or_404(Carrinho, id=carrinho_id)
-    itens = carrinho.itens.all()
+    # select_related evita N+1: itens sao iterados na validacao, no render
+    # e na criacao do Pedido — todos acessam item.produto.{nome, preco}.
+    itens = carrinho.itens.select_related('produto').all()
 
     if not itens:
         return redirect('carrinho')
@@ -2172,16 +2276,24 @@ def criar_preferencia(request, pedido_id, token):
             "failure": site_url(reverse('pagamento_falha', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})),
             "pending": site_url(reverse('pagamento_pendente', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token})),
         },
-        "auto_return": "approved",
-        "notification_url": site_url(reverse('webhook_mp')),
         "external_reference": str(pedido.id),
         "metadata": {
             "pedido_id": pedido.id,
         },
         "statement_descriptor": "BARRS STORE",
     }
+    # Em dev (DEBUG=True) o MP recusa auto_return e notification_url porque
+    # apontam para o dominio de producao, mas o pedido so existe no ambiente
+    # local. Em prod o comportamento permanece igual.
+    if not settings.DEBUG:
+        preference_data["auto_return"] = "approved"
+        preference_data["notification_url"] = site_url(reverse('webhook_mp'))
 
-    preference_response = sdk.preference().create(preference_data)
+    try:
+        preference_response = sdk.preference().create(preference_data)
+    except (RetryError, RequestException) as exc:
+        logger.error('Falha de rede ao criar preferencia MP pedido=%s: %s', pedido.id, exc)
+        return JsonResponse({'erro': 'Pagamento indisponivel no momento. Tente novamente.'}, status=502)
     preference = preference_response.get("response", {})
     if preference_response.get("status", 500) >= 400 or "id" not in preference:
         logger.warning(
@@ -2233,12 +2345,15 @@ def processar_pagamento_brick(request, pedido_id, token):
         'payment_method_id': form_data.get('payment_method_id'),
         'payer': payer,
         'external_reference': str(pedido.id),
-        'notification_url': site_url(reverse('webhook_mp')),
         'metadata': {
             'pedido_id': pedido.id,
         },
         'statement_descriptor': 'BARRS STORE',
     }
+    # Em dev (DEBUG=True) o MP recusa notification_url apontando para dominio
+    # nao publico. Em prod o webhook continua ativo normalmente.
+    if not settings.DEBUG:
+        payment_data['notification_url'] = site_url(reverse('webhook_mp'))
 
     # Cartao usa token/parcelas/emissor. Pix nao precisa desses campos.
     if form_data.get('token'):
@@ -2273,10 +2388,28 @@ def processar_pagamento_brick(request, pedido_id, token):
     )
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
     request_options = mercadopago.config.RequestOptions()
+    # Idempotency-Key estavel: mesma combinacao pedido+metodo+token+parcelas
+    # gera a mesma chave (MP dedupe double-click). Tentativa nova (outro cartao,
+    # outro Pix) gera chave diferente e e aceita como novo pagamento.
+    idem_seed = '|'.join([
+        str(pedido.id),
+        str(payment_data.get('payment_method_id') or ''),
+        str(payment_data.get('token') or '')[:32],
+        str(payment_data.get('installments') or ''),
+    ])
     request_options.custom_headers = {
-        'X-Idempotency-Key': str(uuid.uuid4()),
+        'X-Idempotency-Key': hashlib.sha256(idem_seed.encode('utf-8')).hexdigest(),
     }
-    payment_response = sdk.payment().create(payment_data, request_options)
+    try:
+        payment_response = sdk.payment().create(payment_data, request_options)
+    except (RetryError, RequestException) as exc:
+        logger.error('[MP-BRICK] Falha de rede ao criar pagamento pedido=%s: %s', pedido.id, exc)
+        return JsonResponse({
+            'erro': 'Pagamento indisponivel no momento. Tente novamente em instantes.',
+            'sugestao': 'Se persistir, escolha outra forma de pagamento.',
+            'categoria': 'transient',
+            'pode_tentar': True,
+        }, status=502)
     payment = payment_response.get('response', {})
     status_code = payment_response.get('status', 500)
 
@@ -2341,6 +2474,11 @@ def pagamento_sucesso(request, pedido_id, token):
     if payment_id and pedido.status != 'confirmado':
         confirmar_pagamento_mercadopago(payment_id)
         pedido.refresh_from_db()
+    # Evita renderizar tela de "sucesso" se o pagamento nao foi de fato
+    # aprovado (MP fora, webhook atrasado). Manda pro pendente, onde o
+    # polling atualiza assim que o status chegar.
+    if pedido.status != 'confirmado':
+        return redirect('pagamento_pendente', pedido_id=pedido.id, token=pedido.access_token)
     context = {'pedido': pedido}
     context.update(noindex_context(request, 'Pagamento - Barrs Store'))
     return render(request, 'pagamento_sucesso.html', context)
@@ -2349,6 +2487,13 @@ def pagamento_sucesso(request, pedido_id, token):
 @ratelimit(key='ip', rate='30/m', method='GET', block=False)
 def pagamento_falha(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
+    # Se MP devolveu payment_id na URL e o pedido ainda nao foi resolvido,
+    # tenta sincronizar para nao deixar o pedido eternamente em "pendente".
+    # O guard em confirmar_pagamento_mercadopago evita sobrescrever 'confirmado'.
+    payment_id = request.GET.get('payment_id') or request.GET.get('collection_id')
+    if payment_id and pedido.status not in ('confirmado', 'cancelado'):
+        confirmar_pagamento_mercadopago(payment_id)
+        pedido.refresh_from_db()
     context = {'pedido': pedido}
     context.update(no_tracking_context(request, 'Pagamento nao aprovado - Barrs Store'))
     return render(request, 'pagamento_falha.html', context)
@@ -2389,6 +2534,16 @@ def webhook_mercadopago(request):
             data = json.loads(request.body)
     except json.JSONDecodeError:
         data = {}
+
+    # Dedupe por x-request-id: MP reentrega o mesmo webhook varias vezes.
+    # cache.add e atomico — primeira chamada ganha, demais sao ignoradas.
+    # Funcoes internas ja sao idempotentes (select_for_update + flags), mas
+    # isso evita consultar a API MP repetidamente e consumir quota.
+    request_id_mp = request.headers.get('x-request-id', '')
+    if request_id_mp:
+        if not cache.add(f'mp:wh:{request_id_mp}', '1', 24 * 60 * 60):
+            logger.info('[MP] Webhook duplicado ignorado: x-request-id=%s', request_id_mp)
+            return HttpResponse(status=200)
 
     assinatura_ok, motivo_assinatura = validar_assinatura_mercadopago(request, data)
     if not assinatura_ok:

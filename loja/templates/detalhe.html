@@ -7,7 +7,7 @@
 {% include "partials/product_schema.html" %}
 {% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/detalhe.css' %}"><style>
+{% block page_css %}<style>
 {% inline_static 'loja/css/pages/detalhe.css' %}
 </style>{% endblock %}
 
@@ -38,6 +38,7 @@
     </a>
   </div>
 </nav>
+{% include "partials/category_nav.html" %}
 
 <!-- BREADCRUMB -->
 <nav class="breadcrumb" aria-label="Navegação estrutural">
@@ -122,7 +123,10 @@
     {% endif %}
 
     <h1 class="product__name">{{ produto.nome }}</h1>
-    <div class="product__price">R$ {{ produto.preco }}</div>
+    <div class="product__price">
+      <span class="price__currency">R$</span>
+      <span class="price__amount">{{ produto.preco }}</span>
+    </div>
 
     {% if produto.disponivel %}
       {% if produto.estoque_baixo %}
@@ -241,7 +245,10 @@
       {% endif %}
       <div class="related__card-body">
         <div class="related__card-name">{{ p.nome }}</div>
-        <div class="related__card-price">R$ {{ p.preco }}</div>
+        <div class="related__card-price">
+          <span class="price__currency">R$</span>
+          <span class="price__amount">{{ p.preco }}</span>
+        </div>
       </div>
     </a>
     {% endfor %}
@@ -365,7 +372,63 @@ if (window.location.search.includes('added=1')) {
   }
   history.replaceState(null, '', window.location.pathname);
 }
+
+// Sticky CTA Mobile behavior
+(function initStickyCtaMobile() {
+  const ctaMobile = document.getElementById('sticky-cta-mobile');
+  const mainCta = document.querySelector('.product__cta');
+  const stickyBtn = document.getElementById('sticky-cta-mobile-btn');
+  
+  if (!ctaMobile || !mainCta || !stickyBtn) return;
+
+  stickyBtn.addEventListener('click', function() {
+    mainCta.click();
+  });
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+          ctaMobile.classList.add('is-visible');
+        } else {
+          ctaMobile.classList.remove('is-visible');
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0,
+      rootMargin: '-56px 0px 0px 0px'
+    });
+
+    observer.observe(mainCta);
+  } else {
+    ctaMobile.classList.add('is-visible');
+  }
+})();
 </script>
+
+<!-- STICKY CTA MOBILE HTML -->
+{% if produto.disponivel %}
+<div class="sticky-cta-mobile" id="sticky-cta-mobile">
+  <div class="sticky-cta-mobile__inner">
+    <div class="sticky-cta-mobile__product">
+      {% if produto.imagem %}
+        <img src="{{ produto.imagem|cloudinary_url:'c_fill,w_100,h_100,q_auto,f_auto' }}" alt="" class="sticky-cta-mobile__thumb" loading="lazy" width="40" height="40">
+      {% endif %}
+      <div class="sticky-cta-mobile__info">
+        <span class="sticky-cta-mobile__name">{{ produto.nome }}</span>
+        <span class="sticky-cta-mobile__price">
+          <span class="price__currency">R$</span>
+          <span class="price__amount">{{ produto.preco }}</span>
+        </span>
+      </div>
+    </div>
+    <button type="button" class="sticky-cta-mobile__btn" id="sticky-cta-mobile-btn">
+      Comprar
+    </button>
+  </div>
+</div>
+{% endif %}
 
 {% include "partials/lead_capture.html" %}
 {% endblock %}

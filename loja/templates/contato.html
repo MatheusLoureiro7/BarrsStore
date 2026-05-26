@@ -3,7 +3,7 @@
 
 {% block title %}Contato — Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/contato.css' %}"><style>
+{% block page_css %}<style>
 {% inline_static 'loja/css/pages/contato.css' %}
 </style>{% endblock %}
 
@@ -34,6 +34,7 @@
     </a>
   </div>
 </nav>
+{% include "partials/category_nav.html" %}
 
 <main class="contact">
   <div class="contact__eyebrow">Fale conosco</div>

@@ -3,7 +3,7 @@
 
 {% block title %}Entrega e Trocas — Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/entrega.css' %}"><style>
+{% block page_css %}<style>
 {% inline_static 'loja/css/pages/entrega.css' %}
 </style>{% endblock %}
 
@@ -33,6 +33,7 @@
     </a>
   </div>
 </nav>
+{% include "partials/category_nav.html" %}
 
 <main class="delivery">
   <div class="delivery__eyebrow">Informações de entrega</div>

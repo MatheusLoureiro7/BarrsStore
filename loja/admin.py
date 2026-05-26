@@ -37,7 +37,7 @@ class ProdutoAdmin(admin.ModelAdmin):
             'fields': ('meta_description', 'imagem_alt')
         }),
         ('Controle interno', {
-            'fields': ('codigo_interno', 'estoque_proprio', 'cliques')
+            'fields': ('codigo_interno', 'estoque_proprio', 'peso_gramas', 'cliques')
         }),
     )
     inlines = [TamanhoInline]
@@ -227,14 +227,44 @@ class CupomAdmin(admin.ModelAdmin):
 
 @admin.register(ItemCarrinho)
 class ItemCarrinhoAdmin(admin.ModelAdmin):
+    """Somente leitura: itens de carrinho refletem estado do cliente, nao deve ser
+    editado manualmente para nao gerar inconsistencia no fluxo de checkout."""
     list_display = ('produto', 'quantidade', 'carrinho')
+    readonly_fields = ('carrinho', 'produto', 'quantidade', 'tamanho')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Carrinho)
 class CarrinhoAdmin(admin.ModelAdmin):
+    """Somente leitura: usado para diagnostico de carrinho abandonado / suporte.
+    Edicao manual pode corromper o fluxo de checkout e recuperacao."""
     list_display = ('id', 'telefone_cliente', 'aceita_whatsapp', 'whatsapp_abandono_enviado', 'criado_em', 'atualizado_em')
     list_filter = ('aceita_whatsapp', 'whatsapp_abandono_enviado')
-    search_fields = ('telefone_cliente',)
+    search_fields = ('telefone_cliente', 'email_cliente', 'nome_cliente')
+    readonly_fields = (
+        'criado_em', 'atualizado_em',
+        'nome_cliente', 'telefone_cliente', 'email_cliente',
+        'aceita_whatsapp', 'whatsapp_abandono_enviado', 'whatsapp_abandono_enviado_em',
+        'email_abandono_1_enviado', 'email_abandono_2_enviado', 'email_abandono_3_enviado',
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Permite remover carrinhos antigos para higiene do banco.
+        return request.user.is_superuser
 
 
 @admin.register(Lead)

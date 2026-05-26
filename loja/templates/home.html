@@ -3,13 +3,13 @@
 
 {% block title %}Barrs Store — Semijoias modernas e exclusivas{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/home.css' %}"><style>
+{% block page_css %}<style>
 {% inline_static 'loja/css/pages/home.css' %}
 </style>{% endblock %}
 
 {% block content %}
 <div class="home-page-shell">
-<main class="home-main">
+<main class="home-main" id="conteudo-principal">
 <!-- NAVEGAÇÃO -->
 <nav class="nav">
   <a href="/" class="nav__logo">
@@ -38,7 +38,10 @@
     </a>
   </div>
 </nav>
+{% include "partials/category_nav.html" %}
 
+{# Hero + proof-strip apenas na home premium (sem filtros) — evita scroll-jump na coleção #}
+{% if not busca and not categoria_ativa and not ordem and not request.GET.ver and not request.GET.page %}
 <!-- HERO -->
 <section class="hero">
   <picture class="hero__bg" aria-hidden="true">
@@ -97,21 +100,25 @@
   </div>
   <div class="proof-strip__dots" aria-label="Navegar diferenciais"></div>
 </section>
+{% endif %}
+
+{# ─── SWITCH: com query → modo lista atual · sem query → home premium ─── #}
+{% if busca or categoria_ativa or ordem or request.GET.ver or request.GET.page %}
 
 <!-- CONTROLES DE BUSCA -->
-<div class="controls" id="produtos">
-  <form method="GET" action="/#produtos" class="controls__search" role="search">
+<div class="controls" aria-label="Buscar e ordenar produtos">
+  <form method="GET" action="/" class="controls__search" role="search" id="product-search-form">
     <svg class="icon controls__search-icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-search"/></svg>
     <input type="text" name="q" class="controls__search-input" placeholder="Buscar produtos..." value="{{ busca }}" aria-label="Buscar produtos">
     {% if ordem %}<input type="hidden" name="ordem" value="{{ ordem }}">{% endif %}
     {% if categoria_ativa %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
   </form>
   <div class="controls__row">
-    <button type="submit" form="" class="btn btn--primary" style="padding:0.75rem 1.25rem" onclick="document.querySelector('.controls__search').submit()">Buscar</button>
-    <form method="GET" action="/#produtos" style="flex:1">
+    <button type="submit" form="product-search-form" class="controls__submit">Buscar</button>
+    <form method="GET" action="/" class="controls__sort-form">
       {% if busca %}<input type="hidden" name="q" value="{{ busca }}">{% endif %}
       {% if categoria_ativa %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
-      <select name="ordem" class="controls__sort" onchange="this.form.submit()" aria-label="Ordenar produtos" style="width:100%">
+      <select name="ordem" class="controls__sort" onchange="this.form.submit()" aria-label="Ordenar produtos">
         <option value="" {% if not ordem %}selected{% endif %}>Mais recentes</option>
         <option value="menor" {% if ordem == 'menor' %}selected{% endif %}>Menor preço</option>
         <option value="maior" {% if ordem == 'maior' %}selected{% endif %}>Maior preço</option>
@@ -121,20 +128,9 @@
   </div>
 </div>
 
-<!-- CATEGORIAS -->
-{% if categorias %}
-<div class="categories">
-  <a href="/{% if busca or ordem %}?{% if busca %}q={{ busca }}{% endif %}{% if busca and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}#produtos" class="category-chip {% if not categoria_ativa %}active{% endif %}">Todas</a>
-  {% for cat in categorias %}
-  <a href="/?categoria={{ cat.slug }}{% if busca %}&q={{ busca }}{% endif %}{% if ordem %}&ordem={{ ordem }}{% endif %}#produtos"
-     class="category-chip {% if categoria_ativa == cat.slug %}active{% endif %}">{{ cat.nome }}</a>
-  {% endfor %}
-</div>
-{% endif %}
-
 {% if busca %}
 <div class="search-result">
-  {{ total_produtos }} resultado{% if total_produtos != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" - <a href="/{% if categoria_ativa or ordem %}?{% if categoria_ativa %}categoria={{ categoria_ativa }}{% endif %}{% if categoria_ativa and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}#produtos">Limpar busca</a>
+  {{ total_produtos }} resultado{% if total_produtos != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" - <a href="/{% if categoria_ativa or ordem %}?{% if categoria_ativa %}categoria={{ categoria_ativa }}{% endif %}{% if categoria_ativa and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}">Limpar busca</a>
 </div>
 {% endif %}
 
@@ -177,13 +173,177 @@
   <div class="empty-state">
     {% if busca %}
       Nenhum produto encontrado para "{{ busca }}".
-      <br><a href="/#produtos">Ver todos os produtos</a>
+      <br><a href="/?ver=todos">Ver todos os produtos</a>
     {% else %}
       Nenhum produto cadastrado ainda.
     {% endif %}
   </div>
   {% endif %}
 </section>
+
+{% else %}
+
+{# ─── HOME PREMIUM (sem filtros) ─── #}
+
+<!-- CURADORIA: 6 produtos selecionados -->
+{% if produtos %}
+<section class="ph-section ph-curadoria" id="produtos" data-reveal>
+  <header class="ph-section__head ph-section__head--centered">
+    <span class="ph-eyebrow"><em>Selecionadas a dedo</em></span>
+    <span class="ph-rule" aria-hidden="true"></span>
+    <h2 class="ph-section__title">Mais amadas</h2>
+    <p class="ph-section__lead">As favoritas que mais saem da Barrs — eleitas pelas nossas clientes nas últimas semanas.</p>
+  </header>
+  <div class="product-grid">
+    {% for produto in produtos|slice:":4" %}
+    <article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}">
+      <div class="product-card__media{% if produto.imagem_2 %} product-card__media--swap{% endif %}">
+        {% if produto.imagem %}
+          <img class="product-card__img product-card__img--primary"
+               src="{{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }}"
+               srcset="{{ produto.imagem|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }} 360w, {{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w"
+               sizes="(max-width: 640px) 46vw, (max-width: 1024px) 33vw, 280px"
+               alt="{{ produto.get_image_alt }}" loading="lazy" decoding="async">
+          {% if produto.imagem_2 %}
+          <img class="product-card__img product-card__img--hover"
+               src="{{ produto.imagem_2|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }}"
+               srcset="{{ produto.imagem_2|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }} 360w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w"
+               sizes="(max-width: 640px) 46vw, (max-width: 1024px) 33vw, 280px"
+               alt="{{ produto.get_image_alt }}" loading="lazy" decoding="async">
+          {% endif %}
+        {% else %}
+          <div class="product-card__placeholder">
+            <svg class="icon" style="width:48px;height:48px" aria-hidden="true"><use href="#i-gem"/></svg>
+          </div>
+        {% endif %}
+        {% if not produto.disponivel %}
+          <span class="product-card__badge product-card__badge--out">ESGOTADO</span>
+        {% elif produto.destaque %}
+          <span class="product-card__badge product-card__badge--accent">Mais vendidos</span>
+        {% elif produto.is_novo %}
+          <span class="product-card__badge">Novo</span>
+        {% endif %}
+      </div>
+      <div class="product-card__body">
+        <div class="product-card__name">{{ produto.nome }}</div>
+        <div class="product-card__price{% if not produto.disponivel %} product-card__price--muted{% endif %}">
+          <span class="price__currency">R$</span>
+          <span class="price__amount">{{ produto.preco }}</span>
+        </div>
+        {% if produto.descricao %}<div class="product-card__desc">{{ produto.descricao }}</div>{% endif %}
+      </div>
+      <div class="product-card__actions">
+        <a href="{% url 'detalhe_produto' produto.slug %}" class="product-card__view">Ver produto</a>
+        {% if produto.disponivel %}
+        <form method="POST" action="{% url 'add_carrinho' produto.id %}" style="margin:0"
+              data-pixel-add="1" data-pixel-id="{{ produto.id }}"
+              data-pixel-name="{{ produto.nome|escapejs }}"
+              data-pixel-value="{{ produto.preco|stringformat:'0.2f' }}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="product-card__add" title="Adicionar ao carrinho" aria-label="Adicionar {{ produto.nome }} ao carrinho">+</button>
+        </form>
+        {% else %}
+          <button type="button" class="product-card__add product-card__add--disabled" title="Produto esgotado" aria-label="{{ produto.nome }} esgotado" disabled>×</button>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- TODAS AS PEÇAS — grid completo com infinite scroll (reusa sistema do filter mode) -->
+{% if produtos and produtos|length > 4 %}
+<section class="ph-section ph-todas" data-reveal>
+  <header class="ph-section__head ph-section__head--centered">
+    <span class="ph-eyebrow"><em>Continue explorando</em></span>
+    <span class="ph-rule" aria-hidden="true"></span>
+    <h2 class="ph-section__title">Todas as peças</h2>
+  </header>
+
+  <div class="product-grid" id="product-grid">
+    {% include "partials/product_cards_chunk.html" with produtos=produtos|slice:"4:" %}
+  </div>
+
+  <div id="infinite-sentinel"
+       data-next-page="{{ next_page_number }}"
+       data-base-query="{{ base_query }}"
+       aria-hidden="true"
+       style="height:1px;margin-top:8px"></div>
+
+  <div id="infinite-loader" class="load-more" hidden aria-live="polite" aria-busy="true">
+    <span class="load-more__spinner" aria-hidden="true"></span>
+    <span style="font-size:var(--text-sm);color:var(--color-ink-muted)">Carregando mais peças…</span>
+  </div>
+
+  <div id="infinite-end" class="load-more" hidden role="status" style="font-size:var(--text-sm);color:var(--color-ink-muted)">
+    Você viu todas as peças disponíveis.
+  </div>
+
+  {% if has_next_page %}
+  <noscript>
+    <div class="load-more">
+      <a href="{{ next_page_url }}" class="load-more__btn">Ver mais peças</a>
+    </div>
+  </noscript>
+  {% endif %}
+</section>
+{% endif %}
+
+<!-- DEPOIMENTOS PREMIUM -->
+<section class="ph-band ph-band--ivory" data-reveal>
+  <div class="ph-section ph-testimonials">
+    <header class="ph-section__head ph-section__head--centered">
+      <span class="ph-eyebrow"><em>Clientes Barrs</em></span>
+      <span class="ph-rule" aria-hidden="true"></span>
+      <h2 class="ph-section__title">Quem usa, conta.</h2>
+    </header>
+    <div class="ph-testimonials__grid">
+      <figure class="ph-testimonial" style="--bs-delay:80ms">
+        <span class="ph-testimonial__mark" aria-hidden="true">&ldquo;</span>
+        <div class="ph-testimonial__stars" aria-label="Avaliação 5 de 5">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+        </div>
+        <blockquote class="ph-testimonial__quote">Chegou ainda mais bonito pessoalmente. Virou meu acessório de todos os dias.</blockquote>
+        <span class="ph-testimonial__rule" aria-hidden="true"></span>
+        <figcaption class="ph-testimonial__author">Marina · São Paulo, SP</figcaption>
+      </figure>
+      <figure class="ph-testimonial" style="--bs-delay:200ms">
+        <span class="ph-testimonial__mark" aria-hidden="true">&ldquo;</span>
+        <div class="ph-testimonial__stars" aria-label="Avaliação 5 de 5">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+        </div>
+        <blockquote class="ph-testimonial__quote">As peças parecem joias muito mais caras — recebo elogio toda semana.</blockquote>
+        <span class="ph-testimonial__rule" aria-hidden="true"></span>
+        <figcaption class="ph-testimonial__author">laura · Belo Horizonte, MG</figcaption>
+      </figure>
+      <figure class="ph-testimonial" style="--bs-delay:320ms">
+        <span class="ph-testimonial__mark" aria-hidden="true">&ldquo;</span>
+        <div class="ph-testimonial__stars" aria-label="Avaliação 5 de 5">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.3 2.8 1-5.9L1.5 7.7l5.9-.8z"/></svg>
+        </div>
+        <blockquote class="ph-testimonial__quote">Uso praticamente todos os dias e o brilho continua igual ao primeiro dia.</blockquote>
+        <span class="ph-testimonial__rule" aria-hidden="true"></span>
+        <figcaption class="ph-testimonial__author">Amanda · Curitiba, PR</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+{% endif %}
 </main>
 
 <!-- FOOTER -->
@@ -250,6 +410,19 @@
       </div>
     </div>
 
+    <section class="bs-newsletter" data-reveal aria-labelledby="bs-newsletter-title">
+      <span class="bs-newsletter__eyebrow">Lista exclusiva</span>
+      <h2 class="bs-newsletter__title" id="bs-newsletter-title">Receba novidades e lançamentos exclusivos</h2>
+      <p class="bs-newsletter__lead">Acesso antecipado a novas coleções, drops limitados e ofertas reservadas para a nossa lista.</p>
+      <form class="bs-newsletter__form" data-bs-newsletter novalidate>
+        <input type="email" name="email" required autocomplete="email"
+               class="bs-newsletter__input" placeholder="seu melhor e-mail" aria-label="Seu e-mail">
+        <button type="submit" class="bs-newsletter__btn">Inscrever-se</button>
+      </form>
+      <small class="bs-newsletter__note">Sem spam. Apenas o que merece chegar à sua caixa.</small>
+      <p class="bs-newsletter__msg" role="status" aria-live="polite">Pronto! Você entrou para a lista — fique de olho no e-mail.</p>
+    </section>
+
     <div class="premium-footer__trust" aria-label="Compromissos da Barrs Store">
       <span class="premium-footer__badge">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.6"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>
@@ -281,7 +454,7 @@
       </div>
     </div>
 
-    <p class="premium-footer__credit">Desenvolvido por <strong>Bicodex</strong></p>
+    <p class="premium-footer__credit">Desenvolvido por <a href="https://www.bicodex.dev" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;font-weight:700">Bicodex</a></p>
 
   </div>
 </footer>

@@ -81,6 +81,11 @@ class Produto(models.Model):
     codigo_interno = models.CharField(max_length=50, blank=True, default='', help_text='Código interno (só visível no admin)')
     estoque_proprio = models.BooleanField(default=True, help_text='Produto em estoque próprio? Se não, sob demanda.')
     cliques = models.PositiveIntegerField(default=0, help_text='Quantidade de acessos na pagina do produto.')
+    peso_gramas = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text='Peso unitario da peca em gramas. Se vazio, usamos 8g como padrao no calculo de frete.',
+    )
 
     def __str__(self):
         return self.nome

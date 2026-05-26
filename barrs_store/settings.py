@@ -38,7 +38,7 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(
         'ALLOWED_HOSTS',
-        'barrsstore.com.br,www.barrsstore.com.br,web-production-c4971.up.railway.app,localhost,127.0.0.1'
+        'barrsstore.com.br,www.barrsstore.com.br,web-production-c4971.up.railway.app,localhost,127.0.0.1,.ngrok-free.dev,.ngrok-free.app'
     ).split(',')
     if host.strip()
 ]
@@ -57,7 +57,7 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
         'CSRF_TRUSTED_ORIGINS',
-        'https://web-production-c4971.up.railway.app,https://barrsstore.com.br,https://www.barrsstore.com.br'
+        'https://web-production-c4971.up.railway.app,https://barrsstore.com.br,https://www.barrsstore.com.br,https://*.ngrok-free.dev,https://*.ngrok-free.app'
     ).split(',')
     if origin.strip()
 ]
@@ -149,7 +149,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 WHITENOISE_MAX_AGE = 31536000
-WHITENOISE_USE_FINDERS = os.environ.get('WHITENOISE_USE_FINDERS', 'True') == 'True'
+# Default seguro: True só em DEBUG (em prod, busca em finders a cada request é lenta).
+WHITENOISE_USE_FINDERS = os.environ.get('WHITENOISE_USE_FINDERS', 'True' if DEBUG else 'False') == 'True'
 
 # Cloudinary
 import cloudinary
@@ -236,7 +237,9 @@ CONTENT_SECURITY_POLICY = os.environ.get(
     "frame-src 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br https://challenges.cloudflare.com; "
     "form-action 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br"
 ).strip()
-CSP_ENFORCE = os.environ.get('CSP_ENFORCE', 'False') == 'True'
+# Default seguro: enforce em prod automaticamente; dev fica em report-only para
+# permitir debugar violacoes sem quebrar o site.
+CSP_ENFORCE = os.environ.get('CSP_ENFORCE', 'False' if DEBUG else 'True') == 'True'
 CONTENT_SECURITY_POLICY_REPORT_ONLY = CONTENT_SECURITY_POLICY if not CSP_ENFORCE else ''
 
 TURNSTILE_SITE_KEY = os.environ.get('TURNSTILE_SITE_KEY', '').strip()

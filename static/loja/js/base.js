@@ -92,6 +92,13 @@ document.addEventListener('DOMContentLoaded', function () {
     '</summary>' +
     '<div class="mobile-menu__sub">' +
     '<a href="/#produtos">Ver todos os produtos</a>' +
+    '<a href="/?categoria=anel#produtos">Anéis</a>' +
+    '<a href="/?categoria=pulseira#produtos">Braceletes e Pulseiras</a>' +
+    '<a href="/?categoria=brinco#produtos">Brincos</a>' +
+    '<a href="/?categoria=colar#produtos">Colares</a>' +
+    '<a href="/?categoria=choker#produtos">Chokers</a>' +
+    '<a href="/?categoria=conjunto#produtos">Conjuntos</a>' +
+    '<a href="/?categoria=mais-vendidos#produtos">Mais vendidos</a>' +
     '<a href="/medidas/">Guia de medidas</a>' +
     '<a href="/garantia/">Garantia Barrs</a>' +
     '</div>';
@@ -164,3 +171,88 @@ document.addEventListener('DOMContentLoaded', function () {
     if (event.key === 'Escape' && document.body.classList.contains('mobile-menu-open')) closeMenu();
   });
 });
+
+// ── Reveal-on-scroll: aplica .is-visible quando seção entra na viewport
+(function () {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var targets = document.querySelectorAll('[data-reveal]');
+  if (!targets.length || !('IntersectionObserver' in window)) {
+    // Sem IO → mostra tudo direto pra nao quebrar layout
+    targets.forEach(function (el) { el.classList.add('is-visible'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  targets.forEach(function (el) { io.observe(el); });
+})();
+
+// ── Sticky header: aciona .is-scrolled após pequeno scroll ─────────
+(function () {
+  var nav = document.querySelector('.nav');
+  if (!nav) return;
+  var threshold = 12;
+  var raf = null;
+  function apply() {
+    raf = null;
+    nav.classList.toggle('is-scrolled', window.scrollY > threshold);
+  }
+  function onScroll() {
+    if (raf == null) raf = requestAnimationFrame(apply);
+  }
+  apply();
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
+
+// ── Toast (Django messages) — auto-dismiss + close on click ────────
+(function () {
+  var toasts = document.querySelectorAll('[data-bs-toast]');
+  if (!toasts.length) return;
+  function dismiss(t) {
+    if (!t || t.classList.contains('is-leaving')) return;
+    t.classList.add('is-leaving');
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 240);
+  }
+  toasts.forEach(function (t, i) {
+    var btn = t.querySelector('[data-bs-toast-close]');
+    if (btn) btn.addEventListener('click', function () { dismiss(t); });
+    var isError = t.classList.contains('bs-toast--error');
+    setTimeout(function () { dismiss(t); }, isError ? 6000 : 3600 + i * 200);
+  });
+})();
+
+// ── Newsletter premium — captura local sem backend (frontend-only) ─
+(function () {
+  var forms = document.querySelectorAll('[data-bs-newsletter]');
+  if (!forms.length) return;
+  var STORAGE_KEY = 'bs_newsletter_optin';
+  forms.forEach(function (form) {
+    var wrap = form.closest('.bs-newsletter');
+    if (!wrap) return;
+    try {
+      if (localStorage.getItem(STORAGE_KEY)) wrap.classList.add('is-sent');
+    } catch (e) { /* storage indisponível: segue normal */ }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = form.querySelector('input[type="email"]');
+      if (!input) return;
+      var email = (input.value || '').trim();
+      var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!ok) {
+        input.focus();
+        input.setAttribute('aria-invalid', 'true');
+        input.style.borderColor = 'rgba(212, 92, 82, 0.55)';
+        return;
+      }
+      input.removeAttribute('aria-invalid');
+      input.style.borderColor = '';
+      wrap.classList.add('is-sent');
+      try { localStorage.setItem(STORAGE_KEY, email); } catch (e) { /* ignore */ }
+    });
+  });
+})();

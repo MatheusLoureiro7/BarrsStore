@@ -1,15 +1,26 @@
 {% load cloudinary_extras %}
 {% for produto in produtos %}
 <article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}">
-  <div class="product-card__media">
+  <div class="product-card__media{% if produto.imagem_2 %} product-card__media--swap{% endif %}">
     {% if produto.imagem %}
       <img
+        class="product-card__img product-card__img--primary"
         src="{{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }}"
         srcset="{{ produto.imagem|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }} 360w, {{ produto.imagem|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w"
         sizes="(max-width: 640px) 46vw, (max-width: 1024px) 33vw, 280px"
         alt="{{ produto.alt_text }}"
         loading="lazy"
         decoding="async">
+      {% if produto.imagem_2 %}
+      <img
+        class="product-card__img product-card__img--hover"
+        src="{{ produto.imagem_2|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }}"
+        srcset="{{ produto.imagem_2|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }} 360w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_520,h_520,q_auto,f_auto' }} 520w, {{ produto.imagem_2|cloudinary_url:'c_fill,w_760,h_760,q_auto,f_auto' }} 760w"
+        sizes="(max-width: 640px) 46vw, (max-width: 1024px) 33vw, 280px"
+        alt="{{ produto.alt_text }}"
+        loading="lazy"
+        decoding="async">
+      {% endif %}
     {% else %}
       <div class="product-card__placeholder">
         <svg class="icon" style="width:48px;height:48px" aria-hidden="true"><use href="#i-gem"/></svg>
@@ -25,9 +36,10 @@
   </div>
   <div class="product-card__body">
     <div class="product-card__name">{{ produto.nome }}</div>
-    {% if produto.disponivel %}
-      <div class="product-card__price">R$ {{ produto.preco }}</div>
-    {% endif %}
+    <div class="product-card__price{% if not produto.disponivel %} product-card__price--muted{% endif %}">
+      <span class="price__currency">R$</span>
+      <span class="price__amount">{{ produto.preco }}</span>
+    </div>
     {% if produto.descricao %}<div class="product-card__desc">{{ produto.descricao }}</div>{% endif %}
   </div>
   <div class="product-card__actions">
@@ -39,7 +51,7 @@
           data-pixel-name="{{ produto.nome|escapejs }}"
           data-pixel-value="{{ produto.preco|stringformat:'0.2f' }}">
       {% csrf_token %}
-      <input type="hidden" name="next" value="home">
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
       <button type="submit" class="product-card__add" title="Adicionar ao carrinho" aria-label="Adicionar {{ produto.nome }} ao carrinho">+</button>
     </form>
     {% else %}

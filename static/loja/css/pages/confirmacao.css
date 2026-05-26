@@ -798,3 +798,166 @@ body {
   .co-pay, .co-summary { animation: none; }
 }
 
+/* ── OVERLAY PREMIUM DE PROCESSAMENTO ─────────────────────────── */
+.co-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 18, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: coOverlayIn 220ms ease-out;
+  padding: 1.5rem;
+}
+.co-overlay[hidden] { display: none; }
+
+.co-overlay__card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2.25rem 2rem 1.75rem;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: coOverlayCardIn 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.co-overlay__icon {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.25rem;
+}
+
+/* Spinner (loading) */
+.co-overlay__spinner {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(107, 122, 100, 0.18);
+  border-top-color: var(--color-brand, #6b7a64);
+  animation: coSpin 800ms linear infinite;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.co-overlay.is-loading .co-overlay__spinner { opacity: 1; }
+
+/* Check (success) */
+.co-overlay__check {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 180ms ease, transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.co-overlay__check circle {
+  stroke: var(--color-brand, #6b7a64);
+  stroke-width: 3;
+  fill: rgba(107, 122, 100, 0.08);
+}
+.co-overlay__check path {
+  stroke: var(--color-brand, #6b7a64);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+}
+.co-overlay.is-success .co-overlay__check {
+  opacity: 1;
+  transform: scale(1);
+}
+.co-overlay.is-success .co-overlay__check path {
+  animation: coCheckDraw 420ms 120ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Alert (error) */
+.co-overlay__alert {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 180ms ease, transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.co-overlay__alert circle:first-child {
+  stroke: #c0392b;
+  stroke-width: 3;
+  fill: rgba(192, 57, 43, 0.08);
+}
+.co-overlay__alert path {
+  stroke: #c0392b;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.co-overlay__alert circle:last-child {
+  fill: #c0392b;
+  stroke: none;
+}
+.co-overlay.is-error .co-overlay__alert {
+  opacity: 1;
+  transform: scale(1);
+  animation: coShake 380ms ease;
+}
+
+.co-overlay__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2a23;
+  margin: 0 0 0.5rem;
+  line-height: 1.35;
+}
+.co-overlay__sub {
+  font-size: 0.9rem;
+  color: #5b6660;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.co-overlay__retry {
+  margin-top: 1.25rem;
+  background: var(--color-brand, #6b7a64);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+.co-overlay__retry:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.co-overlay__retry[hidden] { display: none; }
+
+@keyframes coOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes coOverlayCardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes coCheckDraw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes coShake {
+  0%,100% { transform: scale(1) translateX(0); }
+  20%     { transform: scale(1) translateX(-5px); }
+  40%     { transform: scale(1) translateX(5px); }
+  60%     { transform: scale(1) translateX(-3px); }
+  80%     { transform: scale(1) translateX(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .co-overlay, .co-overlay__card { animation: none; }
+  .co-overlay__spinner { animation-duration: 1400ms; }
+  .co-overlay.is-error .co-overlay__alert { animation: none; }
+  .co-overlay.is-success .co-overlay__check path { animation: none; stroke-dashoffset: 0; }
+}
+

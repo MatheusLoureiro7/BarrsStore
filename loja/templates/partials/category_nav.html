@@ -1,0 +1,15 @@
+<nav class="category-nav" aria-label="Categorias de produtos">
+  <div class="category-nav__scroller">
+    <a class="category-nav__link category-nav__link--all{% if request.GET.ver == 'todos' and not request.GET.categoria %} is-active{% endif %}" href="/?ver=todos#produtos">
+      Ver todos
+      <span class="category-nav__chevron" aria-hidden="true">›</span>
+    </a>
+    <a class="category-nav__link{% if request.GET.categoria == 'anel' or request.GET.categoria == 'aneis' %} is-active{% endif %}" href="/?categoria=anel#produtos">Anéis</a>
+    <a class="category-nav__link{% if request.GET.categoria == 'pulseira' or request.GET.categoria == 'pulseiras' or request.GET.categoria == 'braceletes-e-pulseiras' %} is-active{% endif %}" href="/?categoria=pulseira#produtos">Braceletes e Pulseiras</a>
+    <a class="category-nav__link{% if request.GET.categoria == 'brinco' or request.GET.categoria == 'brincos' %} is-active{% endif %}" href="/?categoria=brinco#produtos">Brincos</a>
+    <a class="category-nav__link{% if request.GET.categoria == 'colar' or request.GET.categoria == 'colares' %} is-active{% endif %}" href="/?categoria=colar#produtos">Colares</a>
+    <a class="category-nav__link{% if request.GET.categoria == 'choker' or request.GET.categoria == 'chokers' %} is-active{% endif %}" href="/?categoria=choker#produtos">Chokers</a>
+    <a class="category-nav__link{% if request.GET.categoria == 'conjunto' or request.GET.categoria == 'conjuntos' %} is-active{% endif %}" href="/?categoria=conjunto#produtos">Conjuntos</a>
+    <a class="category-nav__link{% if request.GET.categoria == 'mais-vendidos' %} is-active{% endif %}" href="/?categoria=mais-vendidos#produtos">Mais vendidos</a>
+  </div>
+</nav>

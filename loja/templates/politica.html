@@ -3,7 +3,7 @@
 
 {% block title %}Política de Privacidade — Barrs Store{% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/politica.css' %}"><style>
+{% block page_css %}<style>
 {% inline_static 'loja/css/pages/politica.css' %}
 </style>{% endblock %}
 
@@ -23,6 +23,7 @@
     {% endif %}
   </div>
 </nav>
+{% include "partials/category_nav.html" %}
 
 <main class="policy">
   <div class="policy__eyebrow">Privacidade</div>

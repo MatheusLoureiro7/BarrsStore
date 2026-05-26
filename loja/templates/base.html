@@ -4,18 +4,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#3D2D20">
+<meta name="theme-color" content="#6B7A64">
 <title>{% block title %}Barrs Store{% endblock %}</title>
 {% include "partials/seo_head.html" %}
 {% block extra_head %}{% endblock %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'loja/css/base.css' %}">
-<link rel="stylesheet" href="{% static 'loja/css/components/lead_capture.css' %}">
 <style>
 {% inline_static 'loja/css/base.css' %}
 {% inline_static 'loja/css/components/lead_capture.css' %}
+:root {
+  --color-bg: #F1F3E6;
+  --color-bg-alt: #E8ECD5;
+}
+html,
+body {
+  background: #F1F3E6 !important;
+}
+.nav {
+  background: rgba(241, 243, 230, 0.86) !important;
+}
+.nav.is-scrolled {
+  background: rgba(241, 243, 230, 0.98) !important;
+}
+/* Skip-to-content (a11y): invisivel ate receber foco via Tab. */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 12px;
+  z-index: 9999;
+  padding: 8px 14px;
+  background: #1A1A1A;
+  color: #F4F1E9;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  transition: top 180ms ease;
+}
+.skip-link:focus {
+  top: 0;
+  outline: none;
+}
 </style>
 {% block page_css %}{% endblock %}
 <link rel="icon" type="image/png" sizes="32x32" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_fill,w_32,h_32,q_auto,f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
@@ -31,7 +64,27 @@
   data-account-url="{% url 'minha_conta' %}"
   data-track-url="{% url 'rastrear_pedido' %}"
   data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+<a href="#conteudo-principal" class="skip-link">Ir para o conteúdo</a>
 {% include "partials/icon_sprite.html" %}
+{% if messages %}
+<div class="bs-toast-stack" role="status" aria-live="polite">
+  {% for message in messages %}
+  <div class="bs-toast bs-toast--{{ message.tags|default:'info' }}" data-bs-toast>
+    <svg class="bs-toast__icon" viewBox="0 0 24 24" aria-hidden="true">
+      {% if 'error' in message.tags %}
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M12 7v6M12 16.5v.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      {% else %}
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="m8 12 3 3 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      {% endif %}
+    </svg>
+    <span class="bs-toast__msg">{{ message }}</span>
+    <button type="button" class="bs-toast__close" aria-label="Fechar" data-bs-toast-close>×</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 {% block content %}{% endblock %}
 <script src="{% static 'loja/js/base.js' %}" defer></script>
 <script nonce="{{ csp_nonce }}">

@@ -7,7 +7,7 @@
 <script src="https://sdk.mercadopago.com/js/v2"></script>
 {% endblock %}
 
-{% block page_css %}<link rel="stylesheet" href="{% static 'loja/css/pages/confirmacao.css' %}"><style>
+{% block page_css %}<style>
 {% inline_static 'loja/css/pages/confirmacao.css' %}
 </style>{% endblock %}
 
@@ -235,6 +235,20 @@
   </div>
 </main>
 
+<!-- Overlay premium de processamento de pagamento -->
+<div id="mp-overlay" class="co-overlay" role="dialog" aria-modal="true" aria-live="polite" hidden>
+  <div class="co-overlay__card">
+    <div class="co-overlay__icon" aria-hidden="true">
+      <div class="co-overlay__spinner"></div>
+      <svg class="co-overlay__check" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" fill="none"/><path fill="none" d="M14 27 l8 8 l16 -18"/></svg>
+      <svg class="co-overlay__alert" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" fill="none"/><path fill="none" d="M26 14 v16"/><circle cx="26" cy="37" r="1.6"/></svg>
+    </div>
+    <h3 id="mp-overlay-title" class="co-overlay__title">Processando seu pagamento...</h3>
+    <p id="mp-overlay-sub" class="co-overlay__sub">Aguarde alguns segundos, não feche esta página.</p>
+    <button type="button" id="mp-overlay-retry" class="co-overlay__retry" hidden>Tentar novamente</button>
+  </div>
+</div>
+
 <script nonce="{{ csp_nonce }}">
 (function () {
   const mp = new MercadoPago('{{ mp_public_key }}', { locale: 'pt-BR' });
@@ -289,6 +303,45 @@
     } else {
       statusEl.style.display   = 'none';
     }
+  }
+
+  const overlayEl       = document.getElementById('mp-overlay');
+  const overlayTitleEl  = document.getElementById('mp-overlay-title');
+  const overlaySubEl    = document.getElementById('mp-overlay-sub');
+  const overlayRetryEl  = document.getElementById('mp-overlay-retry');
+
+  function showOverlay(state, options) {
+    if (!overlayEl) return;
+    options = options || {};
+    overlayEl.classList.remove('is-loading', 'is-success', 'is-error');
+    overlayEl.classList.add('is-' + state);
+    overlayEl.hidden = false;
+    document.body.style.overflow = 'hidden';
+
+    if (state === 'loading') {
+      overlayTitleEl.textContent = options.titulo || 'Processando seu pagamento...';
+      overlaySubEl.textContent   = options.sub    || 'Aguarde alguns segundos, não feche esta página.';
+      overlayRetryEl.hidden      = true;
+    } else if (state === 'success') {
+      overlayTitleEl.textContent = options.titulo || 'Pagamento confirmado!';
+      overlaySubEl.textContent   = options.sub    || 'Estamos preparando seu pedido.';
+      overlayRetryEl.hidden      = true;
+    } else if (state === 'error') {
+      overlayTitleEl.textContent = options.titulo || 'Não foi possível concluir o pagamento';
+      overlaySubEl.textContent   = options.sub    || 'Verifique os dados e tente novamente.';
+      overlayRetryEl.hidden      = false;
+    }
+  }
+
+  function hideOverlay() {
+    if (!overlayEl) return;
+    overlayEl.hidden = true;
+    overlayEl.classList.remove('is-loading', 'is-success', 'is-error');
+    document.body.style.overflow = '';
+  }
+
+  if (overlayRetryEl) {
+    overlayRetryEl.addEventListener('click', hideOverlay);
   }
 
   function startStatusPolling() {
@@ -409,12 +462,15 @@
         diretoEl.style.display = 'block';
       }
 
+      // preferenceId nao e usado: o Brick exigiria mercadoPago em paymentMethods,
+      // que nao queremos. A preferencia ainda e criada e o init_point fica
+      // disponivel como fallback (link "Caso o pagamento nao carregue...").
       const bricksBuilder = mp.bricks();
       await bricksBuilder.create('payment', 'paymentBrick_container', {
         initialization: {
           amount: totalPedido,
-          preferenceId: prefData.preference_id,
           payer: {
+            entityType: "individual",
             firstName: '{{ pedido.nome|escapejs }}'.split(' ')[0] || '',
             lastName:  '{{ pedido.nome|escapejs }}'.split(' ').slice(1).join(' '),
             email:     '{{ pedido.email|escapejs }}',
@@ -474,7 +530,6 @@
           paymentMethods: {
             creditCard:      'all',
             bankTransfer:    'all',
-            wallet_purchase: 'all',
             maxInstallments: 6,
           },
 
@@ -504,10 +559,6 @@
             securityCode: {
               label:       'Código de segurança',
               placeholder: 'CVV',
-            },
-            entityType: {
-              label:       'Tipo',
-              placeholder: 'Selecione',
             },
             financialInstitution: {
               label:       'Banco',
@@ -549,6 +600,7 @@
 
           onSubmit: ({ formData }) => {
             showStatus('Processando pagamento com segurança...');
+            showOverlay('loading');
             return fetch(
               '{% url "processar_pagamento_brick" pedido.id pedido.access_token %}',
               {
@@ -572,14 +624,18 @@
                   throw erro;
                 }
                 if ((data.status === 'pending' || data.status === 'in_process') && showPixPayment(data)) {
+                  hideOverlay();
                   return;
                 }
                 if (data.redirect_url) {
-                  window.location.href = data.redirect_url;
+                  showOverlay('success');
+                  setTimeout(() => { window.location.href = data.redirect_url; }, 1400);
                 }
               })
               .catch((error) => {
                 showStatus('');
+                const subMsg = error.sugestao || 'Verifique os dados do cartão e tente novamente.';
+                showOverlay('error', { titulo: error.message, sub: subMsg });
                 showError(error.message, {
                   sugestao:   error.sugestao,
                   categoria:  error.categoria,
