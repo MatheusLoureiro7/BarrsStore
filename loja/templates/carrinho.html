@@ -67,12 +67,12 @@
             <span><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg> Antialérgico</span>
           </div>
           <div class="cart-item__qty">
-            <form method="POST" action="{% url 'remover_item' item.id %}" class="qtd-form">
+            <form method="POST" action="{% url 'remover_item' item.id %}" class="qtd-form" data-qty-form>
               {% csrf_token %}
               <button type="submit" class="cart-item__qty-btn" title="Diminuir" aria-label="Diminuir quantidade">−</button>
             </form>
             <span class="cart-item__qty-num">{{ item.quantidade }}</span>
-            <form method="POST" action="{% url 'add_carrinho' item.produto.id %}" class="qtd-form">
+            <form method="POST" action="{% url 'add_carrinho' item.produto.id %}" class="qtd-form" data-qty-form>
               {% csrf_token %}
               <input type="hidden" name="next" value="carrinho">
               <input type="hidden" name="tamanho" value="{{ item.tamanho }}">
@@ -334,6 +334,23 @@
         event.preventDefault();
       }
     });
+  });
+
+  document.querySelectorAll('[data-qty-form]').forEach((form) => {
+    const button = form.querySelector('button[type="submit"]');
+    if (!button) return;
+
+    const submitQty = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (form.dataset.submitting === '1') return;
+      form.dataset.submitting = '1';
+      button.disabled = true;
+      form.requestSubmit ? form.requestSubmit() : form.submit();
+    };
+
+    button.addEventListener('pointerup', submitQty);
+    button.addEventListener('click', submitQty);
   });
 </script>
 
