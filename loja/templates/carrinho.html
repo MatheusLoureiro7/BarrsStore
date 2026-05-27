@@ -81,7 +81,7 @@
           </div>
         </div>
         <div class="cart-item__right">
-          <form method="POST" action="{% url 'deletar_item' item.id %}" class="remover-form" onsubmit="return confirm('Remover {{ item.produto.nome }}?')">
+          <form method="POST" action="{% url 'deletar_item' item.id %}" class="remover-form" data-confirm="Remover {{ item.produto.nome }}?">
             {% csrf_token %}
             <button type="submit" class="cart-item__remove" title="Remover" aria-label="Remover item">
               <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-trash"/></svg>
@@ -121,8 +121,8 @@
       <div class="shipping-block">
         <span class="shipping-block__label">Calcular frete</span>
         <div class="shipping-input-row">
-          <input type="text" id="cep-frete" class="shipping-input" placeholder="00000-000" maxlength="9" oninput="mascaraCepFrete(this)" aria-label="CEP">
-          <button type="button" class="shipping-btn" id="btn-calcular" onclick="calcularFrete()">Calcular</button>
+          <input type="text" id="cep-frete" class="shipping-input" placeholder="00000-000" maxlength="9" aria-label="CEP">
+          <button type="button" class="shipping-btn" id="btn-calcular">Calcular</button>
         </div>
         <div class="shipping-status" id="cep-status-frete"></div>
         <div class="frete-loading" id="frete-loading">
@@ -316,6 +316,25 @@
     document.getElementById('hidden-frete-service-id').value = serviceId;
     document.getElementById('btn-finalizar').disabled = false;
   }
+
+  const cepFreteInput = document.getElementById('cep-frete');
+  const calcularFreteBtn = document.getElementById('btn-calcular');
+
+  if (cepFreteInput) {
+    cepFreteInput.addEventListener('input', () => mascaraCepFrete(cepFreteInput));
+  }
+
+  if (calcularFreteBtn) {
+    calcularFreteBtn.addEventListener('click', calcularFrete);
+  }
+
+  document.querySelectorAll('.remover-form[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      if (!confirm(form.dataset.confirm || 'Remover item?')) {
+        event.preventDefault();
+      }
+    });
+  });
 </script>
 
 {% include "partials/lead_capture.html" %}
