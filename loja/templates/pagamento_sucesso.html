@@ -283,7 +283,7 @@
   var contentIds = [{% for item in pedido.itens.all %}'{{ item.produto_id|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}];
 
   fbq('track', 'Purchase', {
-    value: parseMoney('{{ pedido.total|unlocalize }}'),
+    value: parseMoney('{{ pedido.total|stringformat:"0.2f" }}'),
     currency: 'BRL',
     content_ids: contentIds,
     content_type: 'product',
