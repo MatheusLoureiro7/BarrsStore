@@ -81,7 +81,6 @@
           <div class="cko-field">
             <label>CPF</label>
             <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" maxlength="14" required
-              oninput="mascaraCpf(this)"
               value="{{ request.POST.cpf }}">
           </div>
           <div class="cko-field full">
@@ -109,9 +108,8 @@
             <label>CEP</label>
             <div class="cep-wrap">
               <input type="text" name="cep" id="cep" placeholder="00000-000" maxlength="9" required
-                oninput="mascaraCep(this)"
                 value="{% if request.POST.cep %}{{ request.POST.cep }}{% elif request.GET.cep %}{{ request.GET.cep|slice:':5' }}-{{ request.GET.cep|slice:'5:' }}{% elif perfil %}{{ perfil.cep }}{% endif %}">
-              <button type="button" class="cep-wrap__btn" onclick="buscarCep()">Buscar CEP</button>
+              <button type="button" class="cep-wrap__btn" id="btn-buscar-cep">Buscar CEP</button>
             </div>
             <div class="cep-status" id="cep-status"></div>
           </div>
@@ -210,7 +208,7 @@
         <label>Cupom de desconto</label>
         <div class="coupon-row">
           <input type="text" name="cupom_codigo" id="cupom_codigo" placeholder="Digite seu cupom" value="{{ request.POST.cupom_codigo }}">
-          <button type="button" class="coupon-btn" id="btn-cupom" onclick="aplicarCupom()">Aplicar</button>
+          <button type="button" class="coupon-btn" id="btn-cupom">Aplicar</button>
         </div>
         {% include "partials/turnstile_widget.html" %}
         <div class="coupon-status" id="cupom-status"></div>
@@ -475,6 +473,37 @@
       botao.textContent = 'Aplicar';
       if (window.turnstile) window.turnstile.reset();
     }
+  }
+
+  const cpfInput = document.getElementById('cpf');
+  const cepInputCheckout = document.getElementById('cep');
+  const buscarCepBtn = document.getElementById('btn-buscar-cep');
+  const cupomInput = document.getElementById('cupom_codigo');
+  const cupomBtn = document.getElementById('btn-cupom');
+
+  if (cpfInput) {
+    cpfInput.addEventListener('input', () => mascaraCpf(cpfInput));
+  }
+
+  if (cepInputCheckout) {
+    cepInputCheckout.addEventListener('input', () => mascaraCep(cepInputCheckout));
+  }
+
+  if (buscarCepBtn) {
+    buscarCepBtn.addEventListener('click', buscarCep);
+  }
+
+  if (cupomBtn) {
+    cupomBtn.addEventListener('click', aplicarCupom);
+  }
+
+  if (cupomInput) {
+    cupomInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        aplicarCupom();
+      }
+    });
   }
 </script>
 
