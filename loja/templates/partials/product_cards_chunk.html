@@ -1,6 +1,6 @@
 {% load cloudinary_extras %}
 {% for produto in produtos %}
-<article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}">
+<article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}" data-product-id="{{ produto.id }}">
   <div class="product-card__media{% if produto.imagem_2 %} product-card__media--swap{% endif %}">
     {% if produto.imagem %}
       <img

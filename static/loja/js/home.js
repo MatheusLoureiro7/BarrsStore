@@ -92,10 +92,71 @@
 })();
 
 
-// Meta Pixel: AddToCart quando clicar no "+" de qualquer card de produto.
+// AddToCart dos cards sem recarregar a pagina.
 // Usa event delegation para cobrir tambem cards adicionados via infinite scroll.
 (function () {
   if (typeof document === 'undefined') return;
+  const cartUrl = document.body?.dataset?.cartUrl || '/carrinho/';
+
+  function updateCartBadges(count) {
+    if (!Number.isFinite(count)) return;
+    document.body.dataset.cartCount = String(count);
+    document.querySelectorAll('.badge-count').forEach((badge) => {
+      badge.textContent = String(count);
+    });
+    document.querySelectorAll('a[href="' + cartUrl + '"], a[href="' + cartUrl.replace(/\/$/, '') + '"]').forEach((link) => {
+      let badge = link.querySelector('.badge-count');
+      if (!badge && count > 0) {
+        badge = document.createElement('span');
+        badge.className = 'badge-count';
+        link.appendChild(badge);
+      }
+      if (badge) badge.textContent = String(count);
+    });
+  }
+
+  function showAddFeedback(button, message) {
+    if (!button) return;
+    const original = button.textContent;
+    button.textContent = '✓';
+    button.classList.add('is-added');
+    button.setAttribute('aria-label', message || 'Produto adicionado ao carrinho');
+    window.setTimeout(() => {
+      button.textContent = original || '+';
+      button.classList.remove('is-added');
+    }, 1100);
+  }
+
+  function showBsToast(msg) {
+    let stack = document.querySelector('.bs-toast-stack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.className = 'bs-toast-stack';
+      stack.setAttribute('role', 'status');
+      stack.setAttribute('aria-live', 'polite');
+      document.body.appendChild(stack);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'bs-toast bs-toast--success';
+    toast.setAttribute('data-bs-toast', '');
+    toast.innerHTML =
+      '<svg class="bs-toast__icon" viewBox="0 0 24 24" aria-hidden="true">' +
+        '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
+        '<path d="m8 12 3 3 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>' +
+      '<span class="bs-toast__msg">' + msg + '</span>' +
+      '<button type="button" class="bs-toast__close" aria-label="Fechar" data-bs-toast-close>×</button>';
+    stack.appendChild(toast);
+    const close = toast.querySelector('[data-bs-toast-close]');
+    function dismiss() {
+      if (toast.classList.contains('is-leaving')) return;
+      toast.classList.add('is-leaving');
+      window.setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 240);
+    }
+    if (close) close.addEventListener('click', dismiss);
+    window.setTimeout(dismiss, 3600);
+  }
+
   document.addEventListener('submit', function (event) {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
@@ -110,6 +171,38 @@
       currency: 'BRL',
     });
   }, true);
+
+  document.addEventListener('submit', async function (event) {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    if (form.dataset.pixelAdd !== '1') return;
+    if (!('fetch' in window) || !('FormData' in window)) return;
+
+    event.preventDefault();
+    const button = form.querySelector('.product-card__add');
+    if (button) button.disabled = true;
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.erro || 'Nao foi possivel adicionar.');
+      updateCartBadges(Number(data.cart_count));
+      showAddFeedback(button, data.message);
+      showBsToast(data.message || 'Produto adicionado ao carrinho!');
+    } catch (error) {
+      form.submit();
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
 })();
 
 
@@ -157,7 +250,13 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       if (data && data.html) {
-        grid.insertAdjacentHTML('beforeend', data.html);
+        const template = document.createElement('template');
+        template.innerHTML = data.html.trim();
+        template.content.querySelectorAll('[data-product-id]').forEach((card) => {
+          const id = card.getAttribute('data-product-id');
+          if (!id || grid.querySelector('[data-product-id="' + id + '"]')) return;
+          grid.appendChild(card);
+        });
       }
       if (data && data.has_next && data.next_page) {
         nextPage = data.next_page;

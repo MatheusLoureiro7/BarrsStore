@@ -62,8 +62,8 @@ ul, ol { list-style: none; }
 :root {
   /* — CORES ————————————————————————————————————————— */
   /* Neutros */
-  --color-bg:           #F1F3E6;     /* fundo sálvia claro */
-  --color-bg-alt:       #E8ECD5;     /* fundo alternado sálvia claro */
+  --color-bg:           #F5F6EE;     /* fundo sálvia quase branco */
+  --color-bg-alt:       #EEF1E1;     /* fundo alternado sálvia suave */
   --color-surface:      #FFFFFF;     /* cards, inputs */
   --color-surface-alt:  #F5F5F5;     /* cards aninhados */
   --color-border:       #E5E5E5;     /* divisores e borders finos cinzas */
@@ -149,7 +149,7 @@ ul, ol { list-style: none; }
   --container:  1200px;
   --container-narrow: 760px;
   --container-text:   680px;
-  --nav-height: 52px;
+  --nav-height: 46px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -426,11 +426,11 @@ p { line-height: var(--leading-relaxed); }
   top: 0;
   z-index: 100;
   height: var(--nav-height);
-  background: rgba(241, 243, 230, 0.86);
+  background: rgba(245, 246, 238, 0.86);
   backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
   border-bottom: 1px solid transparent;
-  box-shadow: inset 0 -1px 0 rgba(241, 243, 230, 0.72);
+  box-shadow: inset 0 -1px 0 rgba(245, 246, 238, 0.72);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -442,12 +442,12 @@ p { line-height: var(--leading-relaxed); }
 }
 
 .nav.is-scrolled {
-  background: rgba(241, 243, 230, 0.98);
+  background: rgba(245, 246, 238, 0.98);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   border-bottom-color: rgba(107, 122, 100, 0.10);
   box-shadow:
-    inset 0 -1px 0 rgba(241, 243, 230, 0.78),
+    inset 0 -1px 0 rgba(245, 246, 238, 0.78),
     0 8px 28px rgba(63, 75, 58, 0.06);
 }
 
@@ -456,7 +456,7 @@ p { line-height: var(--leading-relaxed); }
   top: var(--nav-height);
   z-index: 90;
   width: 100%;
-  background: rgba(241, 243, 230, 0.92);
+  background: rgba(245, 246, 238, 0.92);
   border-bottom: 1px solid rgba(107, 122, 100, 0.12);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
@@ -552,8 +552,8 @@ p { line-height: var(--leading-relaxed); }
   letter-spacing: -0.015em;
 }
 .nav__logo img {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   object-fit: cover;
   mix-blend-mode: multiply;
@@ -646,16 +646,16 @@ p { line-height: var(--leading-relaxed); }
 
 @media (max-width: 640px) {
   .nav {
-    height: 56px;
+    height: 50px;
     padding: 0 0.875rem;
     display: grid;
     grid-template-columns: 44px 1fr 44px;
     align-items: center;
-    background: rgba(241, 243, 230, 0.96);
+    background: rgba(245, 246, 238, 0.96);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom-color: var(--color-border);
-    box-shadow: inset 0 -1px 0 rgba(241, 243, 230, 0.72), 0 2px 12px rgba(0, 0, 0, 0.02);
+    box-shadow: inset 0 -1px 0 rgba(245, 246, 238, 0.72), 0 2px 12px rgba(0, 0, 0, 0.02);
   }
   .nav__links { display: none; }
   .nav__logo {
@@ -665,7 +665,7 @@ p { line-height: var(--leading-relaxed); }
     line-height: 1;
     color: var(--color-ink);
   }
-  .nav__logo img { width: 32px; height: 32px; }
+  .nav__logo img { width: 28px; height: 28px; }
   .nav__right { display: none; }
   .nav__mobile-toggle,
   .nav__mobile-cart {
@@ -733,7 +733,7 @@ p { line-height: var(--leading-relaxed); }
     width: min(84vw, 340px);
     height: 100dvh;
     padding: 1rem 1.125rem 1.25rem;
-    background: rgba(241, 243, 230, 0.96);
+    background: rgba(245, 246, 238, 0.96);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-right: 1px solid rgba(255, 255, 255, 0.4);
@@ -1112,7 +1112,7 @@ p { line-height: var(--leading-relaxed); }
 /* Nav sticky ganha sombra micro ao scroll */
 .nav.is-scrolled {
   box-shadow:
-    inset 0 -1px 0 rgba(241, 243, 230, 0.78),
+    inset 0 -1px 0 rgba(245, 246, 238, 0.78),
     0 6px 22px rgba(63, 75, 58, 0.06),
     0 1px 0 rgba(107, 122, 100, 0.04);
 }
@@ -1171,7 +1171,7 @@ p { line-height: var(--leading-relaxed); }
   height: 5px;
   border-radius: 50%;
   background: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(241, 243, 230, 1), 0 0 12px rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 0 3px rgba(245, 246, 238, 1), 0 0 12px rgba(212, 175, 55, 0.35);
   transform: translate(-50%, -50%);
 }
 

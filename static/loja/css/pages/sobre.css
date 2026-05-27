@@ -247,3 +247,297 @@
   }
 }
 
+/* Premium about redesign */
+.about {
+  width: min(calc(100% - 40px), 960px);
+  max-width: 960px;
+  margin: clamp(2.25rem, 4vw, 3.5rem) auto var(--space-9);
+  padding: 0;
+}
+
+.about > h2:first-of-type {
+  max-width: 760px;
+  margin: 0 auto var(--space-3);
+  font-size: clamp(2.3rem, 4.2vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--color-ink);
+  text-align: center;
+}
+
+.about > h2:first-of-type::before {
+  content: "Sobre a Barrs";
+  display: block;
+  margin-bottom: var(--space-3);
+  color: var(--color-brand);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.about > h2:first-of-type + p {
+  max-width: 660px;
+  margin: 0 auto;
+  color: var(--color-ink-soft);
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.78;
+  text-align: center;
+}
+
+.about__divider {
+  width: min(100%, 760px);
+  margin: clamp(2rem, 4vw, 3rem) auto;
+  border-top: 1px solid rgba(107, 122, 100, 0.14);
+}
+
+.about > .about__divider:first-of-type + h2 {
+  max-width: 660px;
+  margin: 0 auto var(--space-3);
+  font-size: clamp(1.65rem, 2.8vw, 2.15rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: 0;
+  color: var(--color-ink);
+  text-align: center;
+}
+
+.about > .about__divider:first-of-type + h2 + p {
+  max-width: 660px;
+  margin: 0 auto;
+  color: var(--color-ink-muted);
+  font-size: var(--text-base);
+  line-height: 1.76;
+  text-align: center;
+}
+
+.about-quality {
+  width: min(100%, 920px);
+  margin: clamp(2.5rem, 5vw, 4rem) auto;
+  padding: clamp(1.35rem, 3vw, 2.25rem);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(212, 175, 55, 0.07), transparent 34%),
+    rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(107, 122, 100, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 22px 58px rgba(63, 75, 58, 0.07);
+}
+
+.about-quality__eyebrow,
+.about-section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  color: var(--color-brand);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.about-quality__title {
+  max-width: 620px;
+  font-size: clamp(1.85rem, 3.2vw, 2.55rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: 0;
+  color: var(--color-ink);
+  margin-bottom: var(--space-4);
+}
+
+.about-quality__lead {
+  max-width: 680px;
+  margin-bottom: var(--space-6);
+  color: var(--color-ink-muted);
+  font-size: var(--text-base);
+  line-height: 1.72;
+}
+
+.quality-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.quality-card {
+  min-height: 0;
+  padding: var(--space-4);
+  gap: var(--space-2);
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(107, 122, 100, 0.13);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.quality-card:hover {
+  border-color: rgba(107, 122, 100, 0.3);
+  box-shadow: 0 16px 38px rgba(63, 75, 58, 0.075);
+  transform: translateY(-2px);
+}
+
+.quality-card__icon,
+.value-card__icon {
+  width: 34px;
+  height: 34px;
+  margin-bottom: var(--space-2);
+  background: rgba(107, 122, 100, 0.08);
+  box-shadow: none;
+}
+
+.quality-card__name {
+  color: var(--color-ink);
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.quality-card__text {
+  color: var(--color-ink-muted);
+  font-size: 0.82rem;
+  line-height: 1.62;
+}
+
+.quality-card__note {
+  margin-top: var(--space-2);
+  font-size: 0.62rem;
+  letter-spacing: 0.11em;
+}
+
+.about > .about__divider:nth-of-type(2) {
+  display: none;
+}
+
+.about > .about__divider:nth-of-type(2) + h2 {
+  max-width: 760px;
+  margin: clamp(1.5rem, 4vw, 3rem) auto var(--space-4);
+  color: var(--color-ink);
+  font-size: clamp(1.7rem, 2.8vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.values {
+  width: min(100%, 820px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.value-card {
+  min-height: 160px;
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.54);
+  border: 1px solid rgba(107, 122, 100, 0.13);
+  border-radius: 10px;
+  transition: border-color var(--duration) var(--ease),
+              box-shadow var(--duration) var(--ease),
+              transform var(--duration) var(--ease);
+}
+
+.value-card:hover {
+  border-color: rgba(107, 122, 100, 0.3);
+  box-shadow: 0 14px 34px rgba(63, 75, 58, 0.065);
+  transform: translateY(-2px);
+}
+
+.value-card__title {
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 750;
+}
+
+.value-card__desc {
+  color: var(--color-ink-muted);
+  font-size: 0.8rem;
+  line-height: 1.62;
+}
+
+.cta-box {
+  width: min(100%, 760px);
+  margin: clamp(2.25rem, 5vw, 4rem) auto 0;
+  padding: clamp(1.5rem, 3vw, 2.3rem);
+  text-align: center;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(212, 175, 55, 0.06), transparent 38%),
+    rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(107, 122, 100, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 18px 46px rgba(63, 75, 58, 0.06);
+}
+
+.cta-box h2 {
+  color: var(--color-ink);
+  font-size: clamp(1.65rem, 2.8vw, 2.2rem);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.cta-box p {
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--color-ink-muted);
+  line-height: 1.65;
+}
+
+.cta-btn {
+  min-height: 46px;
+  padding: 0.8rem 1.45rem;
+  border-radius: 8px;
+  background: var(--color-brand);
+  box-shadow: 0 12px 26px rgba(63, 75, 58, 0.13);
+}
+
+.cta-btn:hover {
+  background: var(--color-ink);
+  box-shadow: 0 16px 32px rgba(63, 75, 58, 0.18);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .about {
+    width: min(calc(100% - 32px), 960px);
+    margin-top: var(--space-6);
+  }
+
+  .quality-grid,
+  .values {
+    grid-template-columns: 1fr;
+  }
+
+  .value-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .about > h2:first-of-type,
+  .about > h2:first-of-type + p,
+  .about > .about__divider:first-of-type + h2,
+  .about > .about__divider:first-of-type + h2 + p {
+    text-align: left;
+  }
+
+  .about-quality {
+    padding: var(--space-4);
+  }
+
+  .quality-grid {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .quality-card {
+    flex: initial;
+  }
+}
+

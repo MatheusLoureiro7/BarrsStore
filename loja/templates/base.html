@@ -15,18 +15,18 @@
 {% inline_static 'loja/css/base.css' %}
 {% inline_static 'loja/css/components/lead_capture.css' %}
 :root {
-  --color-bg: #F1F3E6;
-  --color-bg-alt: #E8ECD5;
+  --color-bg: #F5F6EE;
+  --color-bg-alt: #EEF1E1;
 }
 html,
 body {
-  background: #F1F3E6 !important;
+  background: #F5F6EE !important;
 }
 .nav {
-  background: rgba(241, 243, 230, 0.86) !important;
+  background: rgba(245, 246, 238, 0.86) !important;
 }
 .nav.is-scrolled {
-  background: rgba(241, 243, 230, 0.98) !important;
+  background: rgba(245, 246, 238, 0.98) !important;
 }
 /* Skip-to-content (a11y): invisivel ate receber foco via Tab. */
 .skip-link {
@@ -51,6 +51,54 @@ body {
 }
 </style>
 {% block page_css %}{% endblock %}
+<style>
+/* Institutional layout guard: keeps content pages readable and centered. */
+:where(.policy, .delivery, .track) {
+  width: min(calc(100% - 32px), 720px) !important;
+  max-width: 720px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.warranty {
+  width: min(calc(100% - 32px), 1100px) !important;
+  max-width: 1100px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+:where(.measure-hero, .measure-tips) {
+  width: min(calc(100% - 32px), 1180px) !important;
+  max-width: 1180px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.measure-cta {
+  width: min(calc(100% - 32px), 1100px) !important;
+  max-width: 1100px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+:where(.info-cards, .quality-grid, .values, .warranty-grid, .steps-grid, .faq__grid, .measure-tips) > * {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .measure-hero {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
 <link rel="icon" type="image/png" sizes="32x32" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_fill,w_32,h_32,q_auto,f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <link rel="icon" type="image/png" sizes="192x192" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_fill,w_192,h_192,q_auto,f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">
 <link rel="apple-touch-icon" sizes="180x180" href="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_fill,w_180,h_180,q_auto,f_png/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png">

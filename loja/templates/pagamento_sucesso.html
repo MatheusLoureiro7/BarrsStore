@@ -265,3 +265,32 @@
 
 </main>
 {% endblock %}
+
+{% block scripts %}
+<script nonce="{{ csp_nonce }}">
+(function () {
+  if (typeof fbq !== 'function') return;
+  var storageKey = 'meta_purchase_{{ pedido.id|escapejs }}';
+  if (sessionStorage.getItem(storageKey)) return;
+
+  function parseMoney(v) {
+    var s = String(v || '0').trim();
+    s = s.indexOf(',') !== -1 ? s.replace(/\./g, '').replace(',', '.') : s;
+    var n = parseFloat(s);
+    return isFinite(n) ? n : 0;
+  }
+
+  var contentIds = [{% for item in pedido.itens.all %}'{{ item.produto_id|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  fbq('track', 'Purchase', {
+    value: parseMoney('{{ pedido.total|unlocalize }}'),
+    currency: 'BRL',
+    content_ids: contentIds,
+    content_type: 'product',
+    order_id: '{{ pedido.id }}'
+  }, { eventID: '{{ meta_event_id|escapejs }}' });
+
+  sessionStorage.setItem(storageKey, '1');
+})();
+</script>
+{% endblock %}

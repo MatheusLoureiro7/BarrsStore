@@ -1462,7 +1462,7 @@ def home(request):
         'conjunto': ['conjunto', 'conjuntos'],
     }
 
-    produtos = Produto.objects.filter(visivel=True)
+    produtos = Produto.objects.filter(visivel=True).distinct()
 
     if busca:
         produtos = produtos.filter(
@@ -1475,13 +1475,13 @@ def home(request):
         produtos = produtos.filter(categoria__slug__in=categoria_aliases.get(categoria_slug, [categoria_slug]))
 
     if ordem == 'menor':
-        produtos = produtos.order_by('-destaque', 'preco', '-criado_em')
+        produtos = produtos.order_by('-destaque', 'preco', '-criado_em', '-id')
     elif ordem == 'maior':
-        produtos = produtos.order_by('-destaque', '-preco', '-criado_em')
+        produtos = produtos.order_by('-destaque', '-preco', '-criado_em', '-id')
     elif ordem == 'nome':
-        produtos = produtos.order_by('-destaque', 'nome', '-criado_em')
+        produtos = produtos.order_by('-destaque', 'nome', '-criado_em', '-id')
     else:
-        produtos = produtos.order_by('-destaque', '-criado_em')
+        produtos = produtos.order_by('-destaque', '-criado_em', '-id')
 
     # Cache do count() (query potencialmente cara em catalogo grande). TTL 60s.
     # Vary por filtros que mudam o resultado.
@@ -1800,7 +1800,13 @@ def calcular_frete_melhor_envio(request):
 @ratelimit(key='ip', rate='20/m', method='POST', block=True)
 def adicionar_carrinho(request, produto_id):
     produto = get_object_or_404(Produto, id=produto_id)
+    wants_json = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        or 'application/json' in request.headers.get('accept', '')
+    )
     if not produto.visivel or produto.estoque <= 0:
+        if wants_json:
+            return JsonResponse({'ok': False, 'erro': 'Este produto esta indisponivel no momento.'}, status=400)
         messages.error(request, 'Este produto esta indisponivel no momento.')
         return redirect('home')
 
@@ -1825,6 +1831,8 @@ def adicionar_carrinho(request, produto_id):
     if tamanho:
         tamanho_obj = TamanhoAnel.objects.filter(produto=produto, numero=tamanho).first()
         if not tamanho_obj or tamanho_obj.estoque <= 0:
+            if wants_json:
+                return JsonResponse({'ok': False, 'erro': 'Este tamanho esta indisponivel no momento.'}, status=400)
             messages.error(request, 'Este tamanho esta indisponivel no momento.')
             return redirect(produto.get_absolute_url())
         estoque_disponivel = min(estoque_disponivel, tamanho_obj.estoque)
@@ -1838,6 +1846,8 @@ def adicionar_carrinho(request, produto_id):
     quantidade_atual = 0 if criado else item.quantidade
     quantidade_permitida = max(estoque_disponivel - quantidade_atual, 0)
     if quantidade_permitida <= 0:
+        if wants_json:
+            return JsonResponse({'ok': False, 'erro': 'Voce ja adicionou todo o estoque disponivel deste produto.'}, status=400)
         messages.error(request, 'Voce ja adicionou todo o estoque disponivel deste produto.')
         return redirect('carrinho')
     quantidade = min(quantidade, quantidade_permitida)
@@ -1860,6 +1870,13 @@ def adicionar_carrinho(request, produto_id):
         send_add_to_cart_event(produto, request, event_id)
     except Exception:
         logger.debug('[META CAPI] AddToCart silencioso (nao quebra fluxo de carrinho).', exc_info=True)
+
+    if wants_json:
+        return JsonResponse({
+            'ok': True,
+            'message': f'{produto.nome} adicionado ao carrinho.',
+            'cart_count': get_carrinho_info(request),
+        })
 
     messages.success(request, f'{produto.nome} adicionado ao carrinho.')
 
@@ -2479,7 +2496,7 @@ def pagamento_sucesso(request, pedido_id, token):
     # polling atualiza assim que o status chegar.
     if pedido.status != 'confirmado':
         return redirect('pagamento_pendente', pedido_id=pedido.id, token=pedido.access_token)
-    context = {'pedido': pedido}
+    context = {'pedido': pedido, 'meta_event_id': f'purchase_{pedido.id}'}
     context.update(noindex_context(request, 'Pagamento - Barrs Store'))
     return render(request, 'pagamento_sucesso.html', context)
 

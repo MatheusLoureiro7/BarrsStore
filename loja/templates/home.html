@@ -196,7 +196,7 @@
   </header>
   <div class="product-grid">
     {% for produto in produtos|slice:":4" %}
-    <article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}">
+    <article class="product-card{% if not produto.disponivel %} product-card--sold-out{% endif %}" data-product-id="{{ produto.id }}">
       <div class="product-card__media{% if produto.imagem_2 %} product-card__media--swap{% endif %}">
         {% if produto.imagem %}
           <img class="product-card__img product-card__img--primary"
@@ -468,7 +468,6 @@
   </svg>
 </a>
 
-<script src="{% static 'loja/js/home.js' %}" defer></script>
 <script nonce="{{ csp_nonce }}">
 {% inline_static 'loja/js/home.js' %}
 </script>

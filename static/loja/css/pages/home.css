@@ -774,6 +774,11 @@
   box-shadow: 0 8px 18px rgba(107, 122, 100, 0.14);
   transform: translateY(-1px);
 }
+.product-card__add.is-added {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: #fff;
+}
 .product-card__add:active { transform: translateY(0) scale(0.96); }
 .product-card__add--disabled {
   color: var(--color-ink-muted);

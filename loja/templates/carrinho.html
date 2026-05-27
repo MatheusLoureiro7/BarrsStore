@@ -30,21 +30,28 @@
 
 <main class="cart-page">
   <header class="cart-head">
-    <h1>Carrinho</h1>
-    {% if itens %}
-      <span class="cart-head__count">{{ itens|length }} {% if itens|length == 1 %}item{% else %}itens{% endif %}</span>
-    {% endif %}
+    <div>
+      <h1>Carrinho</h1>
+      {% if itens %}
+        <p>{{ itens|length }} {% if itens|length == 1 %}item no seu carrinho{% else %}itens no seu carrinho{% endif %}</p>
+      {% endif %}
+    </div>
+    <a href="/" class="cart-head__continue">
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+      Continuar comprando
+    </a>
   </header>
 
   {% if itens %}
   <div class="cart-grid">
     <!-- LISTA DE ITENS -->
+    <section class="cart-main-panel" aria-label="Itens do carrinho">
     <div class="cart-list">
       {% for item in itens %}
       <article class="cart-item">
         <div class="cart-item__media">
           {% if item.produto.imagem %}
-            <img src="{{ item.produto.imagem|cloudinary_url:'c_fill,w_168,h_168,q_auto,f_auto' }}" alt="{{ item.produto.alt_text }}" width="84" height="84" loading="lazy" decoding="async">
+            <img src="{{ item.produto.imagem|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }}" alt="{{ item.produto.alt_text }}" width="120" height="120" loading="lazy" decoding="async">
           {% else %}
             <div class="cart-item__placeholder">
               <svg class="icon" style="width:28px;height:28px" aria-hidden="true"><use href="#i-gem"/></svg>
@@ -55,6 +62,10 @@
           <div class="cart-item__name">{{ item.produto.nome }}</div>
           <div class="cart-item__unit">R$ {{ item.produto.preco }} / unidade</div>
           {% if item.tamanho %}<div class="cart-item__size">Tamanho {{ item.tamanho }}</div>{% endif %}
+          <div class="cart-item__details" aria-label="Diferenciais do produto">
+            <span><svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg> Banho premium</span>
+            <span><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg> Antialérgico</span>
+          </div>
           <div class="cart-item__qty">
             <form method="POST" action="{% url 'remover_item' item.id %}" class="qtd-form">
               {% csrf_token %}
@@ -82,6 +93,26 @@
       {% endfor %}
     </div>
 
+    <div class="cart-benefits" aria-label="Diferenciais Barrs Store">
+      <div class="cart-benefit">
+        <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+        <div><strong>Garantia de 1 ano</strong><span>Contra defeitos de fabricação</span></div>
+      </div>
+      <div class="cart-benefit">
+        <svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg>
+        <div><strong>Antialérgico</strong><span>Livre de níquel e metais pesados</span></div>
+      </div>
+      <div class="cart-benefit">
+        <svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg>
+        <div><strong>Banho premium</strong><span>Brilho intenso e duradouro</span></div>
+      </div>
+      <div class="cart-benefit">
+        <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+        <div><strong>Entrega para todo Brasil</strong><span>Envio rápido e seguro</span></div>
+      </div>
+    </div>
+    </section>
+
     <!-- RESUMO -->
     <aside class="summary">
       <h2>Resumo do pedido</h2>
@@ -108,6 +139,7 @@
         <span>Frete</span>
         <span id="frete-display" class="frete-pendente">informe o CEP</span>
       </div>
+      <div class="summary-row summary-row--muted"><span>Descontos</span><span>-</span></div>
       <hr class="summary-divider">
       <div class="summary-total"><span>Total</span><span id="total-display">R$ {{ total }}</span></div>
 
@@ -117,9 +149,47 @@
         <input type="hidden" name="frete_nome" id="hidden-frete-nome">
         <input type="hidden" name="frete_service_id" id="hidden-frete-service-id">
         <button type="submit" class="summary-cta" id="btn-finalizar" disabled>
+          <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
           Finalizar compra
         </button>
       </form>
+      <div class="cart-trust" aria-label="Garantias de segurança">
+        <div class="cart-trust__item">
+          <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+          <span>Compra protegida</span>
+        </div>
+        <div class="cart-trust__sep" aria-hidden="true"></div>
+        <div class="cart-trust__item">
+          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+          <span>SSL 256-bit</span>
+        </div>
+        <div class="cart-trust__sep" aria-hidden="true"></div>
+        <div class="cart-trust__item">
+          <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+          <span>30 dias para trocar</span>
+        </div>
+      </div>
+      <hr class="summary-divider">
+      <div class="payment-box">
+        <span>Formas de pagamento</span>
+        <div class="payment-badges" aria-label="Formas de pagamento aceitas">
+          <div class="payment-badge" title="PIX">
+            <span class="pay-pix">PIX</span>
+          </div>
+          <div class="payment-badge" title="Visa">
+            <span class="pay-visa">VISA</span>
+          </div>
+          <div class="payment-badge" title="Mastercard">
+            <svg viewBox="0 0 40 26" width="40" height="26" aria-label="Mastercard" role="img">
+              <circle cx="15" cy="13" r="11" fill="#EB001B"/>
+              <circle cx="25" cy="13" r="11" fill="#F79E1B" opacity="0.88"/>
+            </svg>
+          </div>
+          <div class="payment-badge" title="American Express">
+            <span class="pay-amex">AMEX</span>
+          </div>
+        </div>
+      </div>
       <a href="/" class="summary-back">← Continuar comprando</a>
     </aside>
   </div>
