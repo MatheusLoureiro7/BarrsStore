@@ -1,5 +1,6 @@
 ﻿from pathlib import Path
 import os
+import logging
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 from urllib.parse import urlparse
@@ -297,9 +298,23 @@ MERCADOPAGO_WEBHOOK_STRICT = True if not DEBUG else (
     os.environ.get('MP_WEBHOOK_STRICT', 'False') == 'True'
 )
 
+class _BotNoiseFilter(logging.Filter):
+    """Silencia requisições de bots/scanners em paths conhecidos como ruído."""
+    _MUTED_PATHS = {'/meta.json', '/favicon.ico', '/.env', '/robots.txt'}
+
+    def filter(self, record):
+        msg = record.getMessage()
+        return not any(path in msg for path in self._MUTED_PATHS)
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'bot_noise': {
+            '()': 'barrs_store.settings._BotNoiseFilter',
+        },
+    },
     'formatters': {
         'railway': {
             'format': '[{levelname}] {asctime} {name}: {message}',
@@ -310,6 +325,7 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'railway',
+            'filters': ['bot_noise'],
         },
     },
     'root': {
