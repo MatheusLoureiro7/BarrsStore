@@ -229,12 +229,13 @@ CONTENT_SECURITY_POLICY = os.environ.get(
     "frame-ancestors 'none'; "
     # Sem 'unsafe-inline' (nonces cobrem todos os scripts inline proprios).
     # 'unsafe-eval' mantido pois o SDK do Mercado Pago precisa.
-    "script-src 'self' 'nonce-{nonce}' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-    "font-src 'self' data: https://fonts.gstatic.com; "
-    "img-src 'self' data: blob: https://res.cloudinary.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com; "
-    "connect-src 'self' https://api.mercadopago.com https://*.mercadopago.com https://viacep.com.br https://www.facebook.com https://graph.facebook.com https://www.google-analytics.com https://analytics.google.com https://challenges.cloudflare.com; "
-    "frame-src 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br https://challenges.cloudflare.com; "
+    "script-src 'self' 'nonce-{nonce}' 'unsafe-eval' https://sdk.mercadopago.com https://*.mercadopago.com https://*.mercadopago.com.br https://*.mercadolibre.com https://*.mercadolibre.com.br https://*.mlstatic.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.mercadopago.com https://*.mercadopago.com.br https://*.mlstatic.com; "
+    "font-src 'self' data: https://fonts.gstatic.com https://*.mlstatic.com; "
+    "img-src 'self' data: blob: https://res.cloudinary.com https://*.mercadopago.com https://*.mercadopago.com.br https://*.mercadolibre.com https://*.mercadolibre.com.br https://*.mlstatic.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com; "
+    "connect-src 'self' https://api.mercadopago.com https://*.mercadopago.com https://*.mercadopago.com.br https://*.mercadolibre.com https://*.mercadolibre.com.br https://*.mlstatic.com https://viacep.com.br https://www.facebook.com https://graph.facebook.com https://www.google-analytics.com https://analytics.google.com https://challenges.cloudflare.com; "
+    "frame-src 'self' https://*.mercadopago.com https://*.mercadopago.com.br https://*.mercadolibre.com https://*.mercadolibre.com.br https://www.mercadopago.com https://www.mercadopago.com.br https://challenges.cloudflare.com; "
+    "worker-src 'self' blob:; "
     "form-action 'self' https://*.mercadopago.com https://www.mercadopago.com https://www.mercadopago.com.br"
 ).strip()
 # Default seguro: enforce em prod automaticamente; dev fica em report-only para
