@@ -1,7 +1,7 @@
 ﻿.lead-gate {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
     display: grid;
     place-items: center;
     padding: 20px;
