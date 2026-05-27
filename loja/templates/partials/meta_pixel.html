@@ -1,9 +1,10 @@
-<!-- Meta Pixel: carrega após idle para não bloquear FCP/LCP -->
+<!-- Meta Pixel: carrega somente após interação do usuário ou 3 s -->
 <script nonce="{{ csp_nonce }}">
 (function(){
+  var _loaded=false;
   function _fbLoad(){
-    if(window._fbpLoaded)return;
-    window._fbpLoaded=true;
+    if(_loaded)return;
+    _loaded=true;
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -15,11 +16,10 @@
     fbq('init','1413794504078637');
     fbq('track','PageView');
   }
-  if('requestIdleCallback' in window){
-    requestIdleCallback(_fbLoad,{timeout:4000});
-  } else {
-    setTimeout(_fbLoad,3500);
-  }
+  ['scroll','click','touchstart'].forEach(function(e){
+    window.addEventListener(e,_fbLoad,{once:true,passive:true});
+  });
+  setTimeout(_fbLoad,3000);
 })();
 </script>
 <noscript><img height="1" width="1" style="display:none"
