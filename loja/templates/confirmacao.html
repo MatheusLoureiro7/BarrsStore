@@ -266,6 +266,9 @@
   const pixStatusEl  = document.getElementById('mp-pix-status-link');
   const csrfToken    = '{{ csrf_token }}';
   const statusUrl    = '{% url "status_pagamento" pedido.id pedido.access_token %}';
+  const isIosSafari  = /iP(hone|ad|od)/.test(navigator.userAgent)
+    && /Safari/.test(navigator.userAgent)
+    && !/(CriOS|FxiOS|EdgiOS)/.test(navigator.userAgent);
   let statusTimerId  = null;
   let statusInFlight = false;
   let statusStartedAt = 0;
@@ -460,6 +463,13 @@
       if (prefData.init_point) {
         diretoLinkEl.href    = prefData.init_point;
         diretoEl.style.display = 'block';
+
+        if (isIosSafari) {
+          loadingEl.style.display = 'none';
+          showStatus('Abrindo ambiente seguro do Mercado Pago...');
+          window.location.href = prefData.init_point;
+          return;
+        }
       }
 
       // preferenceId nao e usado: o Brick exigiria mercadoPago em paymentMethods,
@@ -474,6 +484,10 @@
             firstName: '{{ pedido.nome|escapejs }}'.split(' ')[0] || '',
             lastName:  '{{ pedido.nome|escapejs }}'.split(' ').slice(1).join(' '),
             email:     '{{ pedido.email|escapejs }}',
+            identification: {
+              type: 'CPF',
+              number: '{{ pedido.cpf|escapejs }}'.replace(/\D/g, ''),
+            },
           },
         },
 
