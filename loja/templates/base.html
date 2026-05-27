@@ -6,11 +6,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6B7A64">
 <title>{% block title %}Barrs Store{% endblock %}</title>
-{% include "partials/seo_head.html" %}
-{% block extra_head %}{% endblock %}
+<!-- Preconnects antecipados: DNS + TLS antes de qualquer recurso externo -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+<link rel="dns-prefetch" href="https://connect.facebook.net">
+<!-- Google Fonts: carga não-bloqueante (print → all no onload) + variantes reduzidas -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@500;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@500;700&display=swap"></noscript>
+{% include "partials/seo_head.html" %}
+{% block extra_head %}{% endblock %}
 <style>
 {% inline_static 'loja/css/base.css' %}
 {% inline_static 'loja/css/components/lead_capture.css' %}
@@ -134,7 +140,6 @@ body {
 </div>
 {% endif %}
 {% block content %}{% endblock %}
-<script src="{% static 'loja/js/base.js' %}" defer></script>
 <script nonce="{{ csp_nonce }}">
 {% inline_static 'loja/js/base.js' %}
 </script>

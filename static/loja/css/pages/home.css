@@ -9,12 +9,7 @@
   min-height: clamp(480px, 72vh, 680px);
   display: flex;
   align-items: center;
-  background:
-    linear-gradient(90deg,
-      rgba(107, 122, 100, 0.35) 0%,
-      rgba(0, 0, 0, 0.12) 28%,
-      rgba(255, 255, 255, 0) 56%),
-    url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778588404/ChatGPT_Image_12_05_2026_09_19_44_ntbqwn.png') center right/cover no-repeat;
+  background: var(--color-brand-bg);
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
@@ -852,13 +847,7 @@
   .hero {
     min-height: clamp(440px, 56vh, 540px);
     align-items: flex-end;
-    background:
-      linear-gradient(to top,
-        rgba(71, 85, 67, 0.65) 0%,
-        rgba(107, 122, 100, 0.4) 34%,
-        rgba(107, 122, 100, 0.08) 61%,
-        rgba(255, 255, 255, 0) 100%),
-      url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1778616354/ChatGPT_Image_12_de_mai._de_2026_17_05_01_fpgqbc.png') center 42%/cover no-repeat;
+    background: var(--color-brand-bg);
     display: flex;
     padding: 0;
     margin-top: 0;
