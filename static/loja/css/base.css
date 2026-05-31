@@ -161,7 +161,6 @@ body {
   line-height: var(--leading-normal);
   color: var(--color-ink-soft);
   background: var(--color-bg);
-  background-attachment: fixed;
   font-feature-settings: "kern", "liga";
 }
 

@@ -22,7 +22,7 @@ body > .lead-gate {
   z-index: 9999 !important;
   display: grid !important;
   place-items: center !important;
-  overflow-y: auto;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
