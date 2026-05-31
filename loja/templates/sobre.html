@@ -3,6 +3,13 @@
 
 {% block title %}Sobre — Barrs Store{% endblock %}
 
+{% block extra_head %}
+<link rel="preload" as="image"
+  href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_900/v1779995380/Heroprincipal_cii1k3.png"
+  media="(max-width: 767px)"
+  fetchpriority="high">
+{% endblock %}
+
 {% block page_css %}<style>
 {% inline_static 'loja/css/pages/sobre.css' %}
 </style>{% endblock %}
@@ -36,90 +43,142 @@
 </nav>
 {% include "partials/category_nav.html" %}
 
-<main class="about">
-  <h2>Nossa história</h2>
-  <p>A Barrs Store nasceu da paixão por acessórios e da percepção de como os detalhes mudam tudo. Um mesmo visual ganha outra presença quando os acessórios entram em cena. Foi dessa observação do dia a dia que surgiu a marca: valorizar o impacto dos detalhes na forma de se expressar. Mais do que peças, queremos destacar a personalidade.</p>
+<main class="about-page" id="conteudo-principal">
 
-  <hr class="about__divider">
+  {# ── 1. HERO PRINCIPAL ────────────────────────────────────────── #}
+  <section class="about-hero" aria-label="Sobre a Barrs Store">
+    <div class="about-hero__bg-wrapper">
+      <picture class="about-hero__picture">
+        <source media="(max-width: 767px)"
+          srcset="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_900/v1779995380/Heroprincipal_cii1k3.png">
+        <img
+          src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_1800/v1779995380/Heroprincipal_cii1k3.png"
+          alt=""
+          class="about-hero__img"
+          loading="eager"
+          decoding="async"
+          fetchpriority="high">
+      </picture>
+      <div class="about-hero__overlay"></div>
+    </div>
 
-  <h2>Quem somos</h2>
-  <p>Somos uma loja especializada em semijoias modernas e exclusivas, com foco em qualidade e estilo. Cada peça é cuidadosamente selecionada para garantir que você se sinta especial em qualquer ocasião. Cada peça carrega estilo, identidade e presença — porque se destacar não tem padrão.</p>
-
-  <section class="about-quality" aria-labelledby="quality-title">
-    <div class="about-quality__eyebrow">Qualidade Barrs</div>
-    <h2 class="about-quality__title" id="quality-title">Banhos premium para semijoias que duram mais</h2>
-    <p class="about-quality__lead">Cada peça é selecionada para entregar brilho, conforto e acabamento refinado. A Barrs Store combina camadas nobres, verniz protetor e tecnologia antialérgica para uma experiência de joalheria moderna no dia a dia.</p>
-
-    <div class="quality-grid" aria-label="Detalhes de qualidade das semijoias">
-      <article class="quality-card">
-        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg></span>
-        <h3 class="quality-card__name">Ouro 18K</h3>
-        <p class="quality-card__text">Banho dourado com cerca de 7 milésimos de ouro 18k, acabamento premium e brilho intenso.</p>
-        <span class="quality-card__note">Dourado sofisticado</span>
-      </article>
-      <article class="quality-card">
-        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg></span>
-        <h3 class="quality-card__name">Banho em prata</h3>
-        <p class="quality-card__text">Cerca de 50 milésimos de prata, com brilho sofisticado e acabamento premium.</p>
-        <span class="quality-card__note">Brilho refinado</span>
-      </article>
-      <article class="quality-card">
-        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg></span>
-        <h3 class="quality-card__name">Antialérgico</h3>
-        <p class="quality-card__text">Tecnologia livre de níquel para mais conforto no uso e cuidado com a pele.</p>
-        <span class="quality-card__note">Livre de níquel</span>
-      </article>
-      <article class="quality-card">
-        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg></span>
-        <h3 class="quality-card__name">Verniz protetor</h3>
-        <p class="quality-card__text">Verniz importado que ajuda a preservar o banho, o brilho e a durabilidade da peça.</p>
-        <span class="quality-card__note">Maior durabilidade</span>
-      </article>
-      <article class="quality-card">
-        <span class="quality-card__icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span>
-        <h3 class="quality-card__name">Garantia Barrs</h3>
-        <p class="quality-card__text">Garantia da loja contra defeitos de fabricação e orientação de cuidados com as peças.</p>
-        <span class="quality-card__note">Compra segura</span>
-      </article>
+    <div class="about-hero__container" data-reveal>
+      <span class="about-hero__eyebrow">Barrs Store · Desde 2024</span>
+      <h1 class="about-hero__title">Semijoias feitas para<br><em>destacar sua presença.</em></h1>
+      <p class="about-hero__subtitle">Peças sofisticadas para mulheres que valorizam elegância nos detalhes.</p>
+      <div class="about-hero__actions">
+        <a href="/#produtos" class="btn-editorial btn-editorial--dark" id="btn-hero-colecao">
+          Conhecer coleção
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+        </a>
+      </div>
     </div>
   </section>
 
-  <hr class="about__divider">
+  {# ── 2. NOSSA HISTÓRIA ────────────────────────────────────────── #}
+  <section class="about-story" aria-labelledby="story-title" data-reveal="rise">
+    <div class="about-story__container">
+      <div class="about-story__grid">
 
-  <h2>Nossos valores</h2>
-  <div class="values">
-    <div class="value-card">
-      <div class="value-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-gem"/></svg>
-      </div>
-      <div class="value-card__title">Qualidade</div>
-      <div class="value-card__desc">Selecionamos cada peça com cuidado para garantir durabilidade e beleza.</div>
-    </div>
-    <div class="value-card">
-      <div class="value-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-truck"/></svg>
-      </div>
-      <div class="value-card__title">Entrega rápida</div>
-      <div class="value-card__desc">Frete facilitado para todo o Brasil, com entrega ágil e segura.</div>
-    </div>
-    <div class="value-card">
-      <div class="value-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-whatsapp"/></svg>
-      </div>
-      <div class="value-card__title">Atendimento</div>
-      <div class="value-card__desc">Atendimento humanizado e rápido pelo WhatsApp para todas as suas dúvidas.</div>
-    </div>
-  </div>
+        <div class="about-story__content">
+          <span class="about-section-eyebrow">Nossa história</span>
+          <h2 id="story-title" class="about-section-title">A beleza que<br><em>reside nos detalhes</em></h2>
+          <p class="about-story__text">
+            A Barrs Store nasceu de uma certeza: detalhes mudam absolutamente tudo. Uma peça cuidadosamente selecionada tem o poder de realçar o que já existe em você — trazendo confiança, presença e sofisticação à sua rotina.
+          </p>
+          <p class="about-story__text">
+            Mais do que semijoias, oferecemos uma extensão da sua personalidade. Peças feitas para durar, para se destacar e para contar a sua história com elegância.
+          </p>
+          <a href="/#produtos" class="btn-editorial" id="btn-story-colecao">
+            Ver coleção
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </a>
+        </div>
 
-  <div class="cta-box">
-    <h2>Pronta para se destacar?</h2>
-    <p>Conheça nossa coleção e encontre o acessório perfeito para você.</p>
-    <a href="/#produtos" class="cta-btn">
-      Ver coleção
-      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-arrow-right"/></svg>
-    </a>
-  </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── 3. PILARES — COLUNAS EDITORIAIS NUMERADAS ────────────────── #}
+  <section class="about-pillars" aria-label="Os três pilares Barrs" data-reveal>
+    <div class="about-pillars__container">
+
+      <header class="about-pillars__header">
+        <span class="about-section-eyebrow">Tradição &amp; Cuidado</span>
+        <h2 class="about-section-title">Os três pilares Barrs</h2>
+        <p class="about-pillars__lead">Uma experiência pensada em cada detalhe, do banho da peça até a embalagem na sua porta.</p>
+      </header>
+
+      <div class="about-pillars__grid">
+
+        <article class="pillar-col" data-reveal="rise" data-reveal-delay="1">
+          <span class="pillar-col__num" aria-hidden="true">01</span>
+          <div class="pillar-col__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg>
+          </div>
+          <h3 class="pillar-col__title">Banhos Premium</h3>
+          <p class="pillar-col__text">Ouro 18K (7 milésimos) ou Prata (50 milésimos) com verniz protetor importado para brilho intenso e alta durabilidade.</p>
+        </article>
+
+        <article class="pillar-col" data-reveal="rise" data-reveal-delay="2">
+          <span class="pillar-col__num" aria-hidden="true">02</span>
+          <div class="pillar-col__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+          </div>
+          <h3 class="pillar-col__title">Garantia Barrs</h3>
+          <p class="pillar-col__text">12 meses de garantia contra defeitos de fabricação. Suporte completo e orientações de cuidado para cada peça.</p>
+        </article>
+
+        <article class="pillar-col" data-reveal="rise" data-reveal-delay="3">
+          <span class="pillar-col__num" aria-hidden="true">03</span>
+          <div class="pillar-col__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+          </div>
+          <h3 class="pillar-col__title">Entrega Rápida</h3>
+          <p class="pillar-col__text">Envio rastreado para todo o Brasil em embalagens exclusivas — prontas para presentear ou para se mimar.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  {# ── 4. EMBALAGEM PREMIUM — NOVA SEÇÃO ────────────────────────── #}
+  <section class="about-packaging" aria-labelledby="packaging-title" data-reveal>
+    <div class="about-packaging__container">
+      <div class="about-packaging__grid">
+
+        <div class="about-packaging__visual" data-reveal="rise">
+          <div class="about-packaging__image-wrapper">
+            <img
+              src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_900/v1779995380/caixa_n8wxxz.png"
+              alt="Embalagem premium Barrs Store — experiência de unboxing elegante"
+              class="about-packaging__img"
+              loading="lazy"
+              decoding="async">
+          </div>
+        </div>
+
+        <div class="about-packaging__content" data-reveal="rise" data-reveal-delay="2">
+          <span class="about-section-eyebrow">Com carinho, da gente pra você</span>
+          <h2 id="packaging-title" class="about-section-title">Uma experiência pensada<br><em>em cada detalhe</em></h2>
+          <p class="about-packaging__text">
+            Cada pedido é preparado com cuidado para tornar sua experiência ainda mais especial. Da peça escolhida até a forma como ela chega até você — pensamos em cada etapa com atenção e afeto.
+          </p>
+          <ul class="about-packaging__features">
+            <li class="packaging-feature">Embalagem com identidade Barrs</li>
+            <li class="packaging-feature">Papel de seda e proteção cuidadosa</li>
+            <li class="packaging-feature">Cartão com dicas de cuidado</li>
+            <li class="packaging-feature">Pronta para presentear, como veio</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
 </main>
+
+{% include "partials/footer.html" %}
 
 <a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!" class="wa-float" target="_blank" rel="noopener" aria-label="WhatsApp">
   <svg viewBox="0 0 24 24" aria-hidden="true">

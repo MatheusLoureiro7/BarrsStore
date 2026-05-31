@@ -49,6 +49,19 @@
 </header>
 
 <main class="co-page">
+
+  <!-- Faixa compacta de resumo — mobile only, sem JS -->
+  <div class="co-mobile-summary">
+    <div class="co-mobile-summary__left">
+      <span class="co-mobile-summary__order">Pedido #{{ pedido.id }}</span>
+      <span class="co-mobile-summary__dot" aria-hidden="true">·</span>
+      {% with n=pedido.itens.all|length %}
+      <span class="co-mobile-summary__items">{{ n }} {% if n == 1 %}item{% else %}itens{% endif %}</span>
+      {% endwith %}
+    </div>
+    <div class="co-mobile-summary__total">R$ {{ pedido.total }}</div>
+  </div>
+
   <div class="co-layout">
 
     <!-- ═══════════════════════════════════════════════════════
@@ -62,9 +75,9 @@
           <svg class="icon" style="width:11px;height:11px" aria-hidden="true"><use href="#i-check"/></svg>
           Pedido #{{ pedido.id }} recebido
         </div>
-        <h1 class="co-pay__title" id="pay-title">Finalize seu<br>pagamento.</h1>
+        <h1 class="co-pay__title" id="pay-title">Finalize seu pagamento.</h1>
         <p class="co-pay__subtitle">
-          Olá, <strong>{{ pedido.nome }}</strong>. Escolha como pagar e conclua sua compra com segurança.
+          Olá, <strong>{{ pedido.nome|first_word }}</strong>. Escolha como deseja pagar.
         </p>
       </div>
 
@@ -91,7 +104,10 @@
 
         <div class="co-method-head">
           <h2 class="co-method-title">Como deseja pagar?</h2>
-          <div class="co-total-badge">R$ {{ pedido.total }}</div>
+          <div class="co-total-clean">
+            <span class="co-total-clean__label">Total do pedido</span>
+            <span class="co-total-clean__value">R$ {{ pedido.total }}</span>
+          </div>
         </div>
 
         <!-- Loading -->
@@ -149,7 +165,7 @@
     <!-- ═══════════════════════════════════════════════════════
          RESUMO DO PEDIDO
     ════════════════════════════════════════════════════════ -->
-    <aside class="co-summary" aria-label="Resumo do pedido">
+    <aside class="co-summary" id="co-summary-panel" aria-label="Resumo do pedido">
 
       <div class="co-sum-header">
         <div class="co-sum-title">Resumo do pedido</div>
@@ -664,5 +680,7 @@
 
   iniciarPagamento();
 }());
+
 </script>
+
 {% endblock %}

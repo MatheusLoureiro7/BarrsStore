@@ -230,20 +230,28 @@ body {
   color: var(--color-ink);
   letter-spacing: -0.01em;
 }
-.co-total-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1.1rem;
-  background: var(--color-brand-bg);
-  border: 1px solid rgba(107, 122, 100, 0.22);
-  color: var(--color-brand);
-  border-radius: var(--radius-full);
-  font-size: 1rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
+/* Total limpo — sem pílula, tipografia editorial */
+.co-total-clean {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.0625rem;
   flex-shrink: 0;
+}
+.co-total-clean__label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.co-total-clean__value {
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
 }
 
 /* Loading premium */
@@ -338,9 +346,8 @@ body {
    espaçamento internos. Aqui apenas complementamos o que não é
    possível via variáveis: gradiente no botão de submit.          */
 .co-brick-wrap {
-  border: 1px solid var(--color-border-soft);
-  border-radius: 14px;
-  background: #fff;
+  border: none;
+  background: transparent;
   /* sem overflow:hidden — evita cortar dropdowns do Brick */
 }
 
@@ -353,9 +360,14 @@ body {
 #paymentBrick_container button[type="submit"] {
   background: linear-gradient(155deg, #738269 0%, #5C6B55 100%) !important;
   box-shadow:
-    0 1px 3px rgba(80, 96, 76, 0.18),
-    0 4px 14px rgba(80, 96, 76, 0.16) !important;
-  letter-spacing: 0.025em !important;
+    0 1px 2px rgba(80, 96, 76, 0.10),
+    0 2px 8px rgba(80, 96, 76, 0.12) !important;
+  border-radius: 8px !important;
+  padding-top: 0.6875rem !important;
+  padding-bottom: 0.6875rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
   transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 #paymentBrick_container button[type="submit"]:hover {
@@ -756,42 +768,126 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* ── RESPONSIVO ──────────────────────────────────────────────── */
+/* ── FAIXA COMPACTA MOBILE — desktop: oculta ─────────────────── */
+.co-mobile-summary { display: none; }
+
+/* ── RESPONSIVO MOBILE ───────────────────────────────────────── */
 @media (max-width: 980px) {
-  .co-page {
-    padding: 1.5rem 1.25rem 3.5rem;
+  /* Faixa compacta de resumo — estática, sem JS */
+  .co-mobile-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: rgba(246, 243, 237, 0.97);
+    border-bottom: 1px solid rgba(228, 221, 208, 0.8);
   }
-  .co-layout {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
+  .co-mobile-summary__left {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
   }
-  .co-summary {
-    position: static;
-    order: -1;
+  .co-mobile-summary__order {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-ink-muted);
+    white-space: nowrap;
   }
-  .co-steps { display: none; }
+  .co-mobile-summary__dot {
+    color: var(--color-ink-muted);
+    font-size: 0.6875rem;
+    flex-shrink: 0;
+  }
+  .co-mobile-summary__items {
+    font-size: 0.75rem;
+    color: var(--color-ink-muted);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .co-mobile-summary__total {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Página e grid mobile */
+  .co-page   { padding: 0 0 3rem; }
+  .co-layout { grid-template-columns: 1fr; gap: 0.875rem; padding: 0.875rem 1rem 0; }
+  .co-steps  { display: none; }
+
+  /* Resumo lateral oculto no mobile — faixa compacta já mostra o essencial */
+  .co-summary { display: none !important; }
 }
 
 @media (max-width: 640px) {
   .co-header__inner { padding: 0 1.25rem; }
   .co-secure { display: none; }
+  .co-layout { padding: 0.5rem 0.875rem 0; gap: 0.5rem; }
 
-  .co-pay__intro { padding: 1.75rem 1.25rem 1.5rem; }
-  .co-trust { padding: 0.75rem 1.25rem; gap: 0.625rem; }
+  /* Intro ultra compacto */
+  .co-pay__intro    { padding: 0.375rem 1.25rem 0.25rem; }
+  .co-pay__eyebrow  { display: none; }
+  .co-pay__title    { font-size: 1.0625rem; line-height: 1.1; margin-bottom: 0.125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .co-pay__subtitle { font-size: 0.75rem; line-height: 1.35; }
+
+  /* Trust strip — linha 1: "Prot. • Confirmação", linha 2: "Suporte" centralizado */
+  .co-trust {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.125rem 0.3rem;
+    padding: 0.375rem 1.25rem;
+  }
   .co-trust__div { display: none; }
-  .co-pay__body { padding: 1.5rem 1.25rem 2rem; }
+  /* Primeiro divisor (2º filho) → ponto "·" entre os dois primeiros itens */
+  .co-trust > .co-trust__div:nth-child(2) {
+    display: flex !important;
+    align-items: center;
+    width: auto; height: auto;
+    background: transparent;
+    margin: 0;
+  }
+  .co-trust > .co-trust__div:nth-child(2)::before {
+    content: '·';
+    font-size: 1.125rem;
+    color: var(--color-border);
+    line-height: 1;
+  }
+  .co-trust__item { font-size: 0.6875rem; gap: 0.3rem; }
+  .co-trust__item .icon { width: 12px; height: 12px; }
+  /* 3º item (5º filho) — nova linha, centralizado */
+  .co-trust .co-trust__item:nth-child(5) { flex: 0 0 100%; justify-content: center; }
 
-  .co-method-head { flex-direction: column; align-items: flex-start; }
-  .co-total-badge { width: 100%; justify-content: center; }
+  /* Corpo compacto */
+  .co-pay__body { padding: 0.5rem 1.25rem 0.75rem; }
 
-  .co-pay__title { font-size: 2rem; }
+  /* Method head empilhado no mobile — total fica abaixo do título */
+  .co-method-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.0625rem;
+    margin-bottom: 0.25rem;
+  }
+  .co-method-title { font-size: 0.8125rem; line-height: 1.2; }
 
-  .co-sum-header,
-  .co-items,
-  .co-prices,
-  .co-delivery,
-  .co-notes,
-  .co-actions { padding-left: 1.25rem; padding-right: 1.25rem; }
+  /* Total inline quando empilhado */
+  .co-total-clean {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.375rem;
+  }
+  .co-total-clean__label { font-size: 0.625rem; letter-spacing: 0.05em; }
+  .co-total-clean__value { font-size: 0.875rem; }
+
+  /* Página com espaço inferior para o botão do MP não ficar colado */
+  .co-page { padding-bottom: 3rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

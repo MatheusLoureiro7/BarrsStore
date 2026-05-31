@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static inline_static %}
 
-{% block title %}Entrega e Trocas — Barrs Store{% endblock %}
+{% block title %}Entrega, Trocas e Garantia — Barrs Store{% endblock %}
 
 {% block page_css %}<style>
 {% inline_static 'loja/css/pages/entrega.css' %}
@@ -15,6 +15,7 @@
   </a>
   <ul class="nav__links">
     <li><a href="/">Início</a></li>
+    <li><a href="/#produtos">Coleção</a></li>
     <li><a href="/sobre/">Sobre</a></li>
     <li><a href="/contato/">Contato</a></li>
   </ul>
@@ -35,96 +36,299 @@
 </nav>
 {% include "partials/category_nav.html" %}
 
-<main class="delivery">
-  <div class="delivery__eyebrow">Informações de entrega</div>
-  <h1 class="delivery__title">Entrega, trocas e devoluções</h1>
-  <p class="delivery__lead">Aqui você encontra tudo sobre prazos de envio e como funciona nossa política de trocas.</p>
+<div class="en-page" id="conteudo-principal">
 
-  <div class="info-cards">
-    <div class="info-card">
-      <div class="info-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-truck"/></svg>
-      </div>
-      <div class="info-card__title">Envio</div>
-      <div class="info-card__desc">Enviamos em até <strong>2 dias úteis</strong> após a confirmação do pagamento. O frete é calculado no carrinho conforme o CEP e a opção escolhida.</div>
-      <span class="info-card__highlight">Enviamos de São Paulo/SP</span>
+  {# ── 1. HERO ─────────────────────────────────────────────────────── #}
+  <section class="en-hero">
+    <div class="en-hero__inner">
+      <div class="en-hero__rule" aria-hidden="true"></div>
+      <span class="en-hero__eyebrow">Políticas da loja</span>
+      <h1 class="en-hero__title">Trocas, devoluções<br>e <em>garantia</em></h1>
+      <p class="en-hero__lead">Compre com tranquilidade. Aqui você encontra<br>tudo sobre prazos, trocas e suas garantias.</p>
+      <p class="en-hero__note">Processo simples · Prazo justo · Atendimento humanizado</p>
     </div>
-    <div class="info-card">
-      <div class="info-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-package"/></svg>
-      </div>
-      <div class="info-card__title">Prazo de entrega</div>
-      <div class="info-card__desc">Grande SP: 2 a 5 dias úteis<br>Demais estados: 5 a 10 dias úteis<br>Norte: 10 a 15 dias úteis</div>
+  </section>
+
+  {# ── 2. CARDS DE INFORMAÇÃO ──────────────────────────────────────── #}
+  <section class="en-info" aria-label="Informações de entrega e trocas">
+    <div class="en-info__inner">
+
+      <article class="en-card">
+        <div class="en-card__icon-wrap">
+          <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+        </div>
+        <div class="en-card__stat">2 dias úteis</div>
+        <h2 class="en-card__title">Envio</h2>
+        <p class="en-card__desc">Despachamos em até 2 dias úteis após a confirmação do pagamento, direto de São Paulo/SP.</p>
+        <span class="en-card__tag">Envio rastreado</span>
+      </article>
+
+      <article class="en-card">
+        <div class="en-card__icon-wrap">
+          <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
+        </div>
+        <div class="en-card__stat">2–15 dias</div>
+        <h2 class="en-card__title">Prazo de entrega</h2>
+        <ul class="en-card__regions">
+          <li class="en-card__region">
+            <span class="en-card__region-name">Grande SP</span>
+            <span class="en-card__region-days">2–5 dias úteis</span>
+          </li>
+          <li class="en-card__region">
+            <span class="en-card__region-name">Demais estados</span>
+            <span class="en-card__region-days">5–10 dias úteis</span>
+          </li>
+          <li class="en-card__region">
+            <span class="en-card__region-name">Região Norte</span>
+            <span class="en-card__region-days">10–15 dias úteis</span>
+          </li>
+        </ul>
+        <span class="en-card__tag">Para todo o Brasil</span>
+      </article>
+
+      <article class="en-card">
+        <div class="en-card__icon-wrap">
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+        </div>
+        <div class="en-card__stat">7 dias corridos</div>
+        <h2 class="en-card__title">Trocas</h2>
+        <p class="en-card__desc">Aceitamos troca em até 7 dias corridos após o recebimento. Produto deve estar sem uso.</p>
+        <span class="en-card__tag">Troca facilitada</span>
+      </article>
+
+      <article class="en-card">
+        <div class="en-card__icon-wrap">
+          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+        </div>
+        <div class="en-card__stat">5 dias úteis</div>
+        <h2 class="en-card__title">Reembolso</h2>
+        <p class="en-card__desc">Devoluções aceitas em até 7 dias. Reembolso processado em até 5 dias úteis após recebermos o produto.</p>
+      </article>
+
+      <article class="en-card">
+        <div class="en-card__icon-wrap">
+          <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+        </div>
+        <div class="en-card__stat">1 ano</div>
+        <h2 class="en-card__title">Garantia</h2>
+        <p class="en-card__desc">Todas as peças têm 1 ano de garantia contra defeitos de fabricação em condições normais de uso.</p>
+        <span class="en-card__tag">Garantia certificada</span>
+      </article>
+
     </div>
-    <div class="info-card">
-      <div class="info-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-arrow-left"/></svg>
-      </div>
-      <div class="info-card__title">Trocas</div>
-      <div class="info-card__desc">Aceitamos troca em até <strong>7 dias corridos</strong> após o recebimento.</div>
-      <span class="info-card__highlight">Produto deve estar sem uso</span>
-    </div>
-    <div class="info-card">
-      <div class="info-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-check"/></svg>
-      </div>
-      <div class="info-card__title">Reembolso</div>
-      <div class="info-card__desc">Devoluções aceitas em até <strong>7 dias</strong>. Reembolso em até 5 dias úteis após recebimento.</div>
-    </div>
-    <div class="info-card">
-      <div class="info-card__icon">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-shield"/></svg>
-      </div>
-      <div class="info-card__title">Garantia</div>
-      <div class="info-card__desc">Todas as peças possuem <strong>1 ano de garantia</strong> contra defeitos de fabricação.</div>
-      <span class="info-card__highlight">Não cobre mau uso</span>
+  </section>
+
+  {# ── 3. FAIXA DE CONFIANÇA ───────────────────────────────────────── #}
+  <div class="en-trust" aria-label="Diferenciais Barrs Store">
+    <div class="en-trust__inner">
+
+      <span class="en-trust-item">
+        <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+        Envio rastreado
+      </span>
+      <span class="en-trust-sep" aria-hidden="true"></span>
+
+      <span class="en-trust-item">
+        <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+        Troca facilitada
+      </span>
+      <span class="en-trust-sep" aria-hidden="true"></span>
+
+      <span class="en-trust-item">
+        <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+        Garantia de 1 ano
+      </span>
+      <span class="en-trust-sep" aria-hidden="true"></span>
+
+      <span class="en-trust-item">
+        <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>
+        Atendimento humanizado
+      </span>
+
     </div>
   </div>
 
-  <hr class="delivery__divider">
+  {# ── 4. GARANTIA PREMIUM ─────────────────────────────────────────── #}
+  <section class="en-guarantee" aria-labelledby="en-guarantee-title">
+    <div class="en-guarantee__inner">
 
-  <h2>Como funciona a garantia</h2>
-  <div class="callout">
-    <strong>Garantia de 1 ano:</strong> cobre defeitos de fabricação, como falha no banho, oxidação fora do padrão ou problemas estruturais identificados em condições normais de uso. A garantia não cobre mau uso, queda, quebra, riscos, amassados, contato com produtos químicos, perfume, cosméticos, água do mar, piscina ou desgaste causado por uso inadequado.
-  </div>
+      <div class="en-guarantee__header">
+        <div class="en-guarantee__seal">
+          <div class="en-guarantee__seal-icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+          </div>
+          <div class="en-guarantee__seal-text">
+            <div class="en-guarantee__seal-name">Garantia Barrs Store</div>
+            <div class="en-guarantee__seal-period">1 ano de fabricação</div>
+          </div>
+        </div>
+        <h2 class="en-guarantee__title" id="en-guarantee-title">Garantia de fabricação</h2>
+        <p class="en-guarantee__lead">Todas as peças Barrs Store são cobertas por 1 ano contra defeitos de fabricação. Queremos que você use com total confiança.</p>
+      </div>
 
-  <h2>Como fazer uma troca ou devolução</h2>
-  <div class="steps-list">
-    <div class="step-item">
-      <div class="step-item__num">01</div>
-      <div>
-        <div class="step-item__title">Entre em contato</div>
-        <div class="step-item__desc">Fale conosco pelo WhatsApp em até 7 dias após receber o produto, informando o motivo da troca ou devolução.</div>
+      <div class="en-guarantee__grid">
+        <div class="en-guarantee__col en-guarantee__col--yes">
+          <div class="en-guarantee__col-header">
+            <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+            <span>O que cobre</span>
+          </div>
+          <ul class="en-guarantee__list">
+            <li>Falha no banho ou oxidação fora do padrão</li>
+            <li>Problemas estruturais da peça</li>
+            <li>Acabamento irregular de fábrica</li>
+            <li>Defeitos visíveis em condições normais de uso</li>
+          </ul>
+        </div>
+        <div class="en-guarantee__col en-guarantee__col--no">
+          <div class="en-guarantee__col-header">
+            <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+            <span>O que não cobre</span>
+          </div>
+          <ul class="en-guarantee__list">
+            <li>Queda, impacto, riscos ou amassados</li>
+            <li>Contato com perfume, cosméticos ou cloro</li>
+            <li>Danos por água do mar ou piscina</li>
+            <li>Desgaste por uso inadequado ou mau uso</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  {# ── 5. TIMELINE DE TROCA ────────────────────────────────────────── #}
+  <section class="en-exchange" aria-labelledby="en-exchange-title">
+    <div class="en-exchange__inner">
+
+      <div class="en-exchange__intro">
+        <h2 class="en-exchange__title" id="en-exchange-title">Como fazer uma troca</h2>
+        <p class="en-exchange__lead">Simples e sem burocracia. Em 3 passos você resolve.</p>
+      </div>
+
+      <div class="en-timeline" role="list">
+
+        <div class="en-timeline__col" role="listitem">
+          <div class="en-timeline__dot" aria-hidden="true">01</div>
+          <div class="en-timeline__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+          </div>
+          <h3 class="en-timeline__label">Contato</h3>
+          <p class="en-timeline__text">Fale pelo WhatsApp em até 7 dias após receber. Informe o motivo e envie uma foto do produto.</p>
+        </div>
+
+        <div class="en-timeline__line" aria-hidden="true"></div>
+
+        <div class="en-timeline__col" role="listitem">
+          <div class="en-timeline__dot" aria-hidden="true">02</div>
+          <div class="en-timeline__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
+          </div>
+          <h3 class="en-timeline__label">Envio do produto</h3>
+          <p class="en-timeline__text">Envie sem uso, na embalagem original, com nota fiscal. Passamos o endereço pelo WhatsApp.</p>
+        </div>
+
+        <div class="en-timeline__line" aria-hidden="true"></div>
+
+        <div class="en-timeline__col" role="listitem">
+          <div class="en-timeline__dot" aria-hidden="true">03</div>
+          <div class="en-timeline__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg>
+          </div>
+          <h3 class="en-timeline__label">Troca ou reembolso</h3>
+          <p class="en-timeline__text">Após receber e conferir, enviamos a nova peça ou processamos o reembolso em até 5 dias úteis.</p>
+        </div>
+
+      </div>
+
+      <div class="en-exchange__note">
+        <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+        <p>Não aceitamos trocas de produtos com sinais de uso, sem embalagem original ou fora do prazo de 7 dias corridos após o recebimento.</p>
+      </div>
+
+    </div>
+  </section>
+
+  {# ── 6. POR QUE COMPRAR COM TRANQUILIDADE ───────────────────────── #}
+  <section class="en-why" aria-labelledby="en-why-title">
+    <div class="en-why__inner">
+      <h2 class="en-why__title" id="en-why-title">Por que comprar com tranquilidade na Barrs Store?</h2>
+      <div class="en-why__grid">
+
+        <div class="en-why-card">
+          <div class="en-why-card__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+          </div>
+          <div class="en-why-card__body">
+            <h3 class="en-why-card__title">Garantia de 1 ano</h3>
+            <p class="en-why-card__desc">Todas as peças cobertas contra defeitos de fabricação.</p>
+          </div>
+        </div>
+
+        <div class="en-why-card">
+          <div class="en-why-card__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+          </div>
+          <div class="en-why-card__body">
+            <h3 class="en-why-card__title">Envio rastreado</h3>
+            <p class="en-why-card__desc">Acompanhe seu pedido do despacho até a entrega.</p>
+          </div>
+        </div>
+
+        <div class="en-why-card">
+          <div class="en-why-card__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          </div>
+          <div class="en-why-card__body">
+            <h3 class="en-why-card__title">Troca facilitada</h3>
+            <p class="en-why-card__desc">Processo simples em até 7 dias após o recebimento.</p>
+          </div>
+        </div>
+
+        <div class="en-why-card">
+          <div class="en-why-card__icon">
+            <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>
+          </div>
+          <div class="en-why-card__body">
+            <h3 class="en-why-card__title">Atendimento humanizado</h3>
+            <p class="en-why-card__desc">Suporte real, por pessoas reais, para cada cliente.</p>
+          </div>
+        </div>
+
       </div>
     </div>
-    <div class="step-item">
-      <div class="step-item__num">02</div>
-      <div>
-        <div class="step-item__title">Envie o produto</div>
-        <div class="step-item__desc">Envie o produto sem uso, na embalagem original, com nota fiscal, para o endereço que passaremos pelo WhatsApp.</div>
-      </div>
-    </div>
-    <div class="step-item">
-      <div class="step-item__num">03</div>
-      <div>
-        <div class="step-item__title">Troca ou reembolso</div>
-        <div class="step-item__desc">Após receber e conferir o produto, enviamos o novo item ou processamos o reembolso em até 5 dias úteis.</div>
-      </div>
-    </div>
+  </section>
+
+  {# ── TAGLINE ──────────────────────────────────────────────────────── #}
+  <div class="en-tagline">
+    <p>Atendimento próximo, suporte rápido e garantia em todas as compras.</p>
   </div>
 
-  <div class="callout callout--warn">
-    <strong>Atenção:</strong> não aceitamos trocas de produtos com sinais de uso, sem embalagem original ou fora do prazo de 7 dias corridos após o recebimento.
-  </div>
+  {# ── 6. CTA FINAL ────────────────────────────────────────────────── #}
+  <section class="en-cta">
+    <div class="en-cta__inner">
+      <div class="en-cta__icon">
+        <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>
+      </div>
+      <div class="en-cta__body">
+        <h2 class="en-cta__title">Ainda precisa de ajuda?</h2>
+        <p class="en-cta__text">Nossa equipe está disponível de segunda a sexta, das 9h às 18h. Estamos aqui para tirar qualquer dúvida sobre pedidos, entregas ou trocas.</p>
+        <a href="https://wa.me/5511913225256?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20entrega%20ou%20troca." class="en-cta__btn" target="_blank" rel="noopener noreferrer">
+          <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+          Falar no WhatsApp
+          <svg class="icon en-cta__arrow" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
 
-  <h2>Ficou com dúvidas?</h2>
-  <p style="font-size:var(--text-sm);color:var(--color-ink-muted);margin-bottom:var(--space-5);line-height:var(--leading-relaxed)">
-    Nossa equipe está disponível de segunda a sexta, das 9h às 18h. Fale conosco pelo WhatsApp.
-  </p>
-  <a href="https://wa.me/5511913225256?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20entrega%20ou%20troca." class="delivery-cta" target="_blank" rel="noopener">
-    <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-whatsapp"/></svg>
-    Falar no WhatsApp
-  </a>
-</main>
+</div>
+
+{% include "partials/footer.html" %}
+
+<a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!" class="wa-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
 
 {% endblock %}

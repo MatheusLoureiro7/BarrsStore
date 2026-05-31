@@ -133,3 +133,34 @@
   justify-content: center;
 }
 
+/* Login guard: keeps the auth card centered even when global/page styles change. */
+main.auth {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+main.auth .auth-card {
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+main.auth .turnstile-wrap {
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  main.auth {
+    align-items: flex-start;
+    padding: var(--space-6) 16px;
+    min-height: calc(100vh - 56px);
+  }
+
+  main.auth .auth-card {
+    max-width: 420px;
+    padding: var(--space-6) 20px;
+  }
+}
+

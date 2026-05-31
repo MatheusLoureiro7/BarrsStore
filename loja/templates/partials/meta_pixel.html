@@ -16,6 +16,7 @@
     fbq('init','1413794504078637');
     fbq('track','PageView');
   }
+  window._fbPixelLoad = _fbLoad;
   ['scroll','click','touchstart'].forEach(function(e){
     window.addEventListener(e,_fbLoad,{once:true,passive:true});
   });

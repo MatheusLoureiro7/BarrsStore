@@ -1,164 +1,455 @@
-.contact {
-  width: min(calc(100% - 40px), 940px);
-  max-width: 940px;
-  margin: clamp(2.25rem, 4vw, 3.5rem) auto var(--space-9);
-  padding: 0;
+/* ==========================================================================
+   BARRS STORE — CONTATO
+   Mood: quiet luxury · feminino · e-commerce premium de semijoias
+   ========================================================================== */
+
+/* ── VARIÁVEIS ───────────────────────────────────────────────────────────── */
+:root {
+  --ct-cream:       #F5F2EC;
+  --ct-cream-alt:   #EDE9E1;
+  --ct-white:       #FFFFFF;
+  --ct-ink:         #3D3028;
+  --ct-ink-soft:    #6B5E53;
+  --ct-ink-muted:   #9E9488;
+  --ct-sage:        #8A947C;
+  --ct-sage-light:  #B7C1A8;
+  --ct-sage-bg:     #EEF1E7;
+  --ct-border:      #E2DDD6;
+  --ct-ease:        cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.contact__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-  color: var(--color-brand);
-  font-size: 0.68rem;
-  font-weight: 750;
-  letter-spacing: 0.14em;
-  line-height: 1;
-  text-transform: uppercase;
+.ct-page {
+  background: var(--ct-cream);
+  color: var(--ct-ink-soft);
+  font-family: var(--font-body);
 }
 
-.contact__eyebrow::before {
-  content: "";
-  width: 22px;
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. HERO — tipografia pura, centralizado
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ct-hero {
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.ct-hero__inner {
+  width: min(calc(100% - 40px), 700px);
+  margin: 0 auto;
+  padding: clamp(1.6rem, 3.6vw, 2.4rem) 0 clamp(1.4rem, 3.2vw, 2.2rem);
+  text-align: center;
+}
+
+/* Linha decorativa acima do eyebrow */
+.ct-hero__rule {
+  width: 36px;
   height: 1px;
-  background: currentColor;
-  opacity: 0.5;
+  background: var(--ct-sage);
+  opacity: 0.55;
+  margin: 0 auto 1.1rem;
 }
 
-.contact__title {
-  max-width: 660px;
-  margin: 0 0 var(--space-3);
-  color: var(--color-ink);
+.ct-hero__eyebrow {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ct-sage);
+  margin-bottom: 0.9rem;
+}
+
+.ct-hero__title {
   font-family: var(--font-display);
-  font-size: clamp(2.25rem, 4vw, 3.35rem);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1;
+  font-size: clamp(2.1rem, 4vw, 3.1rem);
+  font-weight: 400;
+  color: var(--ct-ink);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+.ct-hero__title em {
+  font-style: italic;
+  font-weight: 400;
 }
 
-.contact__lead {
-  max-width: 560px;
-  margin: 0 0 clamp(1.75rem, 3vw, 2.4rem);
-  color: var(--color-ink-muted);
-  font-size: clamp(0.98rem, 1.4vw, 1.08rem);
+.ct-hero__lead {
+  font-size: clamp(0.875rem, 1.4vw, 0.95rem);
+  color: var(--ct-ink-soft);
   line-height: 1.72;
+  font-weight: 300;
+  margin-bottom: 0.55rem;
 }
 
-.channels {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
+.ct-hero__note {
+  font-size: 0.78rem;
+  color: var(--ct-ink-muted);
+  line-height: 1.6;
+  font-weight: 300;
+  margin-bottom: 1.6rem;
 }
 
-.channel {
-  position: relative;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  align-items: center;
-  column-gap: var(--space-4);
-  min-height: 132px;
-  padding: var(--space-4);
-  color: inherit;
-  text-decoration: none;
-  background:
-    radial-gradient(circle at 10% 0%, rgba(212, 175, 55, 0.045), transparent 34%),
-    rgba(255, 255, 255, 0.54);
-  border: 1px solid rgba(107, 122, 100, 0.14);
-  border-radius: 12px;
-  box-shadow: 0 14px 34px rgba(63, 75, 58, 0.045);
-  transition: border-color var(--duration) var(--ease),
-              box-shadow var(--duration) var(--ease),
-              transform var(--duration) var(--ease),
-              background-color var(--duration) var(--ease);
-}
+.ct-hero__actions { display: flex; justify-content: center; }
 
-.channel:hover {
-  border-color: rgba(107, 122, 100, 0.3);
-  background-color: rgba(255, 255, 255, 0.68);
-  box-shadow: 0 18px 42px rgba(63, 75, 58, 0.075);
-  transform: translateY(-2px);
-}
-
-.channel__icon {
-  grid-row: 1 / span 3;
-  width: 42px;
-  height: 42px;
+.ct-hero__btn {
   display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.76rem 1.75rem;
+  background: var(--ct-sage);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 260ms var(--ct-ease), transform 260ms var(--ct-ease);
+}
+.ct-hero__btn .icon { width: 11px; height: 11px; transition: transform 260ms var(--ct-ease); }
+.ct-hero__btn:hover { background: #7A846C; transform: translateY(-1px); }
+.ct-hero__btn:hover .icon { transform: translateX(3px); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. CARDS DE CONTATO — 4 cards independentes, 2×2
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ct-channels {
+  padding: clamp(2rem, 5vw, 3.5rem) 0;
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.ct-channels__inner {
+  width: min(calc(100% - 40px), 980px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+/* ── Card base ── */
+.ct-card {
+  background: var(--ct-white);
+  border: 1px solid var(--ct-border);
+  border-radius: 10px;
+  padding: clamp(1rem, 2vw, 1.35rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-shadow: 0 2px 8px rgba(107, 94, 83, 0.05);
+  transition:
+    transform 320ms var(--ct-ease),
+    box-shadow 320ms var(--ct-ease),
+    border-color 320ms var(--ct-ease);
+}
+.ct-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ct-sage-light);
+  box-shadow: 0 4px 18px rgba(107, 94, 83, 0.10);
+}
+
+/* ── Ícone ── */
+.ct-card__icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ct-sage-bg);
+  color: var(--ct-sage);
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-brand);
-  background: rgba(107, 122, 100, 0.08);
-  border: 1px solid rgba(107, 122, 100, 0.1);
-  border-radius: 50%;
+  margin-bottom: 0.6rem;
+  flex-shrink: 0;
+  transition: background 280ms var(--ct-ease), transform 280ms var(--ct-ease);
 }
+.ct-card__icon-wrap .icon { width: 17px; height: 17px; }
+.ct-card:hover .ct-card__icon-wrap { background: #DDE4D4; transform: scale(1.06); }
 
-.channel__title {
-  min-width: 0;
-  margin: 0 0 0.25rem;
-  color: var(--color-ink);
+/* Destaque WhatsApp */
+.ct-card__icon-wrap--wa { background: #EBFAF0; color: #2B9B4D; }
+.ct-card:hover .ct-card__icon-wrap--wa { background: #D6F5E0; }
+
+/* ── Conteúdo ── */
+.ct-card__title {
+  font-family: var(--font-display);
   font-size: 1rem;
+  font-weight: 400;
+  color: var(--ct-ink);
+  margin-bottom: 0.15rem;
+  letter-spacing: -0.005em;
+}
+
+.ct-card__desc {
+  font-size: 0.78rem;
+  color: var(--ct-ink-muted);
+  line-height: 1.55;
+  font-weight: 300;
+  margin-bottom: 0.3rem;
+}
+
+.ct-card__value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ct-sage);
+  margin-bottom: 0.55rem;
+  overflow-wrap: break-word;
+  word-break: normal;
+  max-width: 100%;
+}
+
+/* Botão só aparece nos cards de contato (WA e email) */
+.ct-card__btn {
+  display: inline-block;
+  margin-top: auto;
+  padding: 0.52rem 1.1rem;
+  background: var(--ct-sage);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.25;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 240ms var(--ct-ease);
+}
+.ct-card__btn:hover { background: #7A846C; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. FAIXA DE CONFIANÇA — 4 colunas
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ct-trust {
+  background: var(--ct-white);
+  border-bottom: 1px solid var(--ct-border);
 }
 
-.channel__desc {
-  min-width: 0;
-  margin: 0 0 0.45rem;
-  color: var(--color-ink-muted);
+.ct-trust__inner {
+  width: min(calc(100% - 40px), 980px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  gap: 0.5rem;
+}
+
+.ct-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ct-ink-soft);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: color 220ms ease;
+}
+.ct-trust-item .icon {
+  width: 14px;
+  height: 14px;
+  color: var(--ct-sage);
+  flex-shrink: 0;
+  transition: color 220ms ease;
+}
+.ct-trust-item:hover { color: var(--ct-ink); }
+.ct-trust-item:hover .icon { color: #6B7A64; }
+
+/* Separador vertical entre itens */
+.ct-trust-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--ct-border);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. DÚVIDAS FREQUENTES — 3 cards horizontais
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ct-faq {
+  padding: clamp(2rem, 5vw, 3.5rem) 0;
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.ct-faq__inner {
+  width: min(calc(100% - 40px), 980px);
+  margin: 0 auto;
+}
+
+.ct-faq__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-weight: 400;
+  color: var(--ct-ink);
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.ct-faq__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+/* ── FAQ card — horizontal (ícone esquerda + conteúdo direita) ── */
+.ct-faq-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--ct-white);
+  border: 1px solid var(--ct-border);
+  border-bottom: 2px solid transparent;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 280ms var(--ct-ease),
+    border-bottom-color 280ms var(--ct-ease),
+    box-shadow 280ms var(--ct-ease);
+}
+.ct-faq-card:hover {
+  transform: translateY(-3px);
+  border-bottom-color: var(--ct-sage);
+  box-shadow: 0 4px 14px rgba(107, 94, 83, 0.08);
+}
+
+.ct-faq-card__icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ct-sage-bg);
+  color: var(--ct-sage);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.05rem;
+}
+.ct-faq-card__icon .icon { width: 15px; height: 15px; }
+
+.ct-faq-card__body { flex: 1; min-width: 0; }
+
+.ct-faq-card__title {
+  font-family: var(--font-body);
   font-size: 0.82rem;
-  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ct-ink);
+  margin-bottom: 0.25rem;
+  line-height: 1.35;
 }
 
-.channel__value {
-  min-width: 0;
-  color: var(--color-brand);
-  font-size: 0.92rem;
-  font-weight: 750;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-  font-variant-numeric: tabular-nums;
+.ct-faq-card__desc {
+  font-size: 0.75rem;
+  color: var(--ct-ink-muted);
+  line-height: 1.55;
+  font-weight: 300;
+  margin-bottom: 0.6rem;
 }
 
-@media (max-width: 820px) {
-  .contact {
-    width: min(calc(100% - 32px), 940px);
-  }
+.ct-faq-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ct-sage);
+  transition: color 220ms var(--ct-ease), gap 220ms var(--ct-ease);
+}
+.ct-faq-card__link .icon { width: 10px; height: 10px; transition: transform 220ms var(--ct-ease); }
+.ct-faq-card:hover .ct-faq-card__link { color: var(--ct-ink); gap: 0.45rem; }
+.ct-faq-card:hover .ct-faq-card__link .icon { transform: translateX(2px); }
 
-  .channels {
-    gap: var(--space-3);
-  }
-
-  .channel {
-    grid-template-columns: 38px minmax(0, 1fr);
-    column-gap: var(--space-3);
-    min-height: 124px;
-    padding: var(--space-4);
-  }
-
-  .channel__icon {
-    width: 38px;
-    height: 38px;
-  }
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. ATENDIMENTO HUMANIZADO — faixa compacta
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ct-human {
+  background: var(--ct-white);
+  padding: 1.5rem 0;
 }
 
-@media (max-width: 640px) {
-  .contact {
-    width: min(calc(100% - 28px), 940px);
-    margin-top: var(--space-6);
-  }
+.ct-human__inner {
+  width: min(calc(100% - 40px), 980px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
 
-  .contact__title {
-    font-size: clamp(2rem, 13vw, 2.65rem);
-  }
+.ct-human__icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #FDF0F2;
+  color: #C4757E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ct-human__icon .icon { width: 16px; height: 16px; }
 
-  .channels {
+.ct-human__body { flex: 1; min-width: 0; }
+
+.ct-human__title {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ct-ink);
+  margin-bottom: 0.2rem;
+  line-height: 1.35;
+}
+
+.ct-human__text {
+  font-size: 0.78rem;
+  color: var(--ct-ink-muted);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVIDADE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Tablet / iPad */
+@media (max-width: 860px) {
+  .ct-trust__inner {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.85rem 0;
+  }
+  .ct-trust-sep { display: none; }
+
+  .ct-faq__grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .ct-channels__inner {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
-  .channel {
-    min-height: 112px;
-    padding: var(--space-4);
+  .ct-card { padding: 0.95rem 1.1rem; }
+
+  .ct-card__btn {
+    padding: 0.62rem 1.1rem;
+    font-size: 0.6875rem;
+  }
+
+  .ct-trust__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    padding: 0.85rem 0;
+  }
+
+  .ct-faq-card {
+    padding: 1rem;
+  }
+
+  .ct-human__inner {
+    align-items: flex-start;
   }
 }

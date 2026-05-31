@@ -269,9 +269,14 @@
 {% block scripts %}
 <script nonce="{{ csp_nonce }}">
 (function () {
-  if (typeof fbq !== 'function') return;
   var storageKey = 'meta_purchase_{{ pedido.id|escapejs }}';
   if (sessionStorage.getItem(storageKey)) return;
+
+  // Pixel e carregado de forma diferida no restante do site; aqui precisamos
+  // que o Purchase dispare de forma confiavel, entao forcamos a inicializacao.
+  if (typeof window._fbPixelLoad === 'function') window._fbPixelLoad();
+
+  if (typeof fbq !== 'function') return;
 
   function parseMoney(v) {
     var s = String(v || '0').trim();

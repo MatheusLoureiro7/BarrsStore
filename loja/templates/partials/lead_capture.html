@@ -26,6 +26,13 @@
     const form = document.getElementById('lead-form');
     if (!form) return;
     const gate = document.getElementById('lead-gate');
+    if (!gate) return;
+    document.querySelectorAll('.lead-gate').forEach(function (item) {
+      if (item !== gate) item.remove();
+    });
+    if (gate.parentElement !== document.body) {
+      document.body.appendChild(gate);
+    }
     const close = document.getElementById('lead-close');
     const erro = document.getElementById('lead-error');
     const telefone = document.getElementById('lead-telefone');
