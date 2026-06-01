@@ -334,6 +334,11 @@ class ItemCarrinho(models.Model):
     quantidade = models.IntegerField(default=1)
     tamanho = models.CharField(max_length=5, blank=True, default='')  # para anéis
 
+    class Meta:
+        unique_together = [('carrinho', 'produto', 'tamanho')]
+        verbose_name = 'Item do carrinho'
+        verbose_name_plural = 'Itens do carrinho'
+
     def subtotal(self):
         return self.produto.preco * self.quantidade
 
