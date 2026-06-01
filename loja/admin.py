@@ -219,9 +219,9 @@ class PedidoAdmin(admin.ModelAdmin):
 
 @admin.register(Cupom)
 class CupomAdmin(admin.ModelAdmin):
-    list_display = ('codigo', 'tipo', 'valor', 'ativo', 'uso_maximo', 'usado', 'valor_minimo')
+    list_display = ('codigo', 'tipo', 'valor', 'ativo', 'so_clientes_fidelidade', 'uso_maximo', 'usado', 'valor_minimo')
     list_editable = ('ativo',)
-    list_filter = ('ativo', 'tipo')
+    list_filter = ('ativo', 'tipo', 'so_clientes_fidelidade')
     search_fields = ('codigo',)
 
 

@@ -85,7 +85,14 @@ def _validar_form_checkout(request, carrinho):
         if not cupom:
             messages.error(request, 'Cupom nao encontrado.')
             return None
-        valido, motivo = cupom.valido_para(subtotal)
+        # Para cupons de fidelidade: se o user nao esta logado, tenta localizar
+        # pelo email digitado no formulario (caso de login durante o checkout).
+        user_para_validar = request.user
+        if not getattr(user_para_validar, 'is_authenticated', False):
+            email_form = request.POST.get('email', '').strip().lower()
+            if email_form:
+                user_para_validar = User.objects.filter(email__iexact=email_form).first()
+        valido, motivo = cupom.valido_para(subtotal, user=user_para_validar)
         if not valido:
             messages.error(request, motivo)
             return None
@@ -479,7 +486,7 @@ def aplicar_cupom_ajax(request):
     if not cupom:
         return JsonResponse({'ok': False, 'erro': 'Cupom nao encontrado.'}, status=404)
 
-    valido, motivo = cupom.valido_para(subtotal)
+    valido, motivo = cupom.valido_para(subtotal, user=request.user)
     if not valido:
         return JsonResponse({'ok': False, 'erro': motivo}, status=400)
 
