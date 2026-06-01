@@ -1085,6 +1085,15 @@ def enviar_email_rastreio(pedido):
 
 # ── SEQUÊNCIA PÓS-COMPRA PREMIUM ──────────────────────────────────
 
+def _enviar_poscompra(pedido, etapa, assunto, html):
+    ok = _brevo_send(assunto, html, pedido.email, pedido.nome)
+    if ok:
+        flag = f'email_poscompra_{etapa}_enviado'
+        setattr(pedido, flag, True)
+        pedido.save(update_fields=[flag])
+    return ok
+
+
 def enviar_email_poscompra_1(pedido):
     """E-mail 1 (≈1h após confirmação): pedido em preparo."""
     link_rastrear = site_url(reverse('rastrear_pedido'))
@@ -1096,12 +1105,7 @@ def enviar_email_poscompra_1(pedido):
         + f'<div style="text-align:center;margin:28px 0">{_btn("Acompanhar meu pedido", link_rastrear)}</div>'
         + _paragrafo('<span style="color:#9E9488;font-size:13px">Em breve você receberá o código de rastreio. Se tiver qualquer dúvida, estamos no WhatsApp.</span>')
     )
-    html = _email_wrapper('Seu pedido está em boas mãos', corpo)
-    ok = _brevo_send(f'Seu pedido #{pedido.id} está sendo preparado — Barrs Store', html, pedido.email, pedido.nome)
-    if ok:
-        pedido.email_poscompra_1_enviado = True
-        pedido.save(update_fields=['email_poscompra_1_enviado'])
-    return ok
+    return _enviar_poscompra(pedido, 1, f'Seu pedido #{pedido.id} está sendo preparado — Barrs Store', _email_wrapper('Seu pedido está em boas mãos', corpo))
 
 
 def enviar_email_poscompra_2(pedido):
@@ -1116,12 +1120,7 @@ def enviar_email_poscompra_2(pedido):
         + '</div>'
         + f'<div style="text-align:center;margin:24px 0">{_btn("Ver novidades na loja", link_loja)}</div>'
     )
-    html = _email_wrapper('O cuidado que vai junto com cada peça', corpo)
-    ok = _brevo_send(f'Um cuidado especial sobre seu pedido #{pedido.id} — Barrs Store', html, pedido.email, pedido.nome)
-    if ok:
-        pedido.email_poscompra_2_enviado = True
-        pedido.save(update_fields=['email_poscompra_2_enviado'])
-    return ok
+    return _enviar_poscompra(pedido, 2, f'Um cuidado especial sobre seu pedido #{pedido.id} — Barrs Store', _email_wrapper('O cuidado que vai junto com cada peça', corpo))
 
 
 def enviar_email_poscompra_3(pedido):
@@ -1149,12 +1148,7 @@ def enviar_email_poscompra_3(pedido):
         intro = _paragrafo(f'<strong>{pedido.nome.split()[0]}</strong>, o pedido #{pedido.id} está nos últimos detalhes de preparo!')
 
     corpo = intro + trecho_rastreio + _paragrafo('<span style="color:#9E9488;font-size:13px">Qualquer dúvida, estamos no WhatsApp. Mal podemos esperar para você receber suas peças.</span>')
-    html = _email_wrapper(subtitulo, corpo)
-    ok = _brevo_send(f'Atualização do seu pedido #{pedido.id} — Barrs Store', html, pedido.email, pedido.nome)
-    if ok:
-        pedido.email_poscompra_3_enviado = True
-        pedido.save(update_fields=['email_poscompra_3_enviado'])
-    return ok
+    return _enviar_poscompra(pedido, 3, f'Atualização do seu pedido #{pedido.id} — Barrs Store', _email_wrapper(subtitulo, corpo))
 
 
 def enviar_email_poscompra_4(pedido):
@@ -1170,12 +1164,7 @@ def enviar_email_poscompra_4(pedido):
         + '</div>'
         + _paragrafo('<span style="color:#9E9488;font-size:13px">Sua satisfação é o que nos move a continuar criando peças exclusivas com tanto cuidado.</span>')
     )
-    html = _email_wrapper('Chegou tudo bem?', corpo)
-    ok = _brevo_send(f'Tudo certo com seu pedido #{pedido.id}, {pedido.nome.split()[0]}? — Barrs Store', html, pedido.email, pedido.nome)
-    if ok:
-        pedido.email_poscompra_4_enviado = True
-        pedido.save(update_fields=['email_poscompra_4_enviado'])
-    return ok
+    return _enviar_poscompra(pedido, 4, f'Tudo certo com seu pedido #{pedido.id}, {pedido.nome.split()[0]}? — Barrs Store', _email_wrapper('Chegou tudo bem?', corpo))
 
 
 def enviar_email_poscompra_5(pedido):
@@ -1194,12 +1183,7 @@ def enviar_email_poscompra_5(pedido):
         + f'<div style="text-align:center;margin:20px 0">{_btn("Ver novas peças na loja", link_loja)}</div>'
         + _paragrafo(f'<span style="color:#9E9488;font-size:13px">Tem alguma peça dos sonhos? Me conta pelo <a href="{link_wa}" style="color:#8A947C">WhatsApp</a> — amo ajudar.</span>')
     )
-    html = _email_wrapper('Uma mensagem especial para você', corpo)
-    ok = _brevo_send(f'Obrigada, {pedido.nome.split()[0]} — Barrs Store', html, pedido.email, pedido.nome)
-    if ok:
-        pedido.email_poscompra_5_enviado = True
-        pedido.save(update_fields=['email_poscompra_5_enviado'])
-    return ok
+    return _enviar_poscompra(pedido, 5, f'Obrigada, {pedido.nome.split()[0]} — Barrs Store', _email_wrapper('Uma mensagem especial para você', corpo))
 
 
 # ── SEQUÊNCIA ABANDONO DE CARRINHO PREMIUM ─────────────────────────

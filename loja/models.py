@@ -87,6 +87,15 @@ class Produto(models.Model):
         help_text='Peso unitario da peca em gramas. Se vazio, usamos 8g como padrao no calculo de frete.',
     )
 
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Produto'
+        verbose_name_plural = 'Produtos'
+        indexes = [
+            models.Index(fields=['visivel', '-criado_em']),
+            models.Index(fields=['visivel', 'destaque']),
+        ]
+
     def __str__(self):
         return self.nome
 
@@ -514,6 +523,9 @@ class EmailPendente(models.Model):
         ordering = ['criado_em']
         verbose_name = 'E-mail pendente'
         verbose_name_plural = 'E-mails pendentes'
+        indexes = [
+            models.Index(fields=['status', 'criado_em']),
+        ]
 
     def __str__(self):
         return f'{self.assunto} -> {self.destinatario_email}'
