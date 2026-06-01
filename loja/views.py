@@ -2662,8 +2662,12 @@ def login_view(request):
         user = authenticate(request, username=email, password=senha)
         if user:
             login(request, user)
-            next_url = request.GET.get('next', 'minha_conta')
-            return redirect(next_url)
+            next_url = request.GET.get('next', '')
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url, allowed_hosts={request.get_host()}, require_https=not settings.DEBUG
+            ):
+                return redirect(next_url)
+            return redirect('minha_conta')
         else:
             messages.error(request, 'E-mail ou senha incorretos.')
 
