@@ -10,7 +10,7 @@
 {% block content %}
 <style>
   .dash { display: grid; gap: 18px; max-width: 1200px; margin: 0 auto; padding: 12px 0 40px; }
-  .dash-row { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .dash-row { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
   .card { background: #fff; border: 1px solid #e4ddd0; border-radius: 14px; padding: 18px 20px; box-shadow: 0 1px 2px rgba(43,37,32,.04); }
   .card h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: #6B5E53; letter-spacing: 0.04em; text-transform: uppercase; }
   .card .big { font-size: 28px; font-weight: 700; color: #3D2D20; font-variant-numeric: tabular-nums; line-height: 1.1; }
@@ -33,11 +33,60 @@
   .grid-2 { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
   @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
   .updated { font-size: 12px; color: #9E9488; margin-top: 16px; text-align: right; }
+
+  /* Banner faturamento total */
+  .banner-total { background: linear-gradient(135deg, #3D2D20 0%, #6B5E53 100%); border-radius: 14px; padding: 22px 28px; display: flex; align-items: flex-start; flex-wrap: wrap; gap: 32px; }
+  .banner-total__title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: rgba(255,255,255,.55); width: 100%; margin-bottom: -16px; }
+  .banner-total__stat { display: flex; flex-direction: column; gap: 3px; }
+  .banner-total__label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,.6); }
+  .banner-total__value { font-size: 30px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .banner-total__sub { font-size: 12px; color: rgba(255,255,255,.5); }
+  .banner-total__sep { width: 1px; background: rgba(255,255,255,.15); align-self: stretch; margin: 4px 0; }
+  @media (max-width: 700px) { .banner-total__sep { display: none; } }
+
+  /* Seletor de mês */
+  .mes-filter { display: flex; align-items: center; gap: 10px; }
+  .mes-filter label { font-size: 13px; font-weight: 600; color: #6B5E53; white-space: nowrap; }
+  .mes-filter select { border: 1px solid #e4ddd0; border-radius: 8px; padding: 5px 10px; font-size: 13px; color: #3D2D20; background: #fff; cursor: pointer; }
+  .mes-filter select:focus { outline: none; border-color: #B27265; box-shadow: 0 0 0 2px rgba(178,114,101,.15); }
+  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #9E9488; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 </style>
 
 <div class="dash">
 
-  <!-- RECEITA -->
+  <!-- FATURAMENTO TOTAL (todos os tempos) -->
+  <div class="banner-total">
+    <span class="banner-total__title">Faturamento — todos os tempos</span>
+    <div class="banner-total__stat">
+      <span class="banner-total__label">Receita total</span>
+      <span class="banner-total__value">R$ {{ faturamento_total.total|default:"0,00" }}</span>
+      <span class="banner-total__sub">{{ faturamento_total.n|default:0 }} pedido(s) confirmado(s)</span>
+    </div>
+    <div class="banner-total__sep"></div>
+    <div class="banner-total__stat">
+      <span class="banner-total__label">Ticket médio geral</span>
+      <span class="banner-total__value">{% if ticket_medio_geral %}R$ {{ ticket_medio_geral|floatformat:2 }}{% else %}—{% endif %}</span>
+      <span class="banner-total__sub">por pedido confirmado</span>
+    </div>
+  </div>
+
+  <!-- RECEITA MENSAL (filtrável) + OPERACIONAL -->
+  <div class="section-title">
+    Receita por período
+    <form class="mes-filter" method="get">
+      <label for="mes-sel">Ver mês:</label>
+      <select id="mes-sel" name="mes" onchange="this.form.submit()">
+        {% for d in meses_disponiveis %}
+        <option value="{{ d|date:'Y-m' }}"{% if d|date:'Y-m' == mes_selecionado %} selected{% endif %}>
+          {{ d|date:"m/Y" }}
+        </option>
+        {% empty %}
+        <option value="{{ mes_selecionado }}" selected>{{ mes_label }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
   <div class="dash-row">
     <div class="card ok">
       <h3>Receita hoje</h3>
@@ -49,10 +98,15 @@
       <div class="big">R$ {{ receita_semana.total|default:"0,00" }}</div>
       <div class="sub">{{ receita_semana.n|default:0 }} pedido(s)</div>
     </div>
-    <div class="card">
-      <h3>Receita mês</h3>
+    <div class="card ok">
+      <h3>Receita {{ mes_label }}</h3>
       <div class="big">R$ {{ receita_mes.total|default:"0,00" }}</div>
       <div class="sub">{{ receita_mes.n|default:0 }} pedido(s)</div>
+    </div>
+    <div class="card">
+      <h3>Ticket médio {{ mes_label }}</h3>
+      <div class="big">{% if ticket_medio_mes %}R$ {{ ticket_medio_mes|floatformat:2 }}{% else %}—{% endif %}</div>
+      <div class="sub">por pedido no mês</div>
     </div>
     <div class="card {% if pedidos_pendentes_count > 0 %}warning{% endif %}">
       <h3>Pendentes &gt; 1h</h3>
