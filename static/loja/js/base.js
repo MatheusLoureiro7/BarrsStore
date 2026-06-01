@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 })();
 
-// ── Newsletter premium — captura local sem backend (frontend-only) ─
+// ── Newsletter footer — captura celular e salva como Lead ─────────
 (function () {
   var forms = document.querySelectorAll('[data-bs-newsletter]');
   if (!forms.length) return;
@@ -234,25 +234,61 @@ document.addEventListener('DOMContentLoaded', function () {
   forms.forEach(function (form) {
     var wrap = form.closest('.bs-newsletter');
     if (!wrap) return;
+    var input = form.querySelector('input[name="telefone"]');
+    if (!input) return;
+    var btn = form.querySelector('button[type="submit"]');
+
     try {
       if (localStorage.getItem(STORAGE_KEY)) wrap.classList.add('is-sent');
-    } catch (e) { /* storage indisponível: segue normal */ }
+    } catch (e) { /* storage indisponível */ }
+
+    // Máscara (11) 99999-9999
+    input.addEventListener('input', function () {
+      var v = input.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 6) v = '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
+      else if (v.length > 2) v = '(' + v.slice(0, 2) + ') ' + v.slice(2);
+      input.value = v;
+    });
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var input = form.querySelector('input[type="email"]');
-      if (!input) return;
-      var email = (input.value || '').trim();
-      var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      if (!ok) {
+      var digits = (input.value || '').replace(/\D/g, '');
+      if (digits.length < 10) {
         input.focus();
         input.setAttribute('aria-invalid', 'true');
-        input.style.borderColor = 'rgba(212, 92, 82, 0.55)';
+        input.style.borderColor = 'rgba(212,92,82,0.55)';
         return;
       }
       input.removeAttribute('aria-invalid');
       input.style.borderColor = '';
-      wrap.classList.add('is-sent');
-      try { localStorage.setItem(STORAGE_KEY, email); } catch (e) { /* ignore */ }
+
+      var csrf = (form.querySelector('input[name="csrfmiddlewaretoken"]') || {}).value || '';
+      var url  = form.dataset.url || '/lead/footer/';
+      if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrf,
+        },
+        body: 'telefone=' + encodeURIComponent(digits),
+        credentials: 'same-origin',
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.ok) {
+            wrap.classList.add('is-sent');
+            try { localStorage.setItem(STORAGE_KEY, '1'); } catch (ex) { /* ignore */ }
+          } else {
+            if (btn) { btn.disabled = false; btn.textContent = 'Inscrever-se'; }
+            input.setAttribute('aria-invalid', 'true');
+            input.style.borderColor = 'rgba(212,92,82,0.55)';
+          }
+        })
+        .catch(function () {
+          if (btn) { btn.disabled = false; btn.textContent = 'Inscrever-se'; }
+        });
     });
   });
 })();

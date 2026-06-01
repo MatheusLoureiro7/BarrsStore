@@ -400,6 +400,30 @@ def deletar_item(request, item_id):
 
 @require_POST
 @ratelimit(key='ip', rate='10/m', method='POST', block=True)
+def salvar_lead_footer(request):
+    telefone = apenas_digitos(request.POST.get('telefone', ''))
+    if len(telefone) < 10:
+        return JsonResponse({'ok': False, 'erro': 'Informe um celular valido com DDD.'}, status=400)
+
+    if not request.session.session_key:
+        request.session.save()
+    sessao_key = request.session.session_key
+
+    if not Lead.objects.filter(telefone=telefone).exists():
+        Lead.objects.create(
+            nome='Lista exclusiva',
+            telefone=telefone,
+            aceita_whatsapp=True,
+            origem='footer',
+            sessao_key=sessao_key,
+        )
+        logger.info('[LEAD] Lead footer salvo: telefone=%s', telefone)
+
+    return JsonResponse({'ok': True})
+
+
+@require_POST
+@ratelimit(key='ip', rate='10/m', method='POST', block=True)
 def salvar_lead_cliente(request):
     nome = request.POST.get('nome', '').strip()
     telefone = apenas_digitos(request.POST.get('telefone', ''))

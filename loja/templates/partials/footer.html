@@ -64,13 +64,14 @@
       <span class="bs-newsletter__eyebrow">Lista exclusiva</span>
       <h2 class="bs-newsletter__title" id="bs-newsletter-title">Receba novidades e lançamentos exclusivos</h2>
       <p class="bs-newsletter__lead">Acesso antecipado a novas coleções, drops limitados e ofertas reservadas para a nossa lista.</p>
-      <form class="bs-newsletter__form" data-bs-newsletter novalidate>
-        <input type="email" name="email" required autocomplete="email"
-               class="bs-newsletter__input" placeholder="seu melhor e-mail" aria-label="Seu e-mail">
+      <form class="bs-newsletter__form" data-bs-newsletter data-url="{% url 'salvar_lead_footer' %}" novalidate>
+        {% csrf_token %}
+        <input type="tel" name="telefone" required autocomplete="tel" inputmode="numeric"
+               class="bs-newsletter__input" placeholder="(11) 99999-9999" aria-label="Seu celular com DDD">
         <button type="submit" class="bs-newsletter__btn">Inscrever-se</button>
       </form>
-      <small class="bs-newsletter__note">Sem spam. Apenas o que merece chegar à sua caixa.</small>
-      <p class="bs-newsletter__msg" role="status" aria-live="polite">Pronto! Você entrou para a lista — fique de olho no e-mail.</p>
+      <small class="bs-newsletter__note">Sem spam. Só o que merece chegar até você.</small>
+      <p class="bs-newsletter__msg" role="status" aria-live="polite">Pronto! Você entrou para a lista exclusiva.</p>
     </section>
 
     <div class="premium-footer__trust" aria-label="Compromissos da Barrs Store">
