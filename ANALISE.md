@@ -459,52 +459,66 @@ Sem `--workers`, roda 1 worker síncrono. Para tráfego concorrente mínimo, adi
 
 ## Tabela Resumo
 
-| # | ID | Área | Problema | Arquivo | Linha | Prioridade |
-|---|----|------|----------|---------|-------|------------|
-| 1 | SEG-01 | Segurança | `.env` com credenciais reais commitado | `.env` | — | **ALTA** |
-| 2 | SEG-02 | Segurança | Open redirect no login (`next` sem validação) | `views.py` | 2665 | **ALTA** |
-| 3 | SEG-03 | Segurança | Webhook MP processa requests com assinatura inválida | `views.py` | 2568 | **ALTA** |
-| 4 | SEG-04 | Segurança | `CACHES` não configurado — dedup de webhook falha após restart | `settings.py` | — | **ALTA** |
-| 5 | CFG-01 | Config | `EMAIL_BACKEND` não configurado | `settings.py` | — | **ALTA** |
-| 6 | PERF-01 | Performance | `ItemPedido.objects.create` em loop (sem `bulk_create`) | `views.py` | 2205 | **ALTA** |
-| 7 | PERF-02 | Performance | N+1 em email — `itens.all()` sem `select_related` | `views.py` | 933 | **ALTA** |
-| 8 | MOD-01 | Models | `ItemCarrinho` sem `unique_together` | `models.py` | 331 | **ALTA** |
-| 9 | COD-01 | Código | `views.py` monolítico — 2547 linhas, 97 funções | `views.py` | — | **ALTA** |
-| 10 | COD-02 | Código | `checkout()` com ~230 linhas, múltiplas responsabilidades | `views.py` | 2005 | **ALTA** |
-| 11 | TPL-01 | Templates | ~418 linhas de JS inline em `confirmacao.html` | `confirmacao.html` | — | **ALTA** |
-| 12 | PERF-03 | Performance | N+1 em linha 2268 — `itens.all()` sem `select_related` | `views.py` | 2268 | **MÉDIA** |
-| 13 | PERF-04 | Performance | `Produto` sem índice composto `(visivel, criado_em)` | `models.py` | 76 | **MÉDIA** |
-| 14 | PERF-05 | Performance | `EmailPendente` sem índice em `(status, criado_em)` | `models.py` | 508 | **MÉDIA** |
-| 15 | COD-03 | Código | 5 funções `enviar_email_poscompra_N` quase idênticas | `views.py` | 1088 | **MÉDIA** |
-| 16 | COD-04 | Código | Lógica de frete dividida entre `models.py` e `views.py` | `models.py` / `views.py` | 25 / 720 | **MÉDIA** |
-| 17 | MOD-02 | Models | `Produto` sem `class Meta` / sem índices | `models.py` | 56 | **MÉDIA** |
-| 18 | TPL-02 | Templates | URLs hardcoded em vez de `{% url %}` | Vários | — | **MÉDIA** |
-| 19 | TPL-03 | Templates | Imagens below-fold sem `loading="lazy"` | `sobre.html`, etc. | 153+ | **MÉDIA** |
-| 20 | COD-05 | Código | `TextField` com `max_length` (não enforçado no DB) | `models.py` | 395 | **BAIXA** |
-| 21 | MOD-03 | Models | `Pedido.forma_pagamento` sem `db_index` | `models.py` | 369 | **BAIXA** |
-| 22 | CFG-02 | Config | Gunicorn sem workers configurados | `railway.json` | 8 | **BAIXA** |
-| 23 | TPL-04 | Templates | Inline styles em SVGs em vez de classes CSS | Vários | — | **BAIXA** |
+| # | ID | Área | Problema | Arquivo | Linha | Prioridade | Status |
+|---|----|------|----------|---------|-------|------------|--------|
+| 1 | SEG-01 | Segurança | `.env` com credenciais reais commitado | `.env` | — | **ALTA** | ✅ Feito |
+| 2 | SEG-02 | Segurança | Open redirect no login (`next` sem validação) | `views.py` | 2665 | **ALTA** | ✅ Feito |
+| 3 | SEG-03 | Segurança | Webhook MP processa requests com assinatura inválida | `views.py` | 2568 | **ALTA** | ✅ Feito |
+| 4 | SEG-04 | Segurança | `CACHES` não configurado — dedup de webhook falha após restart | `settings.py` | — | **ALTA** | ✅ Feito |
+| 5 | CFG-01 | Config | `EMAIL_BACKEND` não configurado | `settings.py` | — | **ALTA** | ✅ Feito |
+| 6 | PERF-01 | Performance | `ItemPedido.objects.create` em loop (sem `bulk_create`) | `views.py` | 2205 | **ALTA** | ✅ Feito |
+| 7 | PERF-02 | Performance | N+1 em email — `itens.all()` sem `select_related` | `views.py` | 933 | **ALTA** | ✅ Feito |
+| 8 | MOD-01 | Models | `ItemCarrinho` sem `unique_together` | `models.py` | 331 | **ALTA** | ✅ Feito |
+| 9 | COD-01 | Código | `views.py` monolítico — 2700+ linhas, 97 funções | `views.py` | — | **ALTA** | ⏳ Backlog |
+| 10 | COD-02 | Código | `checkout()` com ~230 linhas, múltiplas responsabilidades | `views.py` | 2005 | **ALTA** | ⏳ Backlog |
+| 11 | TPL-01 | Templates | ~418 linhas de JS inline em `confirmacao.html` | `confirmacao.html` | — | **ALTA** | ✅ Feito |
+| 12 | PERF-03 | Performance | N+1 em linha 2268 — `itens.all()` sem `select_related` | `views.py` | 2268 | **MÉDIA** | ✅ Feito |
+| 13 | PERF-04 | Performance | `Produto` sem índice composto `(visivel, criado_em)` | `models.py` | 76 | **MÉDIA** | ✅ Feito |
+| 14 | PERF-05 | Performance | `EmailPendente` sem índice em `(status, criado_em)` | `models.py` | 508 | **MÉDIA** | ✅ Feito |
+| 15 | COD-03 | Código | 5 funções `enviar_email_poscompra_N` quase idênticas | `views.py` | 1088 | **MÉDIA** | ✅ Feito |
+| 16 | COD-04 | Código | Lógica de frete dividida entre `models.py` e `views.py` | `models.py` / `views.py` | 25 / 720 | **MÉDIA** | ⏳ Backlog |
+| 17 | MOD-02 | Models | `Produto` sem `class Meta` / sem índices | `models.py` | 56 | **MÉDIA** | ✅ Feito (PERF-04) |
+| 18 | TPL-02 | Templates | URLs hardcoded em vez de `{% url %}` | Vários | — | **MÉDIA** | ⏳ Backlog |
+| 19 | TPL-03 | Templates | Imagens below-fold sem `loading="lazy"` | `sobre.html`, etc. | 153+ | **MÉDIA** | ⏳ Backlog |
+| 20 | COD-05 | Código | `TextField` com `max_length` (não enforçado no DB) | `models.py` | 395 | **BAIXA** | ⏳ Backlog |
+| 21 | MOD-03 | Models | `Pedido.forma_pagamento` sem `db_index` | `models.py` | 369 | **BAIXA** | ⏳ Backlog |
+| 22 | CFG-02 | Config | Gunicorn sem workers configurados | `railway.json` | 8 | **BAIXA** | ⏳ Backlog |
+| 23 | TPL-04 | Templates | Inline styles em SVGs em vez de classes CSS | Vários | — | **BAIXA** | ⏳ Backlog |
 
 ---
 
-## Próximos passos sugeridos
+## Histórico de sprints
 
-### Imediato (hoje)
-- **SEG-01** — remover `.env` do git e rotacionar todos os tokens expostos
-- **SEG-03** — garantir `MERCADOPAGO_WEBHOOK_STRICT=True` em produção via env var
+### Imediato — concluído
+- ✅ **SEG-01** — `.env` removido do tracking, adicionado ao `.gitignore`
+- ✅ **SEG-03** — `MERCADOPAGO_WEBHOOK_STRICT=True` em produção
 
-### Sprint 1
-- **SEG-02** — open redirect no login
-- **SEG-04 + CFG-01** — configurar Redis e EMAIL_BACKEND
-- **PERF-01** — trocar loop de `ItemPedido.create` por `bulk_create`
-- **PERF-02 + PERF-03** — adicionar `select_related` nas duas queries N+1
-- **MOD-01** — `unique_together` no `ItemCarrinho`
+### Sprint 1 — concluída
+- ✅ **SEG-02** — open redirect no login corrigido com `url_has_allowed_host_and_scheme`
+- ✅ **SEG-04 + CFG-01** — Redis como CACHES backend + `EMAIL_BACKEND` configurado
+- ✅ **PERF-01** — `bulk_create` substituindo loop de `ItemPedido.objects.create`
+- ✅ **PERF-02 + PERF-03** — `select_related('produto')` adicionado nas duas queries N+1
+- ✅ **MOD-01** — `unique_together = [('carrinho', 'produto', 'tamanho')]` em `ItemCarrinho`
 
-### Sprint 2
-- **PERF-04 + PERF-05** — criar indexes nos models `Produto` e `EmailPendente`
-- **COD-03** — consolidar funções `enviar_email_poscompra_N`
-- **TPL-01** — extrair JS de `confirmacao.html` para arquivo estático
+### Sprint 2 — concluída
+- ✅ **PERF-04** — `class Meta` com indexes `(visivel, -criado_em)` e `(visivel, destaque)` em `Produto`
+- ✅ **PERF-05** — index `(status, criado_em)` em `EmailPendente`
+- ✅ **COD-03** — helper `_enviar_poscompra()` extrai boilerplate das 5 funções poscompra
+- ✅ **TPL-01** — JS extraído para `static/loja/js/confirmacao.js`; valores Django via `window.BARRS_PAYMENT_CONFIG`
 
-### Backlog
-- **COD-01 + COD-02** — quebrar `views.py` em módulos (refactor de maior impacto)
-- Demais itens de prioridade BAIXA
+## Backlog (pendente)
+
+### Alta prioridade
+- ⏳ **COD-01** — quebrar `views.py` em módulos (`store.py`, `cart.py`, `payment.py`, `account.py`, `shipping.py`, `emails.py`, `dashboard.py`)
+- ⏳ **COD-02** — decompor `checkout()` em helpers privados (`_validar_dados_checkout`, `_resolver_cliente`, `_criar_pedido_com_itens`, `_processar_envio_melhor_envio`)
+
+### Média prioridade
+- ⏳ **COD-04** — consolidar lógica de frete em `loja/shipping.py`
+- ⏳ **TPL-02** — substituir URLs hardcoded por `{% url %}` em `sobre.html`, `contato.html`, `garantia.html`, `politica.html`
+- ⏳ **TPL-03** — adicionar `loading="lazy" decoding="async"` em imagens below-fold (`sobre.html:153`, `contato.html`, `entrega.html`)
+
+### Baixa prioridade
+- ⏳ **COD-05** — trocar `TextField(max_length=500)` por `CharField(max_length=500)` em `Pedido.observacoes`
+- ⏳ **MOD-03** — `db_index=True` em `Pedido.forma_pagamento`
+- ⏳ **CFG-02** — `--workers 2` no Gunicorn (após Redis estável em produção)
+- ⏳ **TPL-04** — substituir `style="width:Npx;height:Npx"` em SVGs por classes CSS
