@@ -930,7 +930,7 @@ def _email_pedido_resumo(pedido):
           <td style="padding:13px 0;border-bottom:1px solid #E8E3D8;color:#738269;font-size:14px;font-weight:700;text-align:right">R$ {item.preco_unitario}</td>
         </tr>
         """
-        for item in pedido.itens.all()
+        for item in pedido.itens.select_related('produto').all()
     ])
     frete_texto = f"R$ {pedido.frete}" if pedido.frete > 0 else "Gratis"
     desconto_html = ''
@@ -2267,7 +2267,7 @@ def criar_preferencia(request, pedido_id, token):
             "currency_id": "BRL",
         })
     else:
-        for item in pedido.itens.all():
+        for item in pedido.itens.select_related('produto').all():
             items.append({
                 "title": item.nome_produto,
                 "quantity": int(item.quantidade),
