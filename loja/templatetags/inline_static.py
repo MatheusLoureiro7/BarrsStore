@@ -36,5 +36,5 @@ def inline_static(path):
 def first_word(value):
     """Retorna a primeira palavra do nome, capitalizada."""
     if not value:
-        return value
+        return ''
     return str(value).split()[0].capitalize()

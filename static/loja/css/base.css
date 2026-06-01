@@ -935,7 +935,8 @@ p { line-height: var(--leading-relaxed); }
 .wa-float svg { width: 18px; height: 18px; fill: currentColor; }
 
 @media (max-width: 640px) {
-  .wa-float { width: 36px; height: 36px; bottom: var(--space-5); right: var(--space-5); }
+  /* Área de toque mínima WCAG 2.5.5 (44px) via padding; visual permanece menor */
+  .wa-float { width: 36px; height: 36px; bottom: var(--space-5); right: var(--space-5); padding: 4px; }
   .wa-float svg { width: 16px; height: 16px; }
 }
 
