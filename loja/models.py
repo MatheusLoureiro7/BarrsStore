@@ -366,7 +366,7 @@ class Pedido(models.Model):
     bairro = models.CharField(max_length=100)
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=2)
-    forma_pagamento = models.CharField(max_length=20, choices=PAGAMENTO_CHOICES)
+    forma_pagamento = models.CharField(max_length=20, choices=PAGAMENTO_CHOICES, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', db_index=True)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -392,7 +392,7 @@ class Pedido(models.Model):
     meta_purchase_sent = models.BooleanField(default=False)
     # Atribuição: UTM e gclid/fbclid capturados no momento do pedido (last-touch).
     origem_utm = models.JSONField(default=dict, blank=True, help_text='Parâmetros utm_*, gclid e fbclid da última visita.')
-    observacoes = models.TextField(blank=True, default='', max_length=500, help_text='Instruções do cliente: embrulho de presente, observações de entrega, etc.')
+    observacoes = models.CharField(max_length=500, blank=True, default='', help_text='Instruções do cliente: embrulho de presente, observações de entrega, etc.')
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'
@@ -423,6 +423,7 @@ class Cupom(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='percentual')
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     ativo = models.BooleanField(default=True)
+    so_clientes_fidelidade = models.BooleanField(default=False, help_text='Somente para clientes com pelo menos 1 pedido confirmado.')
     uso_maximo = models.PositiveIntegerField(default=0, help_text='0 = sem limite')
     usado = models.PositiveIntegerField(default=0)
     valor_minimo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -436,13 +437,19 @@ class Cupom(models.Model):
     def __str__(self):
         return self.codigo.upper()
 
-    def valido_para(self, subtotal):
+    def valido_para(self, subtotal, user=None):
         if not self.ativo:
             return False, 'Cupom inativo.'
         if self.uso_maximo and self.usado >= self.uso_maximo:
             return False, 'Cupom esgotado.'
         if subtotal < self.valor_minimo:
             return False, f'Cupom valido para compras a partir de R$ {self.valor_minimo}.'
+        if self.so_clientes_fidelidade:
+            if not user or not getattr(user, 'is_authenticated', False):
+                return False, 'Este cupom e exclusivo para clientes com compras anteriores. Faca login para continuar.'
+            tem_pedido = user.pedidos.filter(status__in=['confirmado', 'enviado', 'entregue']).exists()
+            if not tem_pedido:
+                return False, 'Este cupom e exclusivo para quem ja realizou uma compra na Barrs Store.'
         return True, ''
 
     def calcular_desconto(self, subtotal, frete=Decimal('0')):

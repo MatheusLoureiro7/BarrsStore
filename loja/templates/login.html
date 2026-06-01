@@ -16,7 +16,7 @@
   </a>
   <div class="nav__right">
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
-      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      <svg class="icon icon--16" aria-hidden="true"><use href="#i-cart"/></svg>
       Carrinho
       {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
     </a>

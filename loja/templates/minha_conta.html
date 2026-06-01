@@ -16,7 +16,7 @@
   </a>
   <div class="nav__right">
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
-      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      <svg class="icon icon--16" aria-hidden="true"><use href="#i-cart"/></svg>
       Carrinho
       {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
     </a>
@@ -31,7 +31,7 @@
     <span id="bc-active">Pedidos</span>
   </nav>
   <a href="{% url 'logout' %}" class="account-exit">
-    <svg class="icon" style="width:11px;height:11px" aria-hidden="true"><use href="#i-logout"/></svg>
+    <svg class="icon icon--11" aria-hidden="true"><use href="#i-logout"/></svg>
     Sair
   </a>
 </div>
@@ -57,11 +57,11 @@
   <!-- ABAS -->
   <div class="tabs">
     <a class="tab active" onclick="trocarAba(event, 'pedidos', this, 'Pedidos')" href="#">
-      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-package"/></svg>
+      <svg class="icon icon--14" aria-hidden="true"><use href="#i-package"/></svg>
       Meus pedidos
     </a>
     <a class="tab" onclick="trocarAba(event, 'dados', this, 'Meus dados')" href="#">
-      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-user"/></svg>
+      <svg class="icon icon--14" aria-hidden="true"><use href="#i-user"/></svg>
       Meus dados
     </a>
   </div>

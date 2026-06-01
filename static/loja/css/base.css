@@ -897,6 +897,19 @@ p { line-height: var(--leading-relaxed); }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+.icon--11  { width: 11px; height: 11px; }
+.icon--12  { width: 12px; height: 12px; }
+.icon--13  { width: 13px; height: 13px; }
+.icon--14  { width: 14px; height: 14px; }
+.icon--16  { width: 16px; height: 16px; }
+.icon--18  { width: 18px; height: 18px; }
+.icon--21  { width: 21px; height: 21px; }
+.icon--22  { width: 22px; height: 22px; }
+.icon--24  { width: 24px; height: 24px; }
+.icon--28  { width: 28px; height: 28px; }
+.icon--48  { width: 48px; height: 48px; }
+.icon--64  { width: 64px; height: 64px; }
+.icon--heavy { stroke-width: 2.5; }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }

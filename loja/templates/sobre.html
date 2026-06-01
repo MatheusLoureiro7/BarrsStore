@@ -29,13 +29,13 @@
   <div class="nav__right">
     {% if user.is_authenticated %}
       <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+        <svg class="icon icon--16" aria-hidden="true"><use href="#i-user"/></svg>
       </a>
     {% else %}
       <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
     {% endif %}
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
-      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      <svg class="icon icon--16" aria-hidden="true"><use href="#i-cart"/></svg>
       Carrinho
       {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
     </a>

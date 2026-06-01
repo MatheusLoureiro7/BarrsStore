@@ -22,13 +22,13 @@
   <div class="nav__right">
     {% if user.is_authenticated %}
       <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+        <svg class="icon icon--16" aria-hidden="true"><use href="#i-user"/></svg>
       </a>
     {% else %}
       <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
     {% endif %}
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
-      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      <svg class="icon icon--16" aria-hidden="true"><use href="#i-cart"/></svg>
       Carrinho
       {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
     </a>
@@ -56,7 +56,7 @@
   <div class="warranty-grid">
     <article class="w-card">
       <div class="w-card__icon">
-        <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-shield"/></svg>
+        <svg class="icon icon--18" aria-hidden="true"><use href="#i-shield"/></svg>
       </div>
       <h2>O que cobre</h2>
       <p class="w-card__text">A garantia cobre defeitos identificados em condições normais de uso, sempre mediante análise da peça.</p>
@@ -70,7 +70,7 @@
 
     <article class="w-card">
       <div class="w-card__icon">
-        <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-close"/></svg>
+        <svg class="icon icon--18" aria-hidden="true"><use href="#i-close"/></svg>
       </div>
       <h2>O que não cobre</h2>
       <ul class="w-card__list w-card__list--no">
@@ -85,7 +85,7 @@
 
     <article class="w-card w-card--wide">
       <div class="w-card__icon">
-        <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-leaf"/></svg>
+        <svg class="icon icon--18" aria-hidden="true"><use href="#i-leaf"/></svg>
       </div>
       <h2>Cuidados com suas semijoias</h2>
       <p class="w-card__text">As semijoias precisam de alguns cuidados para manter o brilho por mais tempo. Com o uso diário, é normal acumular suor, poeira, cremes e perfumes, o que pode alterar temporariamente o brilho da peça. Recomendamos higienização periódica e armazenamento em local seco.</p>
@@ -93,7 +93,7 @@
 
     <article class="w-card w-card--wide">
       <div class="w-card__icon">
-        <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-sparkle"/></svg>
+        <svg class="icon icon--18" aria-hidden="true"><use href="#i-sparkle"/></svg>
       </div>
       <h2>Como cuidar da sua semijoia</h2>
       <div class="steps-grid">
@@ -132,7 +132,7 @@
       <p>Caso precise de ajuda relacionada à sua peça, fale com nossa equipe pelo WhatsApp. Vamos orientar você com cuidado e rapidez.</p>
     </div>
     <a href="https://wa.me/5511913225256?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20garantia%20da%20Barrs%20Store." class="support-cta" target="_blank" rel="noopener">
-      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+      <svg class="icon icon--16" aria-hidden="true"><use href="#i-whatsapp"/></svg>
       Falar no WhatsApp
     </a>
   </section>

@@ -480,10 +480,10 @@ Sem `--workers`, roda 1 worker síncrono. Para tráfego concorrente mínimo, adi
 | 17 | MOD-02 | Models | `Produto` sem `class Meta` / sem índices | `models.py` | 56 | **MÉDIA** | ✅ Feito (PERF-04) |
 | 18 | TPL-02 | Templates | URLs hardcoded em vez de `{% url %}` | Vários | — | **MÉDIA** | ✅ Feito |
 | 19 | TPL-03 | Templates | Imagens below-fold sem `loading="lazy"` | `sobre.html`, etc. | 153+ | **MÉDIA** | ✅ Feito |
-| 20 | COD-05 | Código | `TextField` com `max_length` (não enforçado no DB) | `models.py` | 395 | **BAIXA** | ⏳ Backlog |
-| 21 | MOD-03 | Models | `Pedido.forma_pagamento` sem `db_index` | `models.py` | 369 | **BAIXA** | ⏳ Backlog |
-| 22 | CFG-02 | Config | Gunicorn sem workers configurados | `railway.json` | 8 | **BAIXA** | ⏳ Backlog |
-| 23 | TPL-04 | Templates | Inline styles em SVGs em vez de classes CSS | Vários | — | **BAIXA** | ⏳ Backlog |
+| 20 | COD-05 | Código | `TextField` com `max_length` (não enforçado no DB) | `models.py` | 395 | **BAIXA** | ✅ Feito |
+| 21 | MOD-03 | Models | `Pedido.forma_pagamento` sem `db_index` | `models.py` | 369 | **BAIXA** | ✅ Feito |
+| 22 | CFG-02 | Config | Gunicorn sem workers configurados | `railway.json` | 8 | **BAIXA** | ✅ Feito |
+| 23 | TPL-04 | Templates | Inline styles em SVGs em vez de classes CSS | Vários | — | **BAIXA** | ✅ Feito |
 
 ---
 
@@ -510,15 +510,17 @@ Sem `--workers`, roda 1 worker síncrono. Para tráfego concorrente mínimo, adi
 - ✅ **COD-01** — `views.py` quebrado em pacote `views/` com 8 módulos (`utils.py`, `store.py`, `cart.py`, `payment.py`, `account.py`, `shipping.py`, `emails.py`, `dashboard.py`) + `__init__.py` re-exportando tudo
 - ✅ **COD-02** — `checkout()` decomposto em helpers privados (`_validar_form_checkout`, `_resolver_cliente`, `_criar_pedido_com_itens`, `_notificar_novo_pedido`)
 
+### Sprint 5 — concluída
+- ✅ **COD-05** — `TextField(max_length=500)` → `CharField(max_length=500)` em `Pedido.observacoes`
+- ✅ **MOD-03** — `db_index=True` em `Pedido.forma_pagamento`
+- ✅ **CFG-02** — `--workers 2` adicionado ao Gunicorn em `railway.json`
+- ✅ **TPL-04** — 70 inline styles `style="width:Npx;height:Npx"` em SVGs substituídos por classes `.icon--N` em 21 templates; classes adicionadas em `base.css`
+
 ### Sprint 4 — concluída
 - ✅ **COD-04** — `calcular_frete_por_estado` + constantes movidos para `loja/shipping.py`; re-exportados de `models.py` (compat com tests) e de `views/shipping.py` (API unificada de frete)
 - ✅ **TPL-02** — URLs hardcoded substituídas por `{% url %}` em `sobre.html`, `contato.html`, `garantia.html`, `politica.html`, `entrega.html`
 - ✅ **TPL-03** — Imagem below-fold em `sobre.html` já tinha `loading="lazy"`; demais templates (`contato.html`, `entrega.html`, `garantia.html`) não possuem imagens below-fold
 
-## Backlog (pendente)
+## Backlog
 
-### Baixa prioridade
-- ⏳ **COD-05** — trocar `TextField(max_length=500)` por `CharField(max_length=500)` em `Pedido.observacoes`
-- ⏳ **MOD-03** — `db_index=True` em `Pedido.forma_pagamento`
-- ⏳ **CFG-02** — `--workers 2` no Gunicorn (após Redis estável em produção)
-- ⏳ **TPL-04** — substituir `style="width:Npx;height:Npx"` em SVGs por classes CSS
+Todos os itens identificados foram concluídos.

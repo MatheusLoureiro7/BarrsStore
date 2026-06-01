@@ -16,7 +16,7 @@
   </a>
   <div class="nav__right">
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
-      <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
+      <svg class="icon icon--16" aria-hidden="true"><use href="#i-cart"/></svg>
       Carrinho
       {% if qtd_carrinho > 0 %}<span class="badge-count">{{ qtd_carrinho }}</span>{% endif %}
     </a>
@@ -48,14 +48,14 @@
   <div class="timeline" aria-label="Status do pedido">
     <div class="timeline-step">
       <div class="timeline-dot done">
-        <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+        <svg class="icon icon--11 icon--heavy" aria-hidden="true"><use href="#i-check"/></svg>
       </div>
       <span class="timeline-label">Recebido</span>
     </div>
     <div class="timeline-step">
       <div class="timeline-dot {% if status == 'confirmado' %}active{% elif status == 'enviado' or status == 'entregue' %}done{% endif %}">
         {% if status == 'confirmado' or status == 'enviado' or status == 'entregue' %}
-          <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+          <svg class="icon icon--11 icon--heavy" aria-hidden="true"><use href="#i-check"/></svg>
         {% else %}2{% endif %}
       </div>
       <span class="timeline-label {% if status == 'confirmado' %}active{% endif %}">Confirmado</span>
@@ -63,7 +63,7 @@
     <div class="timeline-step">
       <div class="timeline-dot {% if status == 'enviado' %}active{% elif status == 'entregue' %}done{% endif %}">
         {% if status == 'enviado' or status == 'entregue' %}
-          <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+          <svg class="icon icon--11 icon--heavy" aria-hidden="true"><use href="#i-check"/></svg>
         {% else %}3{% endif %}
       </div>
       <span class="timeline-label {% if status == 'enviado' %}active{% endif %}">Enviado</span>
@@ -71,7 +71,7 @@
     <div class="timeline-step">
       <div class="timeline-dot {% if status == 'entregue' %}active{% endif %}">
         {% if status == 'entregue' %}
-          <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+          <svg class="icon icon--11 icon--heavy" aria-hidden="true"><use href="#i-check"/></svg>
         {% else %}4{% endif %}
       </div>
       <span class="timeline-label {% if status == 'entregue' %}active{% endif %}">Entregue</span>
@@ -168,7 +168,7 @@
   </section>
 
   <a href="{% url 'minha_conta' %}" class="detail-back">
-    <svg class="icon" style="width:12px;height:12px" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+    <svg class="icon icon--12" aria-hidden="true"><use href="#i-arrow-left"/></svg>
     Voltar para Minha Conta
   </a>
 

@@ -20,7 +20,7 @@
   <div class="nav__right">
     {% if user.is_authenticated %}
       <a href="{% url 'minha_conta' %}" class="nav__icon-btn" aria-label="Minha conta">
-        <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-user"/></svg>
+        <svg class="icon icon--16" aria-hidden="true"><use href="#i-user"/></svg>
       </a>
     {% else %}
       <a href="{% url 'login' %}" class="nav__icon-btn">Entrar</a>
@@ -54,7 +54,7 @@
             <img src="{{ item.produto.imagem|cloudinary_url:'c_fill,w_360,h_360,q_auto,f_auto' }}" alt="{{ item.produto.alt_text }}" width="120" height="120" loading="lazy" decoding="async">
           {% else %}
             <div class="cart-item__placeholder">
-              <svg class="icon" style="width:28px;height:28px" aria-hidden="true"><use href="#i-gem"/></svg>
+              <svg class="icon icon--28" aria-hidden="true"><use href="#i-gem"/></svg>
             </div>
           {% endif %}
         </div>
@@ -84,7 +84,7 @@
           <form method="POST" action="{% url 'deletar_item' item.id %}" class="remover-form" data-confirm="Remover {{ item.produto.nome }}?">
             {% csrf_token %}
             <button type="submit" class="cart-item__remove" title="Remover" aria-label="Remover item">
-              <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-trash"/></svg>
+              <svg class="icon icon--14" aria-hidden="true"><use href="#i-trash"/></svg>
             </button>
           </form>
           <div class="cart-item__subtotal">R$ {{ item.subtotal }}</div>
@@ -198,7 +198,7 @@
   <!-- CARRINHO VAZIO -->
   <div class="empty-cart">
     <div class="empty-cart__icon">
-      <svg class="icon" style="width:28px;height:28px" aria-hidden="true"><use href="#i-cart"/></svg>
+      <svg class="icon icon--28" aria-hidden="true"><use href="#i-cart"/></svg>
     </div>
     <p>Seu carrinho está vazio.</p>
     <a href="/">Ver produtos</a>
