@@ -469,8 +469,8 @@ Sem `--workers`, roda 1 worker síncrono. Para tráfego concorrente mínimo, adi
 | 6 | PERF-01 | Performance | `ItemPedido.objects.create` em loop (sem `bulk_create`) | `views.py` | 2205 | **ALTA** | ✅ Feito |
 | 7 | PERF-02 | Performance | N+1 em email — `itens.all()` sem `select_related` | `views.py` | 933 | **ALTA** | ✅ Feito |
 | 8 | MOD-01 | Models | `ItemCarrinho` sem `unique_together` | `models.py` | 331 | **ALTA** | ✅ Feito |
-| 9 | COD-01 | Código | `views.py` monolítico — 2700+ linhas, 97 funções | `views.py` | — | **ALTA** | ⏳ Backlog |
-| 10 | COD-02 | Código | `checkout()` com ~230 linhas, múltiplas responsabilidades | `views.py` | 2005 | **ALTA** | ⏳ Backlog |
+| 9 | COD-01 | Código | `views.py` monolítico — 2700+ linhas, 97 funções | `views.py` | — | **ALTA** | ✅ Feito |
+| 10 | COD-02 | Código | `checkout()` com ~230 linhas, múltiplas responsabilidades | `views.py` | 2005 | **ALTA** | ✅ Feito |
 | 11 | TPL-01 | Templates | ~418 linhas de JS inline em `confirmacao.html` | `confirmacao.html` | — | **ALTA** | ✅ Feito |
 | 12 | PERF-03 | Performance | N+1 em linha 2268 — `itens.all()` sem `select_related` | `views.py` | 2268 | **MÉDIA** | ✅ Feito |
 | 13 | PERF-04 | Performance | `Produto` sem índice composto `(visivel, criado_em)` | `models.py` | 76 | **MÉDIA** | ✅ Feito |
@@ -506,11 +506,11 @@ Sem `--workers`, roda 1 worker síncrono. Para tráfego concorrente mínimo, adi
 - ✅ **COD-03** — helper `_enviar_poscompra()` extrai boilerplate das 5 funções poscompra
 - ✅ **TPL-01** — JS extraído para `static/loja/js/confirmacao.js`; valores Django via `window.BARRS_PAYMENT_CONFIG`
 
-## Backlog (pendente)
+### Sprint 3 — concluída
+- ✅ **COD-01** — `views.py` quebrado em pacote `views/` com 8 módulos (`utils.py`, `store.py`, `cart.py`, `payment.py`, `account.py`, `shipping.py`, `emails.py`, `dashboard.py`) + `__init__.py` re-exportando tudo
+- ✅ **COD-02** — `checkout()` decomposto em helpers privados (`_validar_form_checkout`, `_resolver_cliente`, `_criar_pedido_com_itens`, `_notificar_novo_pedido`)
 
-### Alta prioridade
-- ⏳ **COD-01** — quebrar `views.py` em módulos (`store.py`, `cart.py`, `payment.py`, `account.py`, `shipping.py`, `emails.py`, `dashboard.py`)
-- ⏳ **COD-02** — decompor `checkout()` em helpers privados (`_validar_dados_checkout`, `_resolver_cliente`, `_criar_pedido_com_itens`, `_processar_envio_melhor_envio`)
+## Backlog (pendente)
 
 ### Média prioridade
 - ⏳ **COD-04** — consolidar lógica de frete em `loja/shipping.py`
