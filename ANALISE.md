@@ -476,10 +476,10 @@ Sem `--workers`, roda 1 worker síncrono. Para tráfego concorrente mínimo, adi
 | 13 | PERF-04 | Performance | `Produto` sem índice composto `(visivel, criado_em)` | `models.py` | 76 | **MÉDIA** | ✅ Feito |
 | 14 | PERF-05 | Performance | `EmailPendente` sem índice em `(status, criado_em)` | `models.py` | 508 | **MÉDIA** | ✅ Feito |
 | 15 | COD-03 | Código | 5 funções `enviar_email_poscompra_N` quase idênticas | `views.py` | 1088 | **MÉDIA** | ✅ Feito |
-| 16 | COD-04 | Código | Lógica de frete dividida entre `models.py` e `views.py` | `models.py` / `views.py` | 25 / 720 | **MÉDIA** | ⏳ Backlog |
+| 16 | COD-04 | Código | Lógica de frete dividida entre `models.py` e `views.py` | `models.py` / `views.py` | 25 / 720 | **MÉDIA** | ✅ Feito |
 | 17 | MOD-02 | Models | `Produto` sem `class Meta` / sem índices | `models.py` | 56 | **MÉDIA** | ✅ Feito (PERF-04) |
-| 18 | TPL-02 | Templates | URLs hardcoded em vez de `{% url %}` | Vários | — | **MÉDIA** | ⏳ Backlog |
-| 19 | TPL-03 | Templates | Imagens below-fold sem `loading="lazy"` | `sobre.html`, etc. | 153+ | **MÉDIA** | ⏳ Backlog |
+| 18 | TPL-02 | Templates | URLs hardcoded em vez de `{% url %}` | Vários | — | **MÉDIA** | ✅ Feito |
+| 19 | TPL-03 | Templates | Imagens below-fold sem `loading="lazy"` | `sobre.html`, etc. | 153+ | **MÉDIA** | ✅ Feito |
 | 20 | COD-05 | Código | `TextField` com `max_length` (não enforçado no DB) | `models.py` | 395 | **BAIXA** | ⏳ Backlog |
 | 21 | MOD-03 | Models | `Pedido.forma_pagamento` sem `db_index` | `models.py` | 369 | **BAIXA** | ⏳ Backlog |
 | 22 | CFG-02 | Config | Gunicorn sem workers configurados | `railway.json` | 8 | **BAIXA** | ⏳ Backlog |
@@ -510,12 +510,12 @@ Sem `--workers`, roda 1 worker síncrono. Para tráfego concorrente mínimo, adi
 - ✅ **COD-01** — `views.py` quebrado em pacote `views/` com 8 módulos (`utils.py`, `store.py`, `cart.py`, `payment.py`, `account.py`, `shipping.py`, `emails.py`, `dashboard.py`) + `__init__.py` re-exportando tudo
 - ✅ **COD-02** — `checkout()` decomposto em helpers privados (`_validar_form_checkout`, `_resolver_cliente`, `_criar_pedido_com_itens`, `_notificar_novo_pedido`)
 
-## Backlog (pendente)
+### Sprint 4 — concluída
+- ✅ **COD-04** — `calcular_frete_por_estado` + constantes movidos para `loja/shipping.py`; re-exportados de `models.py` (compat com tests) e de `views/shipping.py` (API unificada de frete)
+- ✅ **TPL-02** — URLs hardcoded substituídas por `{% url %}` em `sobre.html`, `contato.html`, `garantia.html`, `politica.html`, `entrega.html`
+- ✅ **TPL-03** — Imagem below-fold em `sobre.html` já tinha `loading="lazy"`; demais templates (`contato.html`, `entrega.html`, `garantia.html`) não possuem imagens below-fold
 
-### Média prioridade
-- ⏳ **COD-04** — consolidar lógica de frete em `loja/shipping.py`
-- ⏳ **TPL-02** — substituir URLs hardcoded por `{% url %}` em `sobre.html`, `contato.html`, `garantia.html`, `politica.html`
-- ⏳ **TPL-03** — adicionar `loading="lazy" decoding="async"` em imagens below-fold (`sobre.html:153`, `contato.html`, `entrega.html`)
+## Backlog (pendente)
 
 ### Baixa prioridade
 - ⏳ **COD-05** — trocar `TextField(max_length=500)` por `CharField(max_length=500)` em `Pedido.observacoes`

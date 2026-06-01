@@ -14,9 +14,6 @@
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" width="40" height="40" decoding="async">
     Barrs Store
   </a>
-  <ul class="nav__links">
-    <li><a href="/">Início</a></li>
-  </ul>
   <div class="nav__right">
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
       <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
@@ -26,21 +23,28 @@
   </div>
 </nav>
 
+<!-- TOPBAR: breadcrumb + sair -->
+<div class="account-topbar">
+  <nav class="account-breadcrumb" aria-label="Localização">
+    <a href="/">Minha Conta</a>
+    <span class="account-breadcrumb__sep" aria-hidden="true">›</span>
+    <span id="bc-active">Pedidos</span>
+  </nav>
+  <a href="{% url 'logout' %}" class="account-exit">
+    <svg class="icon" style="width:11px;height:11px" aria-hidden="true"><use href="#i-logout"/></svg>
+    Sair
+  </a>
+</div>
+
 <main class="account">
 
-  <!-- HEADER -->
+  <!-- HEADER COMPACTO -->
   <header class="account-header">
-    <div class="account-header__left">
-      <div class="account-avatar">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
-      <div>
-        <div class="account-header__name">{{ request.user.get_full_name|default:request.user.email }}</div>
-        <div class="account-header__email">{{ request.user.email }}</div>
-      </div>
+    <div class="account-avatar" aria-hidden="true">{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}</div>
+    <div class="account-header__info">
+      <div class="account-header__name">{{ request.user.get_full_name|default:request.user.email }}</div>
+      <div class="account-header__email">{{ request.user.email }}</div>
     </div>
-    <a href="{% url 'logout' %}" class="account-logout">
-      <svg class="icon" style="width:13px;height:13px" aria-hidden="true"><use href="#i-logout"/></svg>
-      Sair
-    </a>
   </header>
 
   <!-- MENSAGENS -->
@@ -52,12 +56,12 @@
 
   <!-- ABAS -->
   <div class="tabs">
-    <a class="tab active" onclick="trocarAba(event, 'pedidos', this)" href="#">
-      <svg class="icon" style="width:15px;height:15px" aria-hidden="true"><use href="#i-package"/></svg>
+    <a class="tab active" onclick="trocarAba(event, 'pedidos', this, 'Pedidos')" href="#">
+      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-package"/></svg>
       Meus pedidos
     </a>
-    <a class="tab" onclick="trocarAba(event, 'dados', this)" href="#">
-      <svg class="icon" style="width:15px;height:15px" aria-hidden="true"><use href="#i-user"/></svg>
+    <a class="tab" onclick="trocarAba(event, 'dados', this, 'Meus dados')" href="#">
+      <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-user"/></svg>
       Meus dados
     </a>
   </div>
@@ -68,37 +72,29 @@
 
       <div class="stats">
         <div class="stat-card">
-          <div class="stat-card__label">Total de pedidos</div>
           <div class="stat-card__value">{{ pedidos|length }}</div>
-          <div class="stat-card__sub">pedido{% if pedidos|length != 1 %}s{% endif %} realizado{% if pedidos|length != 1 %}s{% endif %}</div>
+          <div class="stat-card__label">Total de pedidos</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card__label">Valor total</div>
-          <div class="stat-card__value stat-card__value--brand">R$ {{ pedidos_total|default:"0" }}</div>
-          <div class="stat-card__sub">em compras</div>
+          <div class="stat-card__value stat-card__value--brand">R$ {{ pedidos_total }}</div>
+          <div class="stat-card__label">Total gasto</div>
         </div>
         <div class="stat-card">
+          <div class="stat-card__value">{{ pedidos_andamento }}</div>
           <div class="stat-card__label">Em andamento</div>
-          <div class="stat-card__value">{{ pedidos_andamento|default:"0" }}</div>
-          <div class="stat-card__sub">pedido{% if pedidos_andamento != 1 %}s{% endif %} ativo{% if pedidos_andamento != 1 %}s{% endif %}</div>
         </div>
       </div>
 
       <div class="orders">
         {% for pedido in pedidos %}
         <article class="order-card">
-          <div class="order-card__icon">
-            <svg class="icon" style="width:18px;height:18px" aria-hidden="true"><use href="#i-package"/></svg>
-          </div>
-          <div class="order-card__info">
+          <div class="order-card__main">
             <div class="order-card__num">Pedido #{{ pedido.id }}</div>
-            <div class="order-card__meta">
-              {{ pedido.criado_em|date:"d/m/Y" }} às {{ pedido.criado_em|time:"H:i" }} · {{ pedido.itens.count }} item{% if pedido.itens.count != 1 %}ns{% endif %} · {{ pedido.get_forma_pagamento_display }}
-            </div>
+            <div class="order-card__meta">{{ pedido.criado_em|date:"d/m/Y" }} · {{ pedido.get_forma_pagamento_display }}</div>
           </div>
+          <span class="badge-status badge-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
           <div class="order-card__right">
             <span class="order-card__total">R$ {{ pedido.total }}</span>
-            <span class="badge-status badge-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
             <a href="{% url 'detalhe_pedido' pedido.id %}" class="order-card__view">Ver detalhes</a>
           </div>
         </article>
@@ -181,15 +177,16 @@
 </main>
 
 <script nonce="{{ csp_nonce }}">
-function trocarAba(event, nome, el) {
+function trocarAba(event, nome, el, label) {
   event.preventDefault();
   document.querySelectorAll('.tab').forEach(a => a.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('secao-' + nome).classList.add('active');
+  const bc = document.getElementById('bc-active');
+  if (bc) bc.textContent = label;
 }
 
-// CEP automático via ViaCEP
 const cepInput = document.getElementById('cep');
 if (cepInput) {
   cepInput.addEventListener('blur', function() {

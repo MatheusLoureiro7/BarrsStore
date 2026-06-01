@@ -14,9 +14,6 @@
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" width="40" height="40" decoding="async">
     Barrs Store
   </a>
-  <ul class="nav__links">
-    <li><a href="{% url 'minha_conta' %}">Minha conta</a></li>
-  </ul>
   <div class="nav__right">
     <a href="{% url 'carrinho' %}" class="nav__icon-btn" aria-label="Carrinho">
       <svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-cart"/></svg>
@@ -26,18 +23,22 @@
   </div>
 </nav>
 
-<main class="order-detail">
+<!-- TOPBAR: breadcrumb -->
+<div class="order-topbar">
+  <nav class="order-breadcrumb" aria-label="Localização">
+    <a href="{% url 'minha_conta' %}">Minha Conta</a>
+    <span class="order-breadcrumb__sep" aria-hidden="true">›</span>
+    <span>Pedido #{{ pedido.id }}</span>
+  </nav>
+</div>
 
-  <a href="{% url 'minha_conta' %}" class="back-link">
-    <svg class="icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-arrow-left"/></svg>
-    Voltar para minha conta
-  </a>
+<main class="order-detail">
 
   <!-- HEADER -->
   <header class="order-header">
     <div>
       <h1 class="order-header__title">Pedido #{{ pedido.id }}</h1>
-      <p class="order-header__date">{{ pedido.criado_em|date:"d \d\e F \d\e Y" }} às {{ pedido.criado_em|time:"H:i" }}</p>
+      <p class="order-header__date">{{ pedido.criado_em|date:"d \d\e F \d\e Y" }} · {{ pedido.get_forma_pagamento_display }}</p>
     </div>
     <span class="badge-status badge-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
   </header>
@@ -47,14 +48,14 @@
   <div class="timeline" aria-label="Status do pedido">
     <div class="timeline-step">
       <div class="timeline-dot done">
-        <svg class="icon" style="width:13px;height:13px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+        <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
       </div>
-      <span class="timeline-label {% if status == 'pendente' %}active{% endif %}">Recebido</span>
+      <span class="timeline-label">Recebido</span>
     </div>
     <div class="timeline-step">
       <div class="timeline-dot {% if status == 'confirmado' %}active{% elif status == 'enviado' or status == 'entregue' %}done{% endif %}">
         {% if status == 'confirmado' or status == 'enviado' or status == 'entregue' %}
-          <svg class="icon" style="width:13px;height:13px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+          <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
         {% else %}2{% endif %}
       </div>
       <span class="timeline-label {% if status == 'confirmado' %}active{% endif %}">Confirmado</span>
@@ -62,7 +63,7 @@
     <div class="timeline-step">
       <div class="timeline-dot {% if status == 'enviado' %}active{% elif status == 'entregue' %}done{% endif %}">
         {% if status == 'enviado' or status == 'entregue' %}
-          <svg class="icon" style="width:13px;height:13px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+          <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
         {% else %}3{% endif %}
       </div>
       <span class="timeline-label {% if status == 'enviado' %}active{% endif %}">Enviado</span>
@@ -70,7 +71,7 @@
     <div class="timeline-step">
       <div class="timeline-dot {% if status == 'entregue' %}active{% endif %}">
         {% if status == 'entregue' %}
-          <svg class="icon" style="width:13px;height:13px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
+          <svg class="icon" style="width:11px;height:11px;stroke-width:2.5" aria-hidden="true"><use href="#i-check"/></svg>
         {% else %}4{% endif %}
       </div>
       <span class="timeline-label {% if status == 'entregue' %}active{% endif %}">Entregue</span>
@@ -85,7 +86,7 @@
     <div class="item-row">
       <div>
         <div class="item-row__name">{{ item.nome_produto }}</div>
-        <div class="item-row__qty">Quantidade: {{ item.quantidade }} · R$ {{ item.preco_unitario }} cada</div>
+        <div class="item-row__qty">{{ item.quantidade }}× · R$ {{ item.preco_unitario }} cada</div>
       </div>
       <div class="item-row__price">R$ {{ item.subtotal }}</div>
     </div>
@@ -98,7 +99,7 @@
       {% if pedido.desconto > 0 %}
       <div class="info-row">
         <span class="info-row__label">Desconto{% if pedido.cupom_codigo %} ({{ pedido.cupom_codigo }}){% endif %}</span>
-        <span class="info-row__value" style="color:var(--color-brand)">- R$ {{ pedido.desconto }}</span>
+        <span class="info-row__value info-row__value--brand">− R$ {{ pedido.desconto }}</span>
       </div>
       {% endif %}
       <div class="info-row">
@@ -162,11 +163,14 @@
     </div>
     <div class="info-row">
       <span class="info-row__label">Total</span>
-      <span class="info-row__value" style="color:var(--color-brand);font-size:var(--text-md);font-weight:700">R$ {{ pedido.total }}</span>
+      <span class="info-row__value info-row__value--brand info-row__value--lg">R$ {{ pedido.total }}</span>
     </div>
   </section>
 
-  <a href="{% url 'minha_conta' %}" class="detail-btn detail-btn--ghost">← Voltar para minha conta</a>
+  <a href="{% url 'minha_conta' %}" class="detail-back">
+    <svg class="icon" style="width:12px;height:12px" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+    Voltar para Minha Conta
+  </a>
 
 </main>
 {% endblock %}

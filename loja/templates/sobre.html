@@ -16,15 +16,15 @@
 
 {% block content %}
 <nav class="nav">
-  <a href="/" class="nav__logo">
+  <a href="{% url 'home' %}" class="nav__logo">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/v1777401449/ChatGPT_Image_28_de_abr._de_2026_15_37_19_ovzkth.png" alt="Barrs Store" width="40" height="40" decoding="async">
     Barrs Store
   </a>
   <ul class="nav__links">
-    <li><a href="/">Início</a></li>
-    <li><a href="/#produtos">Coleção</a></li>
-    <li><a href="/sobre/" class="active">Sobre</a></li>
-    <li><a href="/contato/">Contato</a></li>
+    <li><a href="{% url 'home' %}">Início</a></li>
+    <li><a href="{% url 'home' %}#produtos">Coleção</a></li>
+    <li><a href="{% url 'sobre' %}" class="active">Sobre</a></li>
+    <li><a href="{% url 'contato' %}">Contato</a></li>
   </ul>
   <div class="nav__right">
     {% if user.is_authenticated %}
@@ -67,7 +67,7 @@
       <h1 class="about-hero__title">Semijoias feitas para<br><em>destacar sua presença.</em></h1>
       <p class="about-hero__subtitle">Peças sofisticadas para mulheres que valorizam elegância nos detalhes.</p>
       <div class="about-hero__actions">
-        <a href="/#produtos" class="btn-editorial btn-editorial--dark" id="btn-hero-colecao">
+        <a href="{% url 'home' %}#produtos" class="btn-editorial btn-editorial--dark" id="btn-hero-colecao">
           Conhecer coleção
           <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
         </a>
@@ -89,7 +89,7 @@
           <p class="about-story__text">
             Mais do que semijoias, oferecemos uma extensão da sua personalidade. Peças feitas para durar, para se destacar e para contar a sua história com elegância.
           </p>
-          <a href="/#produtos" class="btn-editorial" id="btn-story-colecao">
+          <a href="{% url 'home' %}#produtos" class="btn-editorial" id="btn-story-colecao">
             Ver coleção
             <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
           </a>

@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import requests as http_requests
 
+from ..shipping import calcular_frete_por_estado  # noqa: F401 — re-exportado
 from .utils import (
     apenas_digitos,
     resposta_externa_segura_para_log,
