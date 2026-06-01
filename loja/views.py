@@ -2202,8 +2202,8 @@ def checkout(request):
             observacoes=request.POST.get('observacoes', '').strip()[:500],
         )
 
-        for item in itens:
-            ItemPedido.objects.create(
+        ItemPedido.objects.bulk_create([
+            ItemPedido(
                 pedido=pedido,
                 produto=item.produto,
                 nome_produto=item.produto.nome,
@@ -2211,6 +2211,8 @@ def checkout(request):
                 preco_unitario=item.produto.preco,
                 tamanho=item.tamanho,
             )
+            for item in itens
+        ])
 
         # Mantem o carrinho preservado no DB para recuperacao (cliente que desiste pode voltar
         # via link de pagamento pendente sem perder os itens). Apenas desvincula da sessao.
