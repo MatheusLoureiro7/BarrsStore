@@ -133,14 +133,16 @@ else:
         }
     }
 
-# Cache
+# Cache — usa Redis se REDIS_URL valida estiver configurada, senao LocMem
+_redis_url = os.environ.get('REDIS_URL', '')
+_use_redis = not DEBUG and _redis_url.startswith(('redis://', 'rediss://', 'unix://'))
 CACHES = {
     'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': _redis_url,
+    } if _use_redis else {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'barrs-store',
-    } if DEBUG else {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', ''),
     }
 }
 
