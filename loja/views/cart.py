@@ -490,7 +490,7 @@ def salvar_contato_carrinho(request):
 
 
 @require_POST
-@ratelimit(key='ip', rate='20/m', method='POST', block=True)
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def aplicar_cupom_ajax(request):
     if not verificar_turnstile(request):
         return turnstile_error_json()
@@ -506,13 +506,18 @@ def aplicar_cupom_ajax(request):
     if not codigo:
         return JsonResponse({'ok': False, 'erro': 'Digite um cupom.'}, status=400)
 
+    # Resposta opaca para "nao encontrado", "inativo" e "esgotado" — evita
+    # enumeracao de cupons via mensagens diferentes. Mensagens com instrucao
+    # legitima (valor minimo, exclusivo de fidelidade) sao mantidas para UX.
+    _CUPOM_GENERICOS = {'Cupom inativo.', 'Cupom esgotado.'}
     cupom = Cupom.objects.filter(codigo__iexact=codigo).first()
     if not cupom:
-        return JsonResponse({'ok': False, 'erro': 'Cupom nao encontrado.'}, status=404)
+        return JsonResponse({'ok': False, 'erro': 'Cupom invalido.'}, status=400)
 
     valido, motivo = cupom.valido_para(subtotal, user=request.user)
     if not valido:
-        return JsonResponse({'ok': False, 'erro': motivo}, status=400)
+        erro = 'Cupom invalido.' if motivo in _CUPOM_GENERICOS else motivo
+        return JsonResponse({'ok': False, 'erro': erro}, status=400)
 
     desconto = cupom.calcular_desconto(subtotal)
     return JsonResponse({

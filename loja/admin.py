@@ -69,10 +69,12 @@ class PedidoAdmin(admin.ModelAdmin):
     list_editable = ('status',)
     list_filter = ('status', 'forma_pagamento', 'estado')
     search_fields = ('nome', 'email', 'cpf', 'cidade', 'codigo_rastreio', 'melhor_envio_order_id')
+    # access_token e propositalmente omitido do fieldset visivel — e a chave
+    # que da acesso direto ao pedido sem login, nao deve aparecer em screenshots
+    # de suporte ou em sessoes admin comprometidas.
     readonly_fields = (
         'resumo_itens_admin',
         'criado_em',
-        'access_token',
         'email_rastreio_enviado',
         'melhor_envio_order_id',
         'melhor_envio_status',
@@ -112,7 +114,7 @@ class PedidoAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
         ('Controle interno', {
-            'fields': ('access_token', 'criado_em')
+            'fields': ('criado_em',)
         }),
     )
 

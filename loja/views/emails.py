@@ -20,6 +20,21 @@ EMAIL_LOGO_URL = 'https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_aut
 EMAIL_BRAND_NAME = 'Barrs Store'
 
 
+def _imagem_thumb_email(produto, w=96, h=96):
+    """Aplica transformacao Cloudinary inline para thumbnails de email.
+
+    Cloudinary aceita transformacoes na URL: /upload/<params>/v.../arquivo.jpg
+    Aqui evitamos baixar imagens originais (2MB+) dentro de emails — clientes
+    como Outlook/Gmail bloqueiam imagens pesadas e atrasam o render.
+    """
+    if not getattr(produto, 'imagem', None):
+        return ''
+    url = produto.imagem.url
+    if '/upload/' in url:
+        return url.replace('/upload/', f'/upload/c_fill,w_{w},h_{h},q_auto,f_auto/', 1)
+    return url
+
+
 def enfileirar_email_pendente(payload, motivo='', pedido_id=None, tipo=''):
     destinatarios = payload.get('to') or [{}]
     destinatario = destinatarios[0] if destinatarios else {}
@@ -579,7 +594,7 @@ def enviar_email_abandono_1(carrinho):
     itens_html = ''
     for item in itens:
         img = (
-            f'<img src="{item.produto.imagem.url}" alt="{item.produto.nome}" width="48" height="48" style="border-radius:8px;display:block;object-fit:cover">'
+            f'<img src="{_imagem_thumb_email(item.produto, 96, 96)}" alt="{item.produto.nome}" width="48" height="48" style="border-radius:8px;display:block;object-fit:cover">'
             if item.produto.imagem else
             f'<div style="width:48px;height:48px;border-radius:8px;background:#E8E3D8;text-align:center;line-height:48px">{_email_icon("gem", 20)}</div>'
         )

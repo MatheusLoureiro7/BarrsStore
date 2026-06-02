@@ -164,7 +164,17 @@ def resumir_erro_mercadopago(payment):
 
 
 def dados_pagador_mercadopago(pedido):
-    """Monta os dados do pagador sem confiar em dados digitados no frontend."""
+    """Monta os dados do pagador sem confiar em dados digitados no frontend.
+
+    Raises:
+        ValueError: se o pedido nao tem email. O checkout valida email como
+            obrigatorio, entao um pedido sem email indica bug em outro lugar —
+            falhar cedo evita usar o email da loja como pagador (anomalia que
+            mascarava o defeito).
+    """
+    if not pedido.email:
+        raise ValueError(f'Pedido {pedido.id} sem email; nao e possivel iniciar pagamento.')
+
     telefone_limpo = "".join(filter(str.isdigit, pedido.telefone or ""))
     cpf_limpo = apenas_digitos(pedido.cpf)
     partes_nome = (pedido.nome or '').strip().split()
@@ -173,7 +183,7 @@ def dados_pagador_mercadopago(pedido):
         "name": pedido.nome,
         "first_name": partes_nome[0] if partes_nome else pedido.nome,
         "last_name": " ".join(partes_nome[1:]) if len(partes_nome) > 1 else "",
-        "email": pedido.email or os.environ.get('BREVO_FROM_EMAIL', 'contato.barrsstore@gmail.com'),
+        "email": pedido.email,
     }
     if len(cpf_limpo) == 11:
         payer["identification"] = {
@@ -460,10 +470,25 @@ def confirmacao(request, pedido_id, token):
     return render(request, 'confirmacao.html', context)
 
 
+def _pedido_acessivel_por(request, pedido):
+    """Defense-in-depth: se o usuario esta logado e o pedido tem dono,
+    bloqueia qualquer tentativa de iniciar pagamento com token de outro
+    cliente (cenario de access_token vazado em log/screenshot/suporte).
+    Guest checkout (pedido.cliente_id None) continua funcionando."""
+    if not request.user.is_authenticated:
+        return True
+    if pedido.cliente_id is None:
+        return True
+    return pedido.cliente_id == request.user.id
+
+
 @require_POST
 @ratelimit(key='ip', rate='15/m', method='POST', block=True)
 def criar_preferencia(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
+    if not _pedido_acessivel_por(request, pedido):
+        logger.warning('[PAGAMENTO] Tentativa de pagar pedido alheio. pedido=%s user=%s', pedido.id, request.user.id)
+        return JsonResponse({'erro': 'Acesso negado.'}, status=403)
     if not settings.MERCADOPAGO_ACCESS_TOKEN:
         return JsonResponse({'erro': 'Mercado Pago nao configurado.'}, status=503)
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
@@ -495,7 +520,11 @@ def criar_preferencia(request, pedido_id, token):
             })
 
     # Limpa telefone — MP só aceita números
-    payer = dados_pagador_mercadopago(pedido)
+    try:
+        payer = dados_pagador_mercadopago(pedido)
+    except ValueError as exc:
+        logger.error('[PAGAMENTO] %s', exc)
+        return JsonResponse({'erro': 'Pedido sem email. Refaca o checkout.'}, status=400)
 
     preference_data = {
         "items": items,
@@ -543,6 +572,9 @@ def criar_preferencia(request, pedido_id, token):
 @ratelimit(key='ip', rate='12/m', method='POST', block=True)
 def processar_pagamento_brick(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
+    if not _pedido_acessivel_por(request, pedido):
+        logger.warning('[PAGAMENTO] Tentativa de pagar pedido alheio via Brick. pedido=%s user=%s', pedido.id, request.user.id)
+        return JsonResponse({'erro': 'Acesso negado.'}, status=403)
     if pedido.status == 'confirmado':
         return JsonResponse({
             'status': 'approved',
@@ -561,7 +593,11 @@ def processar_pagamento_brick(request, pedido_id, token):
         return JsonResponse({'erro': 'Dados de pagamento invalidos.'}, status=400)
 
     payer_front = form_data.get('payer') or {}
-    payer = dados_pagador_mercadopago(pedido)
+    try:
+        payer = dados_pagador_mercadopago(pedido)
+    except ValueError as exc:
+        logger.error('[PAGAMENTO] %s', exc)
+        return JsonResponse({'erro': 'Pedido sem email. Refaca o checkout.'}, status=400)
     # A API de pagamento direto do Brick rejeita payer.name; usa first_name/last_name.
     payer.pop('name', None)
     # Sempre usa o email do pedido (token UUID ja garante autoria); ignora o que vier do front.
@@ -589,9 +625,13 @@ def processar_pagamento_brick(request, pedido_id, token):
         payment_data['token'] = form_data.get('token')
     if form_data.get('installments'):
         try:
-            payment_data['installments'] = int(form_data.get('installments'))
+            n = int(form_data.get('installments'))
         except (TypeError, ValueError):
-            payment_data['installments'] = 1
+            n = 1
+        # Clamp em [1, 12]: o Brick controla isso no front, mas o body e JSON
+        # livre e um cliente pode injetar installments=999. Aqui evitamos
+        # poluir logs com tentativas absurdas.
+        payment_data['installments'] = max(1, min(12, n))
     elif form_data.get('token'):
         payment_data['installments'] = 1
     if form_data.get('issuer_id'):
@@ -604,17 +644,21 @@ def processar_pagamento_brick(request, pedido_id, token):
         logger.warning('[MP-BRICK] Metodo de pagamento ausente no pedido %s.', pedido.id)
         return JsonResponse({'erro': 'Selecione uma forma de pagamento.'}, status=400)
 
-    logger.info(
+    # DEBUG (nao INFO) — payment_method_id + payload sao dados pessoais indiretos
+    # sob LGPD. Em produsao, ativar so quando investigando incidente especifico.
+    logger.debug(
         '[MP-BRICK] Criando pagamento pedido=%s metodo=%s total=%s',
         pedido.id,
         payment_data.get('payment_method_id'),
         pedido.total,
     )
-    logger.info(
+    logger.debug(
         '[MP-BRICK] Payload seguro pedido=%s: %s',
         pedido.id,
         payload_pagamento_seguro_para_log(payment_data),
     )
+    # Log resumido em INFO: so o ID do pedido, sem revelar metodo de pagamento.
+    logger.info('[MP-BRICK] Iniciando pagamento pedido=%s total=%s', pedido.id, pedido.total)
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
     request_options = mercadopago.config.RequestOptions()
     # Idempotency-Key estavel: mesma combinacao pedido+metodo+token+parcelas
@@ -649,7 +693,8 @@ def processar_pagamento_brick(request, pedido_id, token):
             status_code,
             resumir_erro_mercadopago(payment),
         )
-        logger.warning(
+        # Payload com metodo/parcelas/issuer fica em DEBUG: dados indiretos LGPD.
+        logger.debug(
             '[MP-BRICK] Payload que falhou pedido=%s: %s',
             pedido.id,
             payload_pagamento_seguro_para_log(payment_data),
