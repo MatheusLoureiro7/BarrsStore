@@ -318,5 +318,6 @@ def calcular_frete_melhor_envio(request):
         opcoes.sort(key=lambda x: x['preco'])
         return JsonResponse({'opcoes': opcoes})
 
-    except Exception as e:
-        return JsonResponse({'erro': str(e)}, status=500)
+    except Exception:
+        logger.exception('[ME] Falha ao calcular frete cep=%s', cep_destino)
+        return JsonResponse({'erro': 'Nao foi possivel calcular o frete agora.'}, status=500)

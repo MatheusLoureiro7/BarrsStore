@@ -781,8 +781,7 @@ def webhook_mercadopago(request):
     assinatura_ok, motivo_assinatura = validar_assinatura_mercadopago(request, data)
     if not assinatura_ok:
         logger.warning('[MP] Webhook com assinatura nao validada: %s', motivo_assinatura)
-        if getattr(settings, 'MERCADOPAGO_WEBHOOK_STRICT', False):
-            return JsonResponse({"status": "forbidden"}, status=403)
+        return JsonResponse({"status": "forbidden"}, status=403)
 
     notification_type = data.get("type") or data.get("topic") or request.GET.get("type") or request.GET.get("topic")
     payment_id = (

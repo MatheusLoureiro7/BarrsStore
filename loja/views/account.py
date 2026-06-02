@@ -36,13 +36,13 @@ def cadastro(request):
             return render(request, 'cadastro.html', context)
 
         nome = request.POST.get('nome', '').strip()
-        email = request.POST.get('email', '').strip()
+        email = request.POST.get('email', '').strip().lower()
         senha = request.POST.get('senha', '')
         senha2 = request.POST.get('senha2', '')
 
         if senha != senha2:
             messages.error(request, 'As senhas não coincidem.')
-        elif User.objects.filter(email=email).exists():
+        elif User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'Este e-mail já está cadastrado.')
         else:
             partes = nome.split()
@@ -88,9 +88,15 @@ def login_view(request):
             context.update(no_tracking_context(request, 'Login - Barrs Store'))
             return render(request, 'login.html', context)
 
-        email = request.POST.get('email', '').strip()
+        email = request.POST.get('email', '').strip().lower()
         senha = request.POST.get('senha', '')
-        user = authenticate(request, username=email, password=senha)
+        # Lookup case-insensitive: clientes legados podem ter username em maiusculas,
+        # mas autenticamos com o username real armazenado no banco.
+        usuario_existente = User.objects.filter(email__iexact=email).first()
+        user = (
+            authenticate(request, username=usuario_existente.username, password=senha)
+            if usuario_existente else None
+        )
         if user:
             login(request, user)
             next_url = request.GET.get('next', '')

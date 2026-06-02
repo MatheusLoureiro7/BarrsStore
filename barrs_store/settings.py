@@ -320,9 +320,6 @@ MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN')
 MERCADOPAGO_PUBLIC_KEY = os.environ.get('MP_PUBLIC_KEY')
 MERCADOPAGO_WEBHOOK_SECRET = os.environ.get('MP_WEBHOOK_SECRET', '').strip()
 MERCADOPAGO_WEBHOOK_TOLERANCE_SECONDS = int(os.environ.get('MP_WEBHOOK_TOLERANCE_SECONDS', '300'))
-MERCADOPAGO_WEBHOOK_STRICT = True if not DEBUG else (
-    os.environ.get('MP_WEBHOOK_STRICT', 'False') == 'True'
-)
 
 class _BotNoiseFilter(logging.Filter):
     """Silencia requisições de bots/scanners em paths conhecidos como ruído."""

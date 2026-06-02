@@ -29,11 +29,14 @@ def dashboard_saude(request):
     mes_param = request.GET.get('mes', '') or hoje.strftime('%Y-%m')
     try:
         ano_sel, mes_sel = map(int, mes_param.split('-'))
+        # Range razoavel: do ano fundacional da loja ate o proximo ano.
+        if not (2020 <= ano_sel <= hoje.year + 1) or not (1 <= mes_sel <= 12):
+            raise ValueError('mes fora do range permitido')
         inicio_mes_sel = inicio_dia.replace(year=ano_sel, month=mes_sel, day=1)
         _, n_dias = cal_lib.monthrange(ano_sel, mes_sel)
         fim_mes_sel = inicio_mes_sel.replace(day=n_dias, hour=23, minute=59, second=59, microsecond=999999)
         mes_label = f"{_MESES_PT[mes_sel - 1]}/{ano_sel}"
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, OverflowError):
         mes_param = hoje.strftime('%Y-%m')
         inicio_mes_sel = inicio_mes
         _, n_dias = cal_lib.monthrange(hoje.year, hoje.month)

@@ -35,13 +35,10 @@ def _timestamp_fresco(ts):
 def validar_assinatura_mercadopago(request, data):
     secret = getattr(settings, 'MERCADOPAGO_WEBHOOK_SECRET', '')
     if not secret:
-        if getattr(settings, 'MERCADOPAGO_WEBHOOK_STRICT', False):
-            logger.error('MERCADOPAGO_WEBHOOK_SECRET ausente em modo estrito. Webhook recusado.')
-            return False, 'secret_ausente'
-
-        # Compatibilidade apenas para desenvolvimento/testes locais.
-        logger.warning('MERCADOPAGO_WEBHOOK_SECRET ausente. Webhook aceito em modo compatibilidade.')
-        return True, 'sem_secret_modo_compatibilidade'
+        # Webhook de pagamento nunca deve ser aceito sem secret, em ambiente algum.
+        # Em dev/teste, configure MP_WEBHOOK_SECRET no .env (mesmo que valor fake).
+        logger.error('MERCADOPAGO_WEBHOOK_SECRET ausente. Webhook recusado.')
+        return False, 'secret_ausente'
 
     signature_header = request.headers.get('x-signature', '')
     request_id = request.headers.get('x-request-id', '')
