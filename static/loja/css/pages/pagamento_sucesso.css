@@ -1,34 +1,54 @@
 /* ═══════════════════════════════════════════════════════════════
-   PÁGINA DE SUCESSO — overrides especificos
-   Estrutura compartilhada vem de pagamento_base.css (verde oliva).
+   PÁGINA DE SUCESSO — overrides específicos
+   Estrutura compartilhada vem de pagamento_base.css.
 ═══════════════════════════════════════════════════════════════ */
 
 :root { --su-h: 66px; }
 
-/* Cor de acento no header */
-.su-header__safe .icon { color: var(--color-brand); }
+/* ── HERO COMPACTO (≈35% menor que o padrão base) ──────────── */
+.su-page { padding: 2rem 2rem 5rem; }
 
-/* HERO selo verde com check animado */
-.su-hero { animation: suFade 0.5s var(--ease) both; }
+.su-hero { margin-bottom: 2rem; }
+
 .su-hero__seal {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 1.25rem;
   background: var(--color-brand);
   animation: suSeal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   box-shadow:
     0 1px 3px rgba(80, 96, 76, 0.2),
     0 8px 24px rgba(80, 96, 76, 0.22);
 }
-.su-hero__seal::before,
-.su-hero__seal::after {
+.su-hero__seal::before {
+  width: 88px;
+  height: 88px;
   border: 1px solid rgba(107, 122, 100, 0.22);
   animation: suRing 0.9s 0.2s var(--ease) both;
 }
-.su-hero__seal::after { border-color: rgba(107, 122, 100, 0.12); }
+.su-hero__seal::after {
+  width: 108px;
+  height: 108px;
+  border: 1px solid rgba(107, 122, 100, 0.12);
+  animation: suRing 0.9s 0.2s var(--ease) both;
+}
 .su-hero__seal .icon {
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
   stroke-width: 2.4;
   animation: suCheck 0.5s 0.4s var(--ease) both;
 }
+
+.su-hero__title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin-bottom: 0.75rem;
+}
+
+.su-hero__sub { margin-bottom: 1.25rem; }
+
+/* Animações do hero */
+.su-hero { animation: suFade 0.5s var(--ease) both; }
+
 @keyframes suSeal {
   from { transform: scale(0.4); opacity: 0; }
   to   { transform: scale(1);   opacity: 1; }
@@ -45,30 +65,117 @@
 .su-hero__eyebrow { color: var(--color-brand); }
 .su-hero__order .icon { color: var(--color-brand); }
 
-/* TIMELINE verde */
-.su-timeline { animation: suFadeUp 0.5s 0.1s var(--ease) both; }
-.su-step--done::after,
-.su-step--current::after {
-  background: linear-gradient(to right, var(--color-brand), var(--color-border));
+/* ── PRÓXIMOS PASSOS ────────────────────────────────────────── */
+.su-next-steps {
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 6px 20px rgba(43, 37, 32, 0.05);
+  animation: suFadeUp 0.5s 0.1s var(--ease) both;
 }
-.su-step--done::after { background: var(--color-brand); }
-.su-step--done .su-step__dot {
+
+.su-next-steps__title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.012em;
+  margin-bottom: 1.5rem;
+}
+
+.su-next-steps__list {
+  display: grid;
+  gap: 0;
+}
+
+.su-next-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--color-border-soft);
+  position: relative;
+}
+.su-next-item:last-child { border-bottom: none; padding-bottom: 0; }
+.su-next-item:first-child { padding-top: 0; }
+
+.su-next-item__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-soft);
+  color: var(--color-ink-muted);
+  margin-top: 1px;
+}
+.su-next-item__icon .icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.8;
+}
+
+.su-next-item--done .su-next-item__icon {
   background: var(--color-brand);
   border-color: var(--color-brand);
   color: #fff;
 }
-.su-step--current .su-step__dot {
+
+.su-next-item--active .su-next-item__icon {
   background: var(--color-brand-bg);
   border-color: var(--color-brand);
   color: var(--color-brand);
-  box-shadow: 0 0 0 4px rgba(107, 122, 100, 0.1);
+  box-shadow: 0 0 0 3px rgba(107, 122, 100, 0.1);
 }
 
-/* DETAILS / ITEMS */
+.su-next-item__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.su-next-item__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  line-height: 1.3;
+}
+.su-next-item--done .su-next-item__label,
+.su-next-item--active .su-next-item__label {
+  color: var(--color-ink);
+}
+
+.su-next-item__note {
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+  line-height: 1.45;
+}
+
+.su-next-item__badge {
+  flex-shrink: 0;
+  align-self: center;
+  background: var(--color-brand);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+}
+
+/* ── DETAILS animação ───────────────────────────────────────── */
 .su-details { animation: suFadeUp 0.5s 0.18s var(--ease) both; }
 .su-item__price { color: var(--color-brand); }
 
-/* DELIVERY: linha de contato */
 .su-contact-line {
   display: block;
   line-height: 1.55;
@@ -78,7 +185,7 @@
   font-weight: 600;
 }
 
-/* ETA — bloco exclusivo do sucesso */
+/* ── ETA ────────────────────────────────────────────────────── */
 .su-eta {
   margin-top: 1.5rem;
   display: flex;
@@ -114,7 +221,7 @@
   line-height: 1.5;
 }
 
-/* SUMMARY com layout especial de total */
+/* ── SUMMARY ────────────────────────────────────────────────── */
 .su-summary { animation: suFadeUp 0.5s 0.24s var(--ease) both; }
 .su-summary__head {
   background: linear-gradient(180deg, rgba(232, 237, 227, 0.4), transparent);
@@ -133,7 +240,7 @@
   color: var(--color-ink-soft);
 }
 
-/* META pill com pulse */
+/* STATUS pill padrão */
 .su-meta__pill {
   background: var(--color-brand-bg);
   color: var(--color-brand);
@@ -143,19 +250,153 @@
   background: var(--color-brand);
   animation: suPulse 2s ease-in-out infinite;
 }
-@keyframes suPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.5; transform: scale(1.2); }
+
+/* Status pill maior — mais destaque */
+.su-meta__pill--lg {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.375rem 0.875rem;
+  letter-spacing: 0.05em;
+  gap: 0.5rem;
+}
+.su-meta__pill--lg::before {
+  width: 7px;
+  height: 7px;
 }
 
-/* BTN primary: icone se desloca no hover */
+@keyframes suPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ── TRACKING NOTICE (quando não há rastreio) ───────────────── */
+.su-tracking-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.125rem;
+  background: var(--color-brand-bg);
+  border: 1px solid rgba(107, 122, 100, 0.2);
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  color: var(--color-ink-soft);
+  line-height: 1.5;
+  font-weight: 500;
+}
+.su-tracking-notice .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-brand);
+  flex-shrink: 0;
+  stroke-width: 1.8;
+}
+
+/* ── BTN ────────────────────────────────────────────────────── */
 .su-btn--primary:hover .icon { transform: translateX(2px); }
 .su-btn--primary .icon { transition: transform 220ms var(--ease); }
 
-/* SUPPORT animation */
-.su-support { animation: suFadeUp 0.5s 0.3s var(--ease) both; }
+/* ── CROSS-SELL ─────────────────────────────────────────────── */
+.su-crosssell {
+  margin-top: 1.5rem;
+  animation: suFadeUp 0.5s 0.28s var(--ease) both;
+}
 
-/* ANIMAÇÕES base */
+.su-crosssell__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.su-crosssell__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 1.625rem);
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: -0.015em;
+  margin-bottom: 0.375rem;
+}
+
+.su-crosssell__sub {
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+}
+
+.su-crosssell__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.su-crosssell__card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid rgba(228, 221, 208, 0.75);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.03),
+    0 4px 14px rgba(43, 37, 32, 0.05);
+}
+.su-crosssell__card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 4px rgba(43, 37, 32, 0.06),
+    0 10px 28px rgba(43, 37, 32, 0.1);
+  border-color: rgba(107, 122, 100, 0.3);
+}
+
+.su-crosssell__img-wrap {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--color-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.su-crosssell__img-wrap--empty {
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+}
+
+.su-crosssell__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.su-crosssell__card:hover .su-crosssell__img { transform: scale(1.04); }
+
+.su-crosssell__info {
+  padding: 1rem 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.su-crosssell__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.su-crosssell__price {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── SUPPORT animation ──────────────────────────────────────── */
+.su-support { animation: suFadeUp 0.5s 0.32s var(--ease) both; }
+
+/* ── ANIMAÇÕES BASE ─────────────────────────────────────────── */
 @keyframes suFade {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -165,12 +406,44 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── REDUCED MOTION ─────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .su-hero, .su-timeline, .su-details, .su-summary, .su-support,
+  .su-hero, .su-next-steps, .su-details, .su-summary, .su-support, .su-crosssell,
   .su-hero__seal, .su-hero__seal::before, .su-hero__seal::after,
   .su-hero__seal .icon, .su-meta__pill::before { animation: none !important; }
 }
 
+/* ── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .su-next-steps { padding: 1.5rem 1.75rem; }
+  .su-crosssell__grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+}
+
 @media (max-width: 640px) {
-  .su-hero__seal .icon { width: 32px; height: 32px; }
+  .su-page { padding: 1.25rem 1rem 3.5rem; }
+
+  .su-hero { margin-bottom: 1.5rem; }
+  .su-hero__seal {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+  }
+  .su-hero__seal::before { width: 78px; height: 78px; }
+  .su-hero__seal::after  { width: 96px; height: 96px; }
+  .su-hero__seal .icon   { width: 26px; height: 26px; }
+  .su-hero__title { font-size: 1.625rem; }
+
+  .su-next-steps { padding: 1.25rem 1.125rem; }
+  .su-next-steps__title { font-size: 1rem; margin-bottom: 1.125rem; }
+  .su-next-item { gap: 0.75rem; }
+  .su-next-item__icon { width: 32px; height: 32px; }
+  .su-next-item__label { font-size: 0.845rem; }
+  .su-next-item__note { font-size: 0.75rem; }
+  .su-next-item__badge { font-size: 0.575rem; }
+
+  .su-crosssell__grid { grid-template-columns: repeat(2, 1fr); gap: 0.875rem; }
+  .su-crosssell__grid > *:nth-child(3) { display: none; }
+  .su-crosssell__info { padding: 0.75rem 0.875rem 1rem; }
+  .su-crosssell__name { font-size: 0.8125rem; }
+  .su-crosssell__price { font-size: 0.875rem; }
 }

@@ -30,7 +30,7 @@
 <main class="su-page">
 
   <!-- ═══════════════════════════════════════════════════════════
-       HERO COM SELO ANIMADO
+       HERO COMPACTO
   ═══════════════════════════════════════════════════════════ -->
   <section class="su-hero" aria-labelledby="hero-title">
     <div class="su-hero__seal" aria-hidden="true">
@@ -40,11 +40,11 @@
     <div class="su-hero__eyebrow">Pagamento confirmado</div>
 
     <h1 class="su-hero__title" id="hero-title">
-      Obrigada{% if pedido.nome %}, {{ pedido.nome|truncatewords:1|cut:"..." }}{% endif %}.
+      Pedido confirmado{% if pedido.nome %}, {{ pedido.nome|first_word }}{% endif %}!
     </h1>
 
     <p class="su-hero__sub">
-      Seu pagamento foi aprovado e seu pedido entrou em preparação.
+      Seu pedido já está sendo preparado com carinho pela equipe Barrs.
       Em breve você receberá o código de rastreio no e-mail
       <strong>{{ pedido.email }}</strong>.
     </p>
@@ -56,41 +56,51 @@
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════
-       TIMELINE DO PEDIDO
+       O QUE ACONTECE AGORA?
   ═══════════════════════════════════════════════════════════ -->
-  <section class="su-timeline" aria-label="Status do pedido">
-    <div class="su-timeline__inner">
+  <section class="su-next-steps" aria-label="Próximos passos do pedido">
+    <h2 class="su-next-steps__title">O que acontece agora?</h2>
+    <div class="su-next-steps__list">
 
-      <div class="su-step su-step--done">
-        <span class="su-step__dot">
-          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+      <div class="su-next-item su-next-item--done">
+        <span class="su-next-item__icon" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </span>
-        <span class="su-step__label">Aprovado</span>
-        <span class="su-step__note">Agora</span>
+        <div class="su-next-item__body">
+          <span class="su-next-item__label">Pagamento aprovado</span>
+          <span class="su-next-item__note">Recebemos a confirmação do seu pagamento</span>
+        </div>
       </div>
 
-      <div class="su-step su-step--current">
-        <span class="su-step__dot">
-          <svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>
+      <div class="su-next-item su-next-item--active">
+        <span class="su-next-item__icon" aria-hidden="true">
+          <svg class="icon"><use href="#i-package"/></svg>
         </span>
-        <span class="su-step__label">Em preparação</span>
-        <span class="su-step__note">Até 2 dias úteis</span>
+        <div class="su-next-item__body">
+          <span class="su-next-item__label">Pedido em preparação</span>
+          <span class="su-next-item__note">Nossa equipe está separando suas peças com cuidado</span>
+        </div>
+        <span class="su-next-item__badge" aria-label="Status atual">Agora</span>
       </div>
 
-      <div class="su-step">
-        <span class="su-step__dot">
-          <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+      <div class="su-next-item">
+        <span class="su-next-item__icon" aria-hidden="true">
+          <svg class="icon"><use href="#i-truck"/></svg>
         </span>
-        <span class="su-step__label">Enviado</span>
-        <span class="su-step__note">Com rastreio</span>
+        <div class="su-next-item__body">
+          <span class="su-next-item__label">Código de rastreio por e-mail</span>
+          <span class="su-next-item__note">Você será notificada assim que o pedido for postado</span>
+        </div>
       </div>
 
-      <div class="su-step">
-        <span class="su-step__dot">
-          <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
+      <div class="su-next-item">
+        <span class="su-next-item__icon" aria-hidden="true">
+          <svg class="icon"><use href="#i-pin"/></svg>
         </span>
-        <span class="su-step__label">Entregue</span>
-        <span class="su-step__note">Em breve</span>
+        <div class="su-next-item__body">
+          <span class="su-next-item__label">Entrega no endereço informado</span>
+          <span class="su-next-item__note">{{ pedido.rua }}, {{ pedido.numero }} — {{ pedido.cidade }}/{{ pedido.estado }}</span>
+        </div>
       </div>
 
     </div>
@@ -216,16 +226,24 @@
         </div>
         <div class="su-meta">
           <span class="su-meta__label">Status</span>
-          <span class="su-meta__pill">Em preparação</span>
+          <span class="su-meta__pill su-meta__pill--lg">Em preparação</span>
         </div>
       </div>
 
       <div class="su-summary__cta">
-        {% if user.is_authenticated %}
-          <a href="{% url 'minha_conta' %}" class="su-btn su-btn--primary">
+        {% if pedido.codigo_rastreio %}
+          <a href="{{ pedido.rastreio_url }}" class="su-btn su-btn--primary" target="_blank" rel="noopener">
             Acompanhar pedido
             <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
           </a>
+        {% else %}
+          <div class="su-tracking-notice">
+            <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
+            Você receberá o código de rastreio assim que seu pedido for enviado.
+          </div>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <a href="{% url 'minha_conta' %}" class="su-btn su-btn--ghost">Meus pedidos</a>
         {% endif %}
         <a href="/" class="su-btn su-btn--ghost">Continuar comprando</a>
       </div>
@@ -233,6 +251,41 @@
     </aside>
 
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CROSS-SELL — "Você também pode gostar"
+  ═══════════════════════════════════════════════════════════ -->
+  {% if produtos_recomendados %}
+  <section class="su-crosssell" aria-labelledby="crosssell-title">
+    <div class="su-crosssell__header">
+      <h2 class="su-crosssell__title" id="crosssell-title">Você também pode gostar</h2>
+      <p class="su-crosssell__sub">Peças selecionadas para combinar com a sua compra</p>
+    </div>
+    <div class="su-crosssell__grid">
+      {% for produto in produtos_recomendados %}
+        <a class="su-crosssell__card" href="{{ produto.get_absolute_url }}">
+          {% if produto.imagem %}
+            <div class="su-crosssell__img-wrap">
+              <img class="su-crosssell__img"
+                   src="{{ produto.imagem|cloudinary_url:'c_fill,w_320,h_320,q_auto,f_auto' }}"
+                   alt="{{ produto.nome }}"
+                   width="160" height="160"
+                   loading="lazy">
+            </div>
+          {% else %}
+            <div class="su-crosssell__img-wrap su-crosssell__img-wrap--empty">
+              <svg class="icon icon--32" aria-hidden="true"><use href="#i-gem"/></svg>
+            </div>
+          {% endif %}
+          <div class="su-crosssell__info">
+            <span class="su-crosssell__name">{{ produto.nome }}</span>
+            <span class="su-crosssell__price">R$ {{ produto.preco }}</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 
   <!-- ═══════════════════════════════════════════════════════════
        SUPORTE PELO WHATSAPP
@@ -248,17 +301,17 @@
     </div>
 
     <div class="su-support__text">
-      <h3 class="su-support__title">Precisa de ajuda?</h3>
+      <h3 class="su-support__title">Dúvidas sobre seu pedido?</h3>
       <p class="su-support__sub">
-        Nosso atendimento está disponível pelo WhatsApp para tirar qualquer dúvida
-        sobre seu pedido, prazos ou trocas.
+        Nossa equipe está disponível pelo WhatsApp para tirar qualquer dúvida
+        sobre prazos, rastreio ou trocas.
       </p>
     </div>
 
     <a class="su-btn su-btn--primary"
        href="https://wa.me/5511913225256?text=Ol%C3%A1!%20Acabei%20de%20fazer%20o%20pedido%20%23{{ pedido.id }}%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida."
        target="_blank" rel="noopener">
-      Falar pelo WhatsApp
+      Falar no WhatsApp
       <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
     </a>
   </section>
@@ -272,8 +325,6 @@
   var storageKey = 'meta_purchase_{{ pedido.id|escapejs }}';
   if (sessionStorage.getItem(storageKey)) return;
 
-  // Pixel e carregado de forma diferida no restante do site; aqui precisamos
-  // que o Purchase dispare de forma confiavel, entao forcamos a inicializacao.
   if (typeof window._fbPixelLoad === 'function') window._fbPixelLoad();
 
   if (typeof fbq !== 'function') return;
@@ -283,6 +334,20 @@
     s = s.indexOf(',') !== -1 ? s.replace(/\./g, '').replace(',', '.') : s;
     var n = parseFloat(s);
     return isFinite(n) ? n : 0;
+  }
+
+  function getCookie(name) {
+    var m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  var fbc = getCookie('_fbc');
+  var fbp = getCookie('_fbp');
+  var advMatch = {};
+  if (fbc) advMatch.fbc = fbc;
+  if (fbp) advMatch.fbp = fbp;
+  if (fbc || fbp) {
+    fbq('init', '{{ meta_pixel_id|escapejs }}', advMatch);
   }
 
   var contentIds = [{% for item in pedido.itens.all %}'{{ item.produto_id|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}];

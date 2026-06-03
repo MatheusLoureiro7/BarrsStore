@@ -74,7 +74,8 @@
       "Bash(grep -v '^$')",
       "Bash(git config *)",
       "Bash(xargs file)",
-      "Bash(perl *)"
+      "Bash(perl *)",
+      "Bash(python3 -c ' *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Bibico\\Documents\\projetos\\BarrsStore\\ads-dashboard\\src"

@@ -188,9 +188,24 @@ def send_purchase_event(pedido):
     for chave in ('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'):
         if utm.get(chave):
             custom_data[chave] = utm[chave]
-    fbc = utm.get('fbclid')
-    if fbc:
-        user_data['fbc'] = f'fb.1.{int(time.time())}.{fbc}'
+    # fbc: preferir valor direto do cookie _fbc; cair para fbclid se disponivel.
+    fbc_cookie = utm.get('fbc', '')
+    fbc_fbclid = utm.get('fbclid', '')
+    if fbc_cookie:
+        user_data['fbc'] = fbc_cookie
+    elif fbc_fbclid:
+        user_data['fbc'] = f'fb.1.{int(time.time())}.{fbc_fbclid}'
+    # fbp: identificador do navegador do cookie _fbp.
+    fbp_val = utm.get('fbp', '')
+    if fbp_val:
+        user_data['fbp'] = fbp_val
+    # IP e user-agent: aumentam significativamente o Event Match Quality na CAPI.
+    client_ip = utm.get('client_ip_address', '')
+    if client_ip:
+        user_data['client_ip_address'] = client_ip
+    client_ua = utm.get('client_user_agent', '')
+    if client_ua:
+        user_data['client_user_agent'] = client_ua
 
     payload = {
         'data': [

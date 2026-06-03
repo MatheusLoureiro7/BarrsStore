@@ -2489,6 +2489,30 @@ def pagamento_sucesso(request, pedido_id, token):
     pedido = get_pedido_por_token(pedido_id, token)
     payment_id = request.GET.get('payment_id') or request.GET.get('collection_id')
     if payment_id and pedido.status != 'confirmado':
+        # Enriquecer origem_utm com dados de rastreamento do browser antes da CAPI disparar.
+        # Isso permite que send_purchase_event inclua fbc, fbp, IP e user-agent.
+        _fbc = request.COOKIES.get('_fbc', '')
+        _fbp = request.COOKIES.get('_fbp', '')
+        _ip = (request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+               or request.META.get('REMOTE_ADDR', ''))
+        _ua = request.META.get('HTTP_USER_AGENT', '')[:500]
+        utm = dict(pedido.origem_utm or {})
+        _changed = False
+        if _fbc and not utm.get('fbc'):
+            utm['fbc'] = _fbc
+            _changed = True
+        if _fbp and not utm.get('fbp'):
+            utm['fbp'] = _fbp
+            _changed = True
+        if _ip and not utm.get('client_ip_address'):
+            utm['client_ip_address'] = _ip
+            _changed = True
+        if _ua and not utm.get('client_user_agent'):
+            utm['client_user_agent'] = _ua
+            _changed = True
+        if _changed:
+            pedido.origem_utm = utm
+            pedido.save(update_fields=['origem_utm'])
         confirmar_pagamento_mercadopago(payment_id)
         pedido.refresh_from_db()
     # Evita renderizar tela de "sucesso" se o pagamento nao foi de fato
@@ -2496,7 +2520,25 @@ def pagamento_sucesso(request, pedido_id, token):
     # polling atualiza assim que o status chegar.
     if pedido.status != 'confirmado':
         return redirect('pagamento_pendente', pedido_id=pedido.id, token=pedido.access_token)
-    context = {'pedido': pedido, 'meta_event_id': f'purchase_{pedido.id}'}
+    comprados_ids = list(pedido.itens.values_list('produto_id', flat=True))
+    recomendados = list(
+        Produto.objects.filter(visivel=True, estoque__gt=0, destaque=True)
+        .exclude(id__in=comprados_ids)[:3]
+    )
+    if len(recomendados) < 3:
+        extra_ids = [p.id for p in recomendados]
+        extra = Produto.objects.filter(visivel=True, estoque__gt=0)\
+            .exclude(id__in=comprados_ids).exclude(id__in=extra_ids)[:3 - len(recomendados)]
+        recomendados += list(extra)
+    _client_ip = (request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+                  or request.META.get('REMOTE_ADDR', ''))
+    context = {
+        'pedido': pedido,
+        'meta_event_id': f'purchase_{pedido.id}',
+        'produtos_recomendados': recomendados,
+        'meta_client_ip': _client_ip,
+        'meta_client_ua': request.META.get('HTTP_USER_AGENT', ''),
+    }
     context.update(noindex_context(request, 'Pagamento - Barrs Store'))
     return render(request, 'pagamento_sucesso.html', context)
 
