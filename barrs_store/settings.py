@@ -54,6 +54,9 @@ WHATSAPP_API_URL = os.environ.get('WHATSAPP_API_URL', '').strip().rstrip('/')
 WHATSAPP_API_KEY = os.environ.get('WHATSAPP_API_KEY', '').strip()
 WHATSAPP_INSTANCE = os.environ.get('WHATSAPP_INSTANCE', 'loja').strip() or 'loja'
 
+ERP_WEBHOOK_URL = os.environ.get('ERP_WEBHOOK_URL', '')
+ERP_WEBHOOK_TOKEN = os.environ.get('ERP_WEBHOOK_TOKEN', '')
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
