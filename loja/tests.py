@@ -518,3 +518,86 @@ class CarrinhoAuthorizationTests(TestCase):
         response = client.post(f'/deletar/{item_vitima.id}/')
         self.assertEqual(response.status_code, 404)
         self.assertTrue(ItemCarrinho.objects.filter(id=item_vitima.id).exists())
+
+
+# ── TESTES DO SIGNAL DE WEBHOOK ───────────────────────────────────
+import logging
+from unittest.mock import patch
+
+
+def _criar_pedido_site(status='pendente'):
+    return Pedido.objects.create(
+        nome='Test',
+        email='t@test.com',
+        telefone='',
+        cpf='',
+        cep='01310-100',
+        rua='Av Paulista',
+        numero='1',
+        bairro='Bela Vista',
+        cidade='SP',
+        estado='SP',
+        forma_pagamento='pix',
+        status=status,
+        total=Decimal('100'),
+    )
+
+
+class WebhookSignalTests(TestCase):
+    @patch('loja.signals._chamar_webhook_erp')
+    def test_dispara_ao_confirmar(self, mock_chamar):
+        ped = _criar_pedido_site('pendente')
+        ped.status = 'confirmado'
+        ped.save(update_fields=['status'])
+        mock_chamar.assert_called_once_with(ped.id)
+
+    @patch('loja.signals._chamar_webhook_erp')
+    def test_nao_dispara_sem_status_no_update_fields(self, mock_chamar):
+        ped = _criar_pedido_site('pendente')
+        ped.nome = 'Outro'
+        ped.save(update_fields=['nome'])
+        mock_chamar.assert_not_called()
+
+    @patch('loja.signals._chamar_webhook_erp')
+    def test_nao_dispara_na_criacao(self, mock_chamar):
+        _criar_pedido_site('confirmado')
+        mock_chamar.assert_not_called()
+
+    @patch('loja.signals._chamar_webhook_erp')
+    def test_nao_dispara_para_outros_status(self, mock_chamar):
+        ped = _criar_pedido_site('pendente')
+        ped.status = 'enviado'
+        ped.save(update_fields=['status'])
+        mock_chamar.assert_not_called()
+
+    @override_settings(
+        ERP_WEBHOOK_URL='http://erp.test/webhook/nova-venda/',
+        ERP_WEBHOOK_TOKEN='tok123',
+    )
+    @patch('loja.signals.requests.post')
+    def test_chamar_webhook_faz_post_correto(self, mock_post):
+        from loja.signals import _chamar_webhook_erp
+        _chamar_webhook_erp(42)
+        mock_post.assert_called_once_with(
+            'http://erp.test/webhook/nova-venda/',
+            json={'pedido_id': 42},
+            headers={'X-Webhook-Token': 'tok123'},
+            timeout=5,
+        )
+
+    @override_settings(ERP_WEBHOOK_URL='', ERP_WEBHOOK_TOKEN='')
+    @patch('loja.signals.requests.post')
+    def test_sem_url_nao_faz_post(self, mock_post):
+        from loja.signals import _chamar_webhook_erp
+        _chamar_webhook_erp(42)
+        mock_post.assert_not_called()
+
+    @override_settings(
+        ERP_WEBHOOK_URL='http://erp.test/',
+        ERP_WEBHOOK_TOKEN='tok',
+    )
+    @patch('loja.signals.requests.post', side_effect=Exception('timeout'))
+    def test_falha_silenciosa(self, mock_post):
+        from loja.signals import _chamar_webhook_erp
+        # não deve levantar exceção
+        _chamar_webhook_erp(42)
