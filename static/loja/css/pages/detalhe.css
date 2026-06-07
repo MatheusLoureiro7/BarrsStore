@@ -36,6 +36,7 @@
 
 /* GALERIA */
 .product__gallery {
+  position: -webkit-sticky;
   position: sticky;
   top: 88px;
   align-self: start;
