@@ -38,6 +38,7 @@
 .product__gallery {
   position: sticky;
   top: 88px;
+  align-self: start;
 }
 .product-gallery {
   position: relative;

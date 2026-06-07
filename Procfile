@@ -1,1 +1,1 @@
-web: python manage.py migrate && gunicorn barrs_store.wsgi --workers 4 --timeout 120 --bind 0.0.0.0:$PORT --log-file - --access-logfile - --max-requests 1000 --max-requests-jitter 100
+web: python manage.py migrate && gunicorn barrs_store.wsgi -c gunicorn_config.py
