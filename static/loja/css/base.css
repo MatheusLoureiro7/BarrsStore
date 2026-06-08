@@ -1311,8 +1311,8 @@ body::before {
 .premium-footer__grid {
   display: grid;
   grid-template-columns: 1.5fr repeat(3, 1fr);
-  gap: clamp(16px, 2.4vw, 36px);
-  padding-bottom: clamp(16px, 2vw, 24px);
+  gap: clamp(12px, 2vw, 28px);
+  padding-bottom: clamp(12px, 1.5vw, 18px);
   border-bottom: 1px solid var(--ft-line);
 }
 
@@ -1434,8 +1434,8 @@ body::before {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: clamp(14px, 2.6vw, 32px);
-  padding: clamp(16px, 2.2vw, 24px) 0;
+  gap: clamp(12px, 2vw, 24px);
+  padding: clamp(10px, 1.4vw, 16px) 0;
   border-bottom: 1px solid var(--ft-line-soft);
 }
 
@@ -1707,8 +1707,8 @@ body::before {
 .bs-newsletter {
   position: relative;
   width: 100%;
-  margin: 0 auto var(--space-5);
-  padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.25rem, 4vw, 3rem);
+  margin: 0 auto var(--space-4);
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem);
   max-width: 720px;
   text-align: center;
   background:
@@ -1741,7 +1741,7 @@ body::before {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--color-accent);
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.5rem;
   opacity: 0.92;
 }
 .bs-newsletter__title {
@@ -1758,7 +1758,7 @@ body::before {
   line-height: 1.55;
   color: rgba(244, 241, 233, 0.7);
   max-width: 46ch;
-  margin: 0 auto 1.2rem;
+  margin: 0 auto 0.75rem;
 }
 .bs-newsletter__form {
   display: flex;
