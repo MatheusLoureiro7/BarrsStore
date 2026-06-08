@@ -651,6 +651,20 @@
 .summary-cta:disabled::before { display: none; }
 .summary-cta .icon { width: 17px; height: 17px; flex-shrink: 0; }
 
+/* ── Mercado Pago Trust ───────────────────────────────────── */
+.mp-trust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+.mp-trust strong { color: var(--color-ink-soft); font-weight: 600; }
+.mp-trust .icon { width: 13px; height: 13px; color: var(--color-brand); flex-shrink: 0; }
+
 /* ── Trust Strip ──────────────────────────────────────────── */
 
 .cart-trust {
