@@ -1245,7 +1245,7 @@ body::before {
 
   position: relative;
   flex-shrink: 0;
-  margin-top: clamp(48px, 6vw, 80px);
+  margin-top: clamp(32px, 4vw, 56px);
   background:
     radial-gradient(120% 100% at 50% 0%, rgba(197, 168, 128, 0.06) 0%, transparent 55%),
     linear-gradient(180deg, var(--ft-bg-top) 0%, var(--ft-bg-bot) 100%);
@@ -1283,13 +1283,13 @@ body::before {
 .premium-footer__inner {
   max-width: var(--container);
   margin: 0 auto;
-  padding: clamp(22px, 2.8vw, 34px) var(--ft-pad-x) clamp(14px, 2vw, 22px);
+  padding: clamp(16px, 2vw, 24px) var(--ft-pad-x) clamp(10px, 1.5vw, 16px);
 }
 
 /* ── Crest minimalista (só monograma) ── */
 .premium-footer__crest {
   text-align: center;
-  margin: 0 auto clamp(12px, 2vw, 20px);
+  margin: 0 auto clamp(8px, 1.4vw, 14px);
 }
 
 .premium-footer__monogram {
@@ -1311,8 +1311,8 @@ body::before {
 .premium-footer__grid {
   display: grid;
   grid-template-columns: 1.5fr repeat(3, 1fr);
-  gap: clamp(20px, 3vw, 44px);
-  padding-bottom: clamp(22px, 2.8vw, 34px);
+  gap: clamp(16px, 2.4vw, 36px);
+  padding-bottom: clamp(16px, 2vw, 24px);
   border-bottom: 1px solid var(--ft-line);
 }
 
@@ -1707,8 +1707,8 @@ body::before {
 .bs-newsletter {
   position: relative;
   width: 100%;
-  margin: 0 auto var(--space-7);
-  padding: clamp(2rem, 4vw, 3.25rem) clamp(1.25rem, 4vw, 3rem);
+  margin: 0 auto var(--space-5);
+  padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.25rem, 4vw, 3rem);
   max-width: 720px;
   text-align: center;
   background:
@@ -1746,19 +1746,19 @@ body::before {
 }
 .bs-newsletter__title {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 2.4vw, 1.85rem);
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
   font-weight: 500;
   line-height: 1.25;
   color: #F4F1E9;
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.5rem;
   letter-spacing: -0.005em;
 }
 .bs-newsletter__lead {
   font-size: var(--text-sm);
-  line-height: 1.65;
+  line-height: 1.55;
   color: rgba(244, 241, 233, 0.7);
   max-width: 46ch;
-  margin: 0 auto 1.6rem;
+  margin: 0 auto 1.2rem;
 }
 .bs-newsletter__form {
   display: flex;
