@@ -75,7 +75,13 @@
       "Bash(git config *)",
       "Bash(xargs file)",
       "Bash(perl *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(git -C /Users/bibico/Documents/projetos/BarrsStore status)",
+      "Bash(git -C /Users/bibico/Documents/projetos/BarrsStore diff)",
+      "Bash(git *)",
+      "Bash(python3 manage.py collectstatic --noinput)",
+      "Bash(sed -n '248,260p' /Users/bibico/Documents/projetos/BarrsStore/static/loja/css/base.css)",
+      "Bash(sed -n '740,750p' /Users/bibico/Documents/projetos/BarrsStore/static/loja/css/base.css)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Bibico\\Documents\\projetos\\BarrsStore\\ads-dashboard\\src"
