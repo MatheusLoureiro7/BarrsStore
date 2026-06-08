@@ -7,8 +7,9 @@ workers = 4
 timeout = 120
 max_requests = 1000
 max_requests_jitter = 100
+accesslog = '-'
 
-_SKIP_UAS = ('SentryUptimeBot',)
+_SKIP_UAS = ('SentryUptimeBot', 'facebookexternalhit')
 
 
 class FilteredLogger(Logger):
