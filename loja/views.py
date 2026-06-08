@@ -2849,7 +2849,7 @@ def rastrear_pedido(request):
 def sobre(request):
     context = {
         'qtd_carrinho': get_carrinho_info(request),
-        **seo_context(request, 'Sobre a Barrs Store', 'Conheca a Barrs Store, uma loja de acessorios modernos com atendimento humanizado e rapido.'),
+        **seo_context(request, 'A história da Barrs Store — Uma carta da fundadora Sabrina', 'Em 2026, Sabrina deixou 8 anos de carreira para construir algo seu. Conheça a história por trás da Barrs Store.'),
     }
     return render(request, 'sobre.html', context)
 
