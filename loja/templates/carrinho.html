@@ -210,6 +210,8 @@
   {% endif %}
 </main>
 
+{% include "partials/footer.html" %}
+
 <script nonce="{{ csp_nonce }}">
   function parseMoney(value) {
     if (typeof value === 'number') return value;
