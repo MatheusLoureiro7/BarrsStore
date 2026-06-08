@@ -30,9 +30,6 @@
   gap: var(--space-8);
   align-items: start;
 }
-.product > div:not(.product__gallery) {
-  min-height: calc(100vh + 200px);
-}
 
 /* GALERIA */
 .product__gallery {
