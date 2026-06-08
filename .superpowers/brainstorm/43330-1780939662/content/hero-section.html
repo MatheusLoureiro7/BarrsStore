@@ -1,0 +1,237 @@
+<h2>O que aparece antes da carta?</h2>
+<p class="subtitle">O topo da página define o tom antes do texto começar. Três opções.</p>
+
+<style>
+  .mock-page {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #F5F6EE;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mock-nav-bar {
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 10px 20px;
+    font-size: 10px;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #888;
+  }
+  .mock-logo { font-weight: 700; color: #1a1a1a; font-size: 11px; }
+
+  /* ── OPÇÃO A: Hero com foto existente ── */
+  .hero-photo {
+    height: 150px;
+    background: linear-gradient(160deg, #2a2a22 0%, #3a3a30 100%);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .hero-photo-bg {
+    position: absolute;
+    inset: 0;
+    background: url('https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_900/v1779995380/Heroprincipal_cii1k3.png') center/cover no-repeat;
+    opacity: 0.45;
+    filter: saturate(0.6);
+  }
+  .hero-photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(20,18,14,0.85) 0%, rgba(20,18,14,0.2) 60%, transparent 100%);
+  }
+  .hero-photo-content {
+    position: relative;
+    z-index: 2;
+    padding: 16px 20px;
+    color: #fff;
+  }
+  .hero-eyebrow-sm {
+    font-size: 7px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-family: Arial, sans-serif;
+    opacity: 0.6;
+    margin-bottom: 5px;
+  }
+  .hero-title-sm {
+    font-size: 16px;
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.25;
+  }
+
+  /* ── OPÇÃO B: Topo tipográfico minimalista ── */
+  .hero-typo {
+    padding: 28px 20px 20px;
+    text-align: center;
+    background: #F5F6EE;
+    border-bottom: 1px solid rgba(107,122,100,0.15);
+  }
+  .hero-typo-line {
+    width: 28px;
+    height: 1px;
+    background: #6B7A64;
+    margin: 0 auto 10px;
+    opacity: 0.45;
+  }
+  .hero-typo-label {
+    font-size: 7px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #6B7A64;
+    font-family: Arial, sans-serif;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .hero-typo-title {
+    font-size: 20px;
+    font-weight: 400;
+    font-style: italic;
+    color: #1a1a1a;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .hero-typo-sub {
+    font-size: 9px;
+    color: #888;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── OPÇÃO C: Sem hero — entra direto na carta ── */
+  .hero-none {
+    padding: 24px 20px 0;
+    background: #F5F6EE;
+    text-align: center;
+  }
+  .hero-none-label {
+    font-size: 7px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #6B7A64;
+    font-family: Arial, sans-serif;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .hero-none-title {
+    font-size: 13px;
+    font-style: italic;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    font-family: Georgia, serif;
+  }
+
+  /* ── Carta (compartilhada) ── */
+  .letter-wrap {
+    padding: 16px 20px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .letter-card {
+    background: #fff;
+    border-radius: 2px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+  .letter-text {
+    font-size: 9.5px;
+    line-height: 1.85;
+    color: #444;
+    font-family: Georgia, serif;
+    margin-bottom: 10px;
+  }
+  .letter-sig {
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    text-align: right;
+    margin-top: 10px;
+  }
+  .sig-name { font-style: italic; font-family: Georgia, serif; font-size: 11px; color: #1a1a1a; }
+  .sig-role { font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: #6B7A64; font-family: Arial, sans-serif; margin-top: 2px; }
+</style>
+
+<div class="cards">
+
+  <!-- A: Com foto -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span>Início</span><span>Coleção</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="hero-photo">
+          <div class="hero-photo-bg"></div>
+          <div class="hero-photo-overlay"></div>
+          <div class="hero-photo-content">
+            <div class="hero-eyebrow-sm">Nossa história · Barrs Store</div>
+            <div class="hero-title-sm">A decisão que<br>mudou tudo</div>
+          </div>
+        </div>
+        <div class="letter-wrap">
+          <div class="letter-card">
+            <p class="letter-text">Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida. Depois de trabalhar por quase oito anos na mesma empresa, percebi que existia um sonho que continuava falando mais alto dentro de mim...</p>
+            <p class="letter-text">Sempre acreditei que uma peça tem o poder de transformar a forma como nos sentimos...</p>
+            <div class="letter-sig"><div class="sig-name">Sabrina</div><div class="sig-role">Fundadora da Barrs Store</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Hero com foto</h3>
+      <p>Mantém a foto atual da loja como imagem de abertura. Dá impacto visual antes da carta. Transição de "loja" para "história pessoal".</p>
+    </div>
+  </div>
+
+  <!-- B: Tipográfico -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span>Início</span><span>Coleção</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="hero-typo">
+          <div class="hero-typo-line"></div>
+          <span class="hero-typo-label">Uma mensagem da fundadora</span>
+          <div class="hero-typo-title">A Barrs nasceu de uma<br><em>decisão que mudou tudo</em></div>
+          <div class="hero-typo-sub">Sabrina · Fundadora · 2026</div>
+        </div>
+        <div class="letter-wrap">
+          <div class="letter-card">
+            <p class="letter-text">Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida. Depois de trabalhar por quase oito anos na mesma empresa, percebi que existia um sonho que continuava falando mais alto dentro de mim...</p>
+            <p class="letter-text">Sempre acreditei que uma peça tem o poder de transformar a forma como nos sentimos...</p>
+            <div class="letter-sig"><div class="sig-name">Sabrina</div><div class="sig-role">Fundadora da Barrs Store</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Topo tipográfico</h3>
+      <p>Sem foto. Só tipografia elegante com o título da história. Mais intimista, toda atenção vai para as palavras. Consistente com o tom de carta.</p>
+    </div>
+  </div>
+
+  <!-- C: Sem hero -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span>Início</span><span>Coleção</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="hero-none">
+          <span class="hero-none-label">Nossa história</span>
+          <div class="hero-none-title">A Barrs nasceu de uma decisão que mudou tudo</div>
+        </div>
+        <div class="letter-wrap" style="padding-top:0">
+          <div class="letter-card">
+            <p class="letter-text">Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida. Depois de trabalhar por quase oito anos na mesma empresa, percebi que existia um sonho que continuava falando mais alto dentro de mim...</p>
+            <p class="letter-text">Sempre acreditei que uma peça tem o poder de transformar a forma como nos sentimos...</p>
+            <div class="letter-sig"><div class="sig-name">Sabrina</div><div class="sig-role">Fundadora da Barrs Store</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Direto na carta</h3>
+      <p>Sem hero. Entra direto no texto logo após o nav. Máximo foco na história. O mais minimalista e corajoso — a história que se sustenta sozinha.</p>
+    </div>
+  </div>
+
+</div>

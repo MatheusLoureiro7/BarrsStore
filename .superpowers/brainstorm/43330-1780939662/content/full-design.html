@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — Página Sobre · Barrs Store</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Georgia', serif;
+    background: #e8e8e8;
+    padding: 24px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .label-top {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .page-frame {
+    width: 100%;
+    max-width: 680px;
+    background: #F5F6EE;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.14);
+  }
+
+  /* NAV */
+  .nav {
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #1a1a1a;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-logo-dot {
+    width: 28px;
+    height: 28px;
+    background: #6B7A64;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .nav-links {
+    display: flex;
+    gap: 20px;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #999;
+    list-style: none;
+  }
+  .nav-links .active { color: #6B7A64; }
+  .nav-right {
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: #888;
+    display: flex;
+    gap: 14px;
+  }
+
+  /* TOPO TIPOGRÁFICO */
+  .page-header {
+    padding: 44px 28px 32px;
+    text-align: center;
+    background: #F5F6EE;
+    border-bottom: 1px solid rgba(107,122,100,0.14);
+  }
+  .header-line {
+    width: 28px;
+    height: 1px;
+    background: #6B7A64;
+    margin: 0 auto 14px;
+    opacity: 0.45;
+  }
+  .header-eyebrow {
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: #6B7A64;
+    margin-bottom: 16px;
+  }
+  .header-title {
+    font-family: 'Georgia', serif;
+    font-size: 28px;
+    font-weight: 400;
+    font-style: italic;
+    color: #1a1a1a;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+  }
+  .header-title em {
+    font-style: italic;
+  }
+  .header-sub {
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    color: #aaa;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* CARTA */
+  .letter-section {
+    padding: 32px 28px 40px;
+  }
+  .letter-card {
+    background: #fff;
+    border-radius: 2px;
+    padding: 36px 40px;
+    box-shadow:
+      0 2px 12px rgba(0,0,0,0.04),
+      0 1px 3px rgba(0,0,0,0.06);
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  /* Cabeçalho da carta */
+  .letter-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .letter-from {
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: #6B7A64;
+    margin-bottom: 6px;
+  }
+  .letter-date {
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+    color: #bbb;
+    letter-spacing: 0.1em;
+  }
+
+  /* Texto da carta */
+  .letter-body p {
+    font-family: 'Georgia', serif;
+    font-size: 13.5px;
+    line-height: 1.92;
+    color: #3a3a3a;
+    font-weight: 400;
+    margin-bottom: 18px;
+  }
+  .letter-body p:last-of-type {
+    margin-bottom: 0;
+  }
+
+  /* Assinatura */
+  .letter-sig {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .sig-name {
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .sig-role {
+    font-family: Arial, sans-serif;
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #6B7A64;
+  }
+
+  /* Fechamento */
+  .letter-end {
+    padding: 28px 28px 36px;
+    text-align: center;
+    background: #F5F6EE;
+  }
+  .end-ornament {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .end-ornament-line { width: 28px; height: 1px; background: #6B7A64; opacity: 0.25; }
+  .end-ornament-dot { width: 5px; height: 5px; border-radius: 50%; background: #6B7A64; opacity: 0.25; }
+  .end-text {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-style: italic;
+    color: #aaa;
+    letter-spacing: 0.04em;
+  }
+
+  /* FOOTER */
+  .footer {
+    background: #1a1a1a;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-brand {
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    font-style: italic;
+  }
+  .footer-links {
+    display: flex;
+    gap: 16px;
+    font-family: Arial, sans-serif;
+    font-size: 7.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    list-style: none;
+  }
+
+  /* Botão de aprovação */
+  .approve-bar {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .approve-btn {
+    padding: 10px 24px;
+    background: #6B7A64;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 200ms;
+  }
+  .approve-btn:hover { background: #7E8F78; }
+  .change-btn {
+    padding: 10px 24px;
+    background: transparent;
+    color: #888;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="label-top">Design completo — Página Sobre · Barrs Store</div>
+
+<div class="page-frame">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <div class="nav-logo-dot">B</div>
+      Barrs Store
+    </div>
+    <ul class="nav-links">
+      <li>Início</li>
+      <li>Coleção</li>
+      <li class="active">Sobre</li>
+      <li>Contato</li>
+    </ul>
+    <div class="nav-right">
+      <span>Entrar</span>
+      <span>Carrinho</span>
+    </div>
+  </nav>
+
+  <!-- TOPO TIPOGRÁFICO -->
+  <header class="page-header">
+    <div class="header-line"></div>
+    <span class="header-eyebrow">Uma mensagem da fundadora</span>
+    <h1 class="header-title">A Barrs nasceu de uma<br><em>decisão que mudou tudo</em></h1>
+    <div class="header-sub">Sabrina · Fundadora · 2026</div>
+  </header>
+
+  <!-- CARTA -->
+  <section class="letter-section">
+    <div class="letter-card">
+
+      <div class="letter-head">
+        <span class="letter-from">De: Sabrina, fundadora</span>
+        <span class="letter-date">Barrs Store · 2026</span>
+      </div>
+
+      <div class="letter-body">
+        <p>A Barrs nasceu de uma decisão que mudou tudo.</p>
+        <p>Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida. Depois de trabalhar por quase oito anos na mesma empresa, conquistar estabilidade, crescer profissionalmente e ocupar um cargo importante, percebi que existia um sonho que continuava falando mais alto dentro de mim: o sonho de construir algo meu.</p>
+        <p>Sempre gostei de acessórios. Sempre acreditei que uma peça tem o poder de transformar a forma como nos sentimos. Não porque ela muda quem somos, mas porque ela nos lembra da nossa própria beleza, da nossa confiança e da nossa essência.</p>
+        <p>Por muito tempo, esse sonho ficou guardado. E não foi por falta de vontade. Foi por medo. Medo de abrir mão da estabilidade que eu havia construído durante anos. Medo de deixar para trás um cargo que conquistei com muito esforço. Medo de abandonar a segurança financeira para começar algo do zero.</p>
+        <p>Mas chegou um momento em que percebi que o medo de nunca tentar era maior do que o medo de arriscar. Foi então que decidi deixar para trás a segurança que conhecia para viver algo completamente novo. Nascia ali a Barrs Store.</p>
+        <p>A Barrs nunca foi apenas sobre acessórios. Ela nasceu da coragem de recomeçar. Nasceu de noites de planejamento, pesquisas, aprendizados, erros, acertos e da vontade de construir uma marca que entregasse muito mais do que produtos. Queria criar uma experiência. Queria que cada cliente recebesse não apenas uma peça bonita, mas sentisse o carinho colocado em cada detalhe.</p>
+        <p>Os detalhes mudam tudo. Uma peça escolhida com carinho pode transformar um look. Uma embalagem preparada com cuidado pode transformar uma entrega. E são esses detalhes que buscamos entregar todos os dias.</p>
+        <p>A Barrs nasceu de um sonho. Mas hoje ela é construída por cada pessoa que escolhe fazer parte dessa história. Se você está aqui, saiba que sua presença significa muito para nós.</p>
+        <p>Obrigada por apoiar uma marca que nasceu da coragem de acreditar.</p>
+      </div>
+
+      <div class="letter-sig">
+        <div class="sig-name">Sabrina</div>
+        <div class="sig-role">Fundadora da Barrs Store</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FECHAMENTO -->
+  <div class="letter-end">
+    <div class="end-ornament">
+      <div class="end-ornament-line"></div>
+      <div class="end-ornament-dot"></div>
+      <div class="end-ornament-line"></div>
+    </div>
+    <div class="end-text">com carinho, Barrs Store</div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-brand">Barrs Store</div>
+    <ul class="footer-links">
+      <li>Coleção</li>
+      <li>Contato</li>
+      <li>Política</li>
+    </ul>
+  </footer>
+
+</div>
+
+<div class="approve-bar">
+  <button class="approve-btn" onclick="window.parent && window.parent.postMessage({type:'choice',choice:'approved',text:'Design aprovado'},'*'); alert('Aprovado! Me avise no terminal.')">
+    Aprovar design →
+  </button>
+  <button class="change-btn" onclick="alert('Me diga no terminal o que quer mudar.')">
+    Quero ajustar algo
+  </button>
+</div>
+
+</body>
+</html>

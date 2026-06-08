@@ -1,0 +1,352 @@
+<h2>Qual estrutura combina com a história da Sabrina?</h2>
+<p class="subtitle">O texto é pessoal e emocional — a estrutura precisa honrar isso. Três direções diferentes.</p>
+
+<style>
+  .mock-page {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #F5F6EE;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mock-nav-bar {
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 10px 20px;
+    font-size: 10px;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #888;
+  }
+  .mock-logo { font-weight: 700; color: #1a1a1a; font-size: 11px; }
+
+  /* OPÇÃO A — Editorial / Revista */
+  .option-a-page {
+    min-height: 380px;
+    font-family: Georgia, serif;
+    background: #F5F6EE;
+  }
+  .hero-full {
+    background: linear-gradient(160deg, #1a1a1a 0%, #3a3a32 100%);
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px 24px;
+    position: relative;
+  }
+  .hero-full-text {
+    color: #fff;
+  }
+  .hero-eyebrow {
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-family: Arial, sans-serif;
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+  .hero-h1 {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.2;
+    font-style: italic;
+  }
+  .editorial-body {
+    padding: 24px;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+  .editorial-intro {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-family: Arial, sans-serif;
+  }
+  .pull-quote {
+    border-left: 2px solid #6B7A64;
+    padding: 8px 16px;
+    margin: 16px 0;
+    font-size: 15px;
+    font-style: italic;
+    color: #6B7A64;
+    line-height: 1.5;
+  }
+  .editorial-text {
+    font-size: 11px;
+    line-height: 1.8;
+    color: #555;
+    font-family: Arial, sans-serif;
+    font-weight: 300;
+  }
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+  }
+  .section-divider span { width: 24px; height: 1px; background: #6B7A64; }
+  .section-divider .num { font-size: 8px; letter-spacing: 0.2em; color: #6B7A64; font-family: Arial, sans-serif; }
+
+  /* OPÇÃO B — Timeline / Jornada */
+  .timeline-page {
+    background: #F5F6EE;
+    min-height: 380px;
+  }
+  .timeline-hero {
+    background: #fff;
+    padding: 20px 24px 16px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+  }
+  .timeline-eyebrow {
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #6B7A64;
+    font-family: Arial, sans-serif;
+    margin-bottom: 6px;
+  }
+  .timeline-title {
+    font-size: 18px;
+    font-weight: 400;
+    font-style: italic;
+    color: #1a1a1a;
+  }
+  .timeline-body {
+    padding: 20px 24px;
+  }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 28px;
+    bottom: -12px;
+    width: 1px;
+    background: #e0e0da;
+  }
+  .timeline-item:last-child::before { display: none; }
+  .timeline-dot {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid #6B7A64;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: #6B7A64;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+    font-weight: 700;
+  }
+  .timeline-content h4 {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a1a1a;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+  .timeline-content p {
+    font-size: 10px;
+    line-height: 1.7;
+    color: #666;
+    font-family: Arial, sans-serif;
+    font-weight: 300;
+  }
+
+  /* OPÇÃO C — Carta / Minimalista */
+  .letter-page {
+    background: #F5F6EE;
+    min-height: 380px;
+  }
+  .letter-header {
+    background: #F5F6EE;
+    padding: 28px 24px 0;
+    text-align: center;
+  }
+  .letter-line {
+    width: 32px;
+    height: 1px;
+    background: #6B7A64;
+    margin: 0 auto 12px;
+    opacity: 0.5;
+  }
+  .letter-label {
+    font-size: 8px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: #6B7A64;
+    font-family: Arial, sans-serif;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .letter-title {
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    color: #1a1a1a;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .letter-subtitle {
+    font-size: 10px;
+    color: #888;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+  .letter-body {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 24px 24px;
+  }
+  .letter-bg {
+    background: #fff;
+    border-radius: 2px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .letter-text {
+    font-size: 11px;
+    line-height: 1.9;
+    color: #444;
+    font-family: Georgia, serif;
+    font-weight: 400;
+    margin-bottom: 12px;
+  }
+  .letter-signature {
+    margin-top: 16px;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+    text-align: right;
+  }
+  .letter-signature .sig-name {
+    font-size: 13px;
+    font-style: italic;
+    font-family: Georgia, serif;
+    color: #1a1a1a;
+  }
+  .letter-signature .sig-role {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #6B7A64;
+    font-family: Arial, sans-serif;
+    margin-top: 3px;
+  }
+</style>
+
+<div class="cards">
+
+  <!-- OPÇÃO A: Editorial -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page option-a-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span>Início</span><span>Coleção</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="hero-full">
+          <div class="hero-full-text">
+            <div class="hero-eyebrow">Nossa história · 2026</div>
+            <div class="hero-h1">A decisão que<br>mudou tudo</div>
+          </div>
+        </div>
+        <div class="editorial-body">
+          <p class="editorial-intro">A Barrs nasceu de uma decisão que mudou tudo. Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida.</p>
+          <div class="pull-quote">"O medo de nunca tentar era maior do que o medo de arriscar."</div>
+          <p class="editorial-text">Depois de trabalhar por quase oito anos na mesma empresa, conquistar estabilidade, crescer profissionalmente e ocupar um cargo importante, percebi que existia um sonho que continuava falando mais alto dentro de mim...</p>
+          <div class="section-divider"><span></span><span class="num">A JORNADA</span><span></span></div>
+          <p class="editorial-text">Sempre gostei de acessórios. Sempre acreditei que uma peça tem o poder de transformar a forma como nos sentimos...</p>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Editorial / Revista</h3>
+      <p>Hero escuro com foto, texto em coluna central, pull quotes destacados. Sente como uma matéria de revista de moda. Dramático e impactante.</p>
+    </div>
+  </div>
+
+  <!-- OPÇÃO B: Timeline -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page timeline-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span>Início</span><span>Coleção</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="timeline-hero">
+          <div class="timeline-eyebrow">Nossa história</div>
+          <div class="timeline-title">A Barrs nasceu de coragem</div>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-item">
+            <div class="timeline-dot">01</div>
+            <div class="timeline-content">
+              <h4>O sonho guardado</h4>
+              <p>Oito anos de estabilidade, um cargo conquistado com esforço — e um sonho que falava mais alto dentro de mim...</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">02</div>
+            <div class="timeline-content">
+              <h4>O medo de arriscar</h4>
+              <p>Medo de abrir mão da estabilidade. Medo de deixar um cargo para trás. Mas o medo de nunca tentar falou mais alto...</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">03</div>
+            <div class="timeline-content">
+              <h4>Nasce a Barrs</h4>
+              <p>Noites de planejamento, pesquisas, aprendizados, erros e acertos. E a certeza: os detalhes mudam tudo.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Jornada / Capítulos</h3>
+      <p>A história dividida em capítulos numerados com linha do tempo vertical. Narrativa estruturada, fácil de seguir. Sente como uma jornada com começo, meio e fim.</p>
+    </div>
+  </div>
+
+  <!-- OPÇÃO C: Carta -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page letter-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span>Início</span><span>Coleção</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="letter-header">
+          <div class="letter-line"></div>
+          <span class="letter-label">Uma mensagem da fundadora</span>
+          <div class="letter-title">A Barrs nasceu de<br><em>uma decisão que mudou tudo</em></div>
+          <div class="letter-subtitle">Sabrina · Fundadora · 2026</div>
+        </div>
+        <div class="letter-body">
+          <div class="letter-bg">
+            <p class="letter-text">Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida. Depois de trabalhar por quase oito anos na mesma empresa, percebi que existia um sonho que continuava falando mais alto dentro de mim...</p>
+            <p class="letter-text">Sempre gostei de acessórios. Sempre acreditei que uma peça tem o poder de transformar a forma como nos sentimos. Não porque ela muda quem somos, mas porque ela nos lembra da nossa própria beleza...</p>
+            <div class="letter-signature">
+              <div class="sig-name">Sabrina</div>
+              <div class="sig-role">Fundadora da Barrs Store</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Carta / Founder's Note</h3>
+      <p>Texto contínuo em fundo de papel, assinado pela Sabrina. Íntimo, pessoal, autêntico. O mais próximo de uma carta pessoal. Simples mas poderoso.</p>
+    </div>
+  </div>
+
+</div>

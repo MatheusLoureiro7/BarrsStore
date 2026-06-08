@@ -1,0 +1,185 @@
+<h2>O que vem depois da carta da Sabrina?</h2>
+<p class="subtitle">A carta termina com assinatura. O que aparece a seguir na página?</p>
+
+<style>
+  .mock-page {
+    font-family: Georgia, serif;
+    background: #F5F6EE;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mock-nav-bar {
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 8px 16px;
+    font-size: 9px;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #888;
+  }
+  .mock-logo { font-weight: 700; color: #1a1a1a; font-size: 10px; }
+
+  /* Topo tipográfico (já escolhido) */
+  .hero-typo {
+    padding: 18px 16px 14px;
+    text-align: center;
+    background: #F5F6EE;
+    border-bottom: 1px solid rgba(107,122,100,0.15);
+  }
+  .hero-typo-line { width: 24px; height: 1px; background: #6B7A64; margin: 0 auto 8px; opacity: 0.45; }
+  .hero-typo-label { font-size: 6px; letter-spacing: 0.3em; text-transform: uppercase; color: #6B7A64; font-family: Arial, sans-serif; margin-bottom: 8px; display: block; }
+  .hero-typo-title { font-size: 15px; font-weight: 400; font-style: italic; color: #1a1a1a; line-height: 1.25; margin-bottom: 5px; }
+  .hero-typo-sub { font-size: 8px; color: #888; font-family: Arial, sans-serif; letter-spacing: 0.06em; }
+
+  /* Carta compacta */
+  .letter-wrap { padding: 12px 16px; max-width: 400px; margin: 0 auto; }
+  .letter-card { background: #fff; border-radius: 2px; padding: 14px 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+  .letter-text { font-size: 8.5px; line-height: 1.8; color: #444; font-family: Georgia, serif; margin-bottom: 8px; }
+  .letter-sig { border-top: 1px solid #eee; padding-top: 8px; text-align: right; margin-top: 8px; }
+  .sig-name { font-style: italic; font-family: Georgia, serif; font-size: 10px; color: #1a1a1a; }
+  .sig-role { font-size: 6.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #6B7A64; font-family: Arial, sans-serif; margin-top: 2px; }
+  .letter-ellipsis { font-size: 8px; color: #aaa; font-family: Arial, sans-serif; text-align: center; padding: 4px 0; letter-spacing: 0.1em; }
+
+  /* OPÇÃO A: Pilares (manter) */
+  .pillars-section {
+    background: linear-gradient(162deg, rgba(228,235,216,0.90) 0%, #EEF1E1 45%, rgba(235,240,224,0.85) 100%);
+    padding: 14px 16px;
+  }
+  .pillars-header { text-align: center; margin-bottom: 12px; }
+  .pillars-eyebrow { font-size: 6px; letter-spacing: 0.28em; text-transform: uppercase; color: #6B7A64; font-family: Arial, sans-serif; display: block; margin-bottom: 5px; }
+  .pillars-title { font-size: 13px; font-weight: 400; font-style: italic; color: #1a1a1a; font-family: Georgia, serif; }
+  .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pillar { background: rgba(255,255,255,0.7); border-radius: 3px; padding: 10px 8px; border-top: 2px solid rgba(107,122,100,0.2); text-align: center; }
+  .pillar-num { font-size: 16px; font-family: Georgia, serif; color: #6B7A64; opacity: 0.3; margin-bottom: 4px; }
+  .pillar-title { font-size: 8px; font-weight: 700; color: #1a1a1a; font-family: Arial, sans-serif; letter-spacing: 0.04em; margin-bottom: 3px; }
+  .pillar-text { font-size: 7px; color: #777; font-family: Arial, sans-serif; line-height: 1.5; font-weight: 300; }
+
+  /* OPÇÃO B: CTA simples */
+  .cta-section {
+    padding: 20px 16px;
+    text-align: center;
+    background: #F5F6EE;
+  }
+  .cta-line { width: 24px; height: 1px; background: #6B7A64; margin: 0 auto 10px; opacity: 0.4; }
+  .cta-text { font-size: 8.5px; color: #777; font-family: Arial, sans-serif; margin-bottom: 12px; line-height: 1.6; max-width: 220px; margin-left: auto; margin-right: auto; }
+  .cta-btn { display: inline-block; background: #6B7A64; color: #fff; font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; font-family: Arial, sans-serif; padding: 8px 18px; border-radius: 2px; font-weight: 600; }
+
+  /* OPÇÃO C: Termina na carta */
+  .end-section {
+    padding: 16px;
+    text-align: center;
+    background: #F5F6EE;
+  }
+  .end-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+  .end-dot { width: 4px; height: 4px; border-radius: 50%; background: #6B7A64; opacity: 0.3; }
+  .end-text { font-size: 8px; color: #aaa; font-family: Arial, sans-serif; letter-spacing: 0.08em; font-style: italic; }
+  .footer-hint { background: #1a1a1a; height: 28px; display: flex; align-items: center; justify-content: center; }
+  .footer-hint-text { font-size: 7px; color: rgba(255,255,255,0.4); font-family: Arial, sans-serif; letter-spacing: 0.12em; }
+</style>
+
+<div class="cards">
+
+  <!-- A: Manter pilares -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="hero-typo">
+          <div class="hero-typo-line"></div>
+          <span class="hero-typo-label">Uma mensagem da fundadora</span>
+          <div class="hero-typo-title">A Barrs nasceu de uma<br><em>decisão que mudou tudo</em></div>
+        </div>
+        <div class="letter-wrap">
+          <div class="letter-card">
+            <p class="letter-text">Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida...</p>
+            <p class="letter-ellipsis">· · ·</p>
+            <p class="letter-text">Obrigada por apoiar uma marca que nasceu da coragem de acreditar.</p>
+            <div class="letter-sig"><div class="sig-name">Sabrina</div><div class="sig-role">Fundadora da Barrs Store</div></div>
+          </div>
+        </div>
+        <div class="pillars-section">
+          <div class="pillars-header">
+            <span class="pillars-eyebrow">Tradição &amp; Cuidado</span>
+            <div class="pillars-title">Os três pilares Barrs</div>
+          </div>
+          <div class="pillars-grid">
+            <div class="pillar"><div class="pillar-num">01</div><div class="pillar-title">Banhos Premium</div><div class="pillar-text">Ouro 18K e Prata 950 com verniz protetor importado.</div></div>
+            <div class="pillar"><div class="pillar-num">02</div><div class="pillar-title">Garantia Barrs</div><div class="pillar-text">12 meses contra defeitos de fabricação.</div></div>
+            <div class="pillar"><div class="pillar-num">03</div><div class="pillar-title">Entrega Rápida</div><div class="pillar-text">Envio rastreado em embalagem exclusiva.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Carta + Pilares</h3>
+      <p>Mantém os 3 pilares de produto depois da carta. A história pessoal abre, os diferenciais da marca fecham. Mais conteúdo, mais completo.</p>
+    </div>
+  </div>
+
+  <!-- B: CTA simples -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="hero-typo">
+          <div class="hero-typo-line"></div>
+          <span class="hero-typo-label">Uma mensagem da fundadora</span>
+          <div class="hero-typo-title">A Barrs nasceu de uma<br><em>decisão que mudou tudo</em></div>
+        </div>
+        <div class="letter-wrap">
+          <div class="letter-card">
+            <p class="letter-text">Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida...</p>
+            <p class="letter-ellipsis">· · ·</p>
+            <p class="letter-text">Obrigada por apoiar uma marca que nasceu da coragem de acreditar.</p>
+            <div class="letter-sig"><div class="sig-name">Sabrina</div><div class="sig-role">Fundadora da Barrs Store</div></div>
+          </div>
+        </div>
+        <div class="cta-section">
+          <div class="cta-line"></div>
+          <p class="cta-text">Se você está aqui, sua presença significa muito. Conheça as peças que nasceram desse sonho.</p>
+          <div class="cta-btn">Ver coleção →</div>
+        </div>
+        <div class="footer-hint"><span class="footer-hint-text">BARRS STORE · CNPJ</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Carta + CTA</h3>
+      <p>Apenas um parágrafo de convite e botão para a coleção. Limpo, focado — a carta termina e direciona para comprar. Sem distrações.</p>
+    </div>
+  </div>
+
+  <!-- C: Só a carta -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-page">
+        <div class="mock-nav-bar"><span class="mock-logo">Barrs</span><span style="color:#6B7A64;font-weight:700">Sobre</span></div>
+        <div class="hero-typo">
+          <div class="hero-typo-line"></div>
+          <span class="hero-typo-label">Uma mensagem da fundadora</span>
+          <div class="hero-typo-title">A Barrs nasceu de uma<br><em>decisão que mudou tudo</em></div>
+        </div>
+        <div class="letter-wrap">
+          <div class="letter-card">
+            <p class="letter-text">Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida...</p>
+            <p class="letter-ellipsis">· · ·</p>
+            <p class="letter-text">Obrigada por apoiar uma marca que nasceu da coragem de acreditar.</p>
+            <div class="letter-sig"><div class="sig-name">Sabrina</div><div class="sig-role">Fundadora da Barrs Store</div></div>
+          </div>
+        </div>
+        <div class="end-section">
+          <div class="end-dots"><div class="end-dot"></div><div class="end-dot"></div><div class="end-dot"></div></div>
+          <div class="end-text">com carinho, Barrs Store</div>
+        </div>
+        <div class="footer-hint"><span class="footer-hint-text">BARRS STORE · CNPJ</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Só a carta</h3>
+      <p>A carta termina, a página termina. Nenhuma distração. Deixa o texto respirar e criar impacto sozinho. O mais corajoso e minimalista.</p>
+    </div>
+  </div>
+
+</div>
