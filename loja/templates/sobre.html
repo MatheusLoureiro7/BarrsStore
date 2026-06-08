@@ -3,13 +3,6 @@
 
 {% block title %}Sobre — Barrs Store{% endblock %}
 
-{% block extra_head %}
-<link rel="preload" as="image"
-  href="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_900/v1779995380/Heroprincipal_cii1k3.png"
-  media="(max-width: 767px)"
-  fetchpriority="high">
-{% endblock %}
-
 {% block page_css %}<style>
 {% inline_static 'loja/css/pages/sobre.css' %}
 </style>{% endblock %}
@@ -45,137 +38,44 @@
 
 <main class="about-page" id="conteudo-principal">
 
-  {# ── 1. HERO PRINCIPAL ────────────────────────────────────────── #}
-  <section class="about-hero" aria-label="Sobre a Barrs Store">
-    <div class="about-hero__bg-wrapper">
-      <picture class="about-hero__picture">
-        <source media="(max-width: 767px)"
-          srcset="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_900/v1779995380/Heroprincipal_cii1k3.png">
-        <img
-          src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_1800/v1779995380/Heroprincipal_cii1k3.png"
-          alt=""
-          class="about-hero__img"
-          loading="eager"
-          decoding="async"
-          fetchpriority="high">
-      </picture>
-      <div class="about-hero__overlay"></div>
-    </div>
+  <header class="about-header" data-reveal>
+    <div class="about-header__line"></div>
+    <span class="about-header__eyebrow">Uma mensagem da fundadora</span>
+    <h1 class="about-header__title">A Barrs nasceu de uma<br><em>decisão que mudou tudo</em></h1>
+    <p class="about-header__sub">Sabrina &middot; Fundadora &middot; 2026</p>
+  </header>
 
-    <div class="about-hero__container" data-reveal>
-      <span class="about-hero__eyebrow">Barrs Store · Desde 2024</span>
-      <h1 class="about-hero__title">Semijoias feitas para<br><em>destacar sua presença.</em></h1>
-      <p class="about-hero__subtitle">Peças sofisticadas para mulheres que valorizam elegância nos detalhes.</p>
-      <div class="about-hero__actions">
-        <a href="{% url 'home' %}#produtos" class="btn-editorial btn-editorial--dark" id="btn-hero-colecao">
-          Conhecer coleção
-          <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
-        </a>
+  <section class="about-letter" aria-label="Carta da fundadora">
+    <div class="about-letter__card" data-reveal="rise">
+
+      <div class="about-letter__head">
+        <span class="about-letter__from">De: Sabrina, fundadora</span>
+        <span class="about-letter__date">Barrs Store &middot; 2026</span>
       </div>
+
+      <div class="about-letter__body">
+        <p>A Barrs nasceu de uma decisão que mudou tudo.</p>
+        <p>Meu nome é Sabrina. Em 2026, aos 29 anos, tomei uma das decisões mais difíceis da minha vida. Depois de trabalhar por quase oito anos na mesma empresa, conquistar estabilidade, crescer profissionalmente e ocupar um cargo importante, percebi que existia um sonho que continuava falando mais alto dentro de mim: o sonho de construir algo meu.</p>
+        <p>Sempre gostei de acessórios. Sempre acreditei que uma peça tem o poder de transformar a forma como nos sentimos. Não porque ela muda quem somos, mas porque ela nos lembra da nossa própria beleza, da nossa confiança e da nossa essência.</p>
+        <p>Por muito tempo, esse sonho ficou guardado. E não foi por falta de vontade. Foi por medo. Medo de abrir mão da estabilidade que eu havia construído durante anos. Medo de deixar para trás um cargo que conquistei com muito esforço. Medo de abandonar a segurança financeira para começar algo do zero. Eu sabia exatamente o que estava deixando para trás, mas não sabia o que encontraria pela frente. E talvez essa tenha sido a parte mais difícil.</p>
+        <p>Durante muito tempo, tentei ignorar essa vontade de empreender. Mas chegou um momento em que percebi que o medo de nunca tentar era maior do que o medo de arriscar. Eu sentia que precisava de algo a mais. Precisava me desafiar. Precisava construir algo que carregasse meus valores, minha dedicação e minha identidade.</p>
+        <p>Queria ter a oportunidade de olhar para trás no futuro e saber que pelo menos tentei viver o sonho que sempre esteve dentro de mim. Foi então que decidi deixar para trás a segurança que conhecia para viver algo completamente novo. Nascia ali a Barrs Store.</p>
+        <p>A Barrs nunca foi apenas sobre acessórios. Ela nasceu da coragem de recomeçar. Nasceu de noites de planejamento, pesquisas, aprendizados, erros, acertos e da vontade de construir uma marca que entregasse muito mais do que produtos. Queria criar uma experiência. Queria que cada cliente recebesse não apenas uma peça bonita, mas sentisse o carinho colocado em cada detalhe. Da escolha dos produtos à embalagem. Da compra à entrega. Da primeira visita ao site até o momento em que a caixa é aberta.</p>
+        <p>Foi dessa certeza que nasceu a essência da Barrs. Os detalhes mudam tudo. Uma peça escolhida com carinho pode transformar um look. Uma embalagem preparada com cuidado pode transformar uma entrega. Um pequeno gesto pode transformar um dia comum. E são esses detalhes que buscamos entregar todos os dias.</p>
+        <p>A Barrs nasceu de um sonho. Mas hoje ela é construída por cada pessoa que escolhe fazer parte dessa história. Se você está aqui, saiba que sua presença significa muito para nós.</p>
+        <p>Cada pedido, cada mensagem e cada cliente que confia no nosso trabalho nos lembra diariamente porque essa decisão valeu a pena.</p>
+        <p>Obrigada por apoiar uma marca que nasceu da coragem de acreditar.</p>
+      </div>
+
+      <p class="about-letter__closing">
+        Com carinho,<br>
+        Sabrina,<br>
+        Fundadora da Barrs Store.
+      </p>
+
     </div>
   </section>
 
-  {# ── 2. NOSSA HISTÓRIA ────────────────────────────────────────── #}
-  <section class="about-story" aria-labelledby="story-title" data-reveal="rise">
-    <div class="about-story__container">
-      <div class="about-story__grid">
-
-        <div class="about-story__content">
-          <span class="about-section-eyebrow">Nossa história</span>
-          <h2 id="story-title" class="about-section-title">A beleza que<br><em>reside nos detalhes</em></h2>
-          <p class="about-story__text">
-            A Barrs Store nasceu de uma certeza: detalhes mudam absolutamente tudo. Uma peça cuidadosamente selecionada tem o poder de realçar o que já existe em você — trazendo confiança, presença e sofisticação à sua rotina.
-          </p>
-          <p class="about-story__text">
-            Mais do que semijoias, oferecemos uma extensão da sua personalidade. Peças feitas para durar, para se destacar e para contar a sua história com elegância.
-          </p>
-          <a href="{% url 'home' %}#produtos" class="btn-editorial" id="btn-story-colecao">
-            Ver coleção
-            <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
-          </a>
-        </div>
-
-
-      </div>
-    </div>
-  </section>
-
-  {# ── 3. PILARES — COLUNAS EDITORIAIS NUMERADAS ────────────────── #}
-  <section class="about-pillars" aria-label="Os três pilares Barrs" data-reveal>
-    <div class="about-pillars__container">
-
-      <header class="about-pillars__header">
-        <span class="about-section-eyebrow">Tradição &amp; Cuidado</span>
-        <h2 class="about-section-title">Os três pilares Barrs</h2>
-        <p class="about-pillars__lead">Uma experiência pensada em cada detalhe, do banho da peça até a embalagem na sua porta.</p>
-      </header>
-
-      <div class="about-pillars__grid">
-
-        <article class="pillar-col" data-reveal="rise" data-reveal-delay="1">
-          <span class="pillar-col__num" aria-hidden="true">01</span>
-          <div class="pillar-col__icon">
-            <svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg>
-          </div>
-          <h3 class="pillar-col__title">Banhos Premium</h3>
-          <p class="pillar-col__text">Ouro 18K (7 milésimos) ou Prata (50 milésimos) com verniz protetor importado para brilho intenso e alta durabilidade.</p>
-        </article>
-
-        <article class="pillar-col" data-reveal="rise" data-reveal-delay="2">
-          <span class="pillar-col__num" aria-hidden="true">02</span>
-          <div class="pillar-col__icon">
-            <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
-          </div>
-          <h3 class="pillar-col__title">Garantia Barrs</h3>
-          <p class="pillar-col__text">12 meses de garantia contra defeitos de fabricação. Suporte completo e orientações de cuidado para cada peça.</p>
-        </article>
-
-        <article class="pillar-col" data-reveal="rise" data-reveal-delay="3">
-          <span class="pillar-col__num" aria-hidden="true">03</span>
-          <div class="pillar-col__icon">
-            <svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>
-          </div>
-          <h3 class="pillar-col__title">Entrega Rápida</h3>
-          <p class="pillar-col__text">Envio rastreado para todo o Brasil em embalagens exclusivas — prontas para presentear ou para se mimar.</p>
-        </article>
-
-      </div>
-    </div>
-  </section>
-
-  {# ── 4. EMBALAGEM PREMIUM — NOVA SEÇÃO ────────────────────────── #}
-  <section class="about-packaging" aria-labelledby="packaging-title" data-reveal>
-    <div class="about-packaging__container">
-      <div class="about-packaging__grid">
-
-        <div class="about-packaging__visual" data-reveal="rise">
-          <div class="about-packaging__image-wrapper">
-            <img
-              src="https://res.cloudinary.com/dsw5fkmwp/image/upload/q_auto/f_auto/w_900/v1779995380/caixa_n8wxxz.png"
-              alt="Embalagem premium Barrs Store — experiência de unboxing elegante"
-              class="about-packaging__img"
-              loading="lazy"
-              decoding="async">
-          </div>
-        </div>
-
-        <div class="about-packaging__content" data-reveal="rise" data-reveal-delay="2">
-          <span class="about-section-eyebrow">Com carinho, da gente pra você</span>
-          <h2 id="packaging-title" class="about-section-title">Uma experiência pensada<br><em>em cada detalhe</em></h2>
-          <p class="about-packaging__text">
-            Cada pedido é preparado com cuidado para tornar sua experiência ainda mais especial. Da peça escolhida até a forma como ela chega até você — pensamos em cada etapa com atenção e afeto.
-          </p>
-          <ul class="about-packaging__features">
-            <li class="packaging-feature">Embalagem com identidade Barrs</li>
-            <li class="packaging-feature">Papel de seda e proteção cuidadosa</li>
-            <li class="packaging-feature">Cartão com dicas de cuidado</li>
-            <li class="packaging-feature">Pronta para presentear, como veio</li>
-          </ul>
-        </div>
-
-      </div>
-    </div>
-  </section>
 </main>
 
 {% include "partials/footer.html" %}

@@ -1,631 +1,130 @@
 /* ==========================================================================
-   BARRS STORE — SOBRE — PREMIUM EDITORIAL REFINEMENT
-   Referências: Mejuri · Monica Vinader · Pandora Premium · Pinterest Luxury
-   Mood: quiet luxury · editorial fashion · high-end jewelry boutique
+   BARRS STORE — SOBRE — CARTA DA FUNDADORA
    ========================================================================== */
 
-/* ── GRAIN TEXTURE ───────────────────────────────────────────────── */
-:root {
-  --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='340' height='340' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-
-  /* Easing premium — suave, sem bounce */
-  --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ── CONTAINER GERAL ─────────────────────────────────────────────── */
 .about-page {
   width: 100%;
   overflow-x: hidden;
   background: var(--color-bg);
 }
 
-/* ── EYEBROW GLOBAL ──────────────────────────────────────────────── */
-.about-section-eyebrow {
+/* ── TOPO TIPOGRÁFICO ────────────────────────────────────────────── */
+.about-header {
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1.25rem, 4vw, 2rem) clamp(2rem, 4vw, 3rem);
+  text-align: center;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.about-header__line {
+  width: 28px;
+  height: 1px;
+  background: var(--color-brand);
+  margin: 0 auto var(--space-4);
+  opacity: 0.45;
+}
+
+.about-header__eyebrow {
   display: block;
   font-family: var(--font-body);
   font-size: 0.5625rem;
   font-weight: 700;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--color-brand);
+  margin-bottom: var(--space-4);
+}
+
+.about-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-ink);
+  line-height: 1.22;
+  letter-spacing: -0.015em;
   margin-bottom: var(--space-3);
 }
 
-/* ── TÍTULOS GLOBAIS ─────────────────────────────────────────────── */
-.about-section-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 2.6vw, 2.25rem);
-  font-weight: 400;
-  line-height: 1.18;
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
-  margin-bottom: var(--space-5);  /* mais espaço entre título e texto */
-}
-
-.about-section-title em,
-.about-cta__title em,
-.about-hero__title em {
-  font-style: italic;
-  font-weight: 400;
-}
-
-/* ==========================================================================
-   BOTÃO EDITORIAL — VERDE MUTED PREMIUM (não preto)
-   "soft luxury" — nem agressivo nem genérico
-   ========================================================================== */
-.btn-editorial {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.72rem 1.75rem;
-  background: transparent;
-  /* Verde Barrs no texto e borda — não preto */
-  color: var(--color-brand);
-  border: 1px solid rgba(107, 122, 100, 0.42);
-  border-radius: 2px;
+.about-header__sub {
   font-family: var(--font-body);
-  font-size: 0.625rem;
-  font-weight: 600;
+  font-size: 0.5625rem;
+  color: var(--color-ink-muted);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  text-decoration: none;
-  transition:
-    background 320ms var(--ease-luxury),
-    color 320ms var(--ease-luxury),
-    border-color 320ms var(--ease-luxury),
-    transform 280ms var(--ease-luxury),
-    box-shadow 320ms var(--ease-luxury);
-}
-.btn-editorial:hover {
-  background: var(--color-brand);
-  color: #fff;
-  border-color: var(--color-brand);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(107, 122, 100, 0.22);
-}
-.btn-editorial svg {
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-  transition: transform 280ms var(--ease-luxury);
-}
-.btn-editorial:hover svg { transform: translateX(3px); }
-
-/* Variante preenchida — verde Barrs (não preto) */
-.btn-editorial--dark {
-  background: var(--color-brand);
-  color: #fff;
-  border-color: var(--color-brand);
-}
-.btn-editorial--dark:hover {
-  background: var(--color-brand-soft);
-  border-color: var(--color-brand-soft);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 26px rgba(107, 122, 100, 0.26);
+  font-weight: 600;
 }
 
-/* ==========================================================================
-   HERO — FULLSCREEN EDITORIAL PREMIUM
-   Fórmula: imagem mais brilhante + overlay quente creme mínimo
-   ========================================================================== */
-.about-hero {
-  position: relative;
-  min-height: clamp(320px, 54vh, 560px);
-  width: 100%;
+/* ── SEÇÃO DA CARTA ──────────────────────────────────────────────── */
+.about-letter {
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.25rem, 4vw, 2rem) clamp(2.5rem, 5vw, 4rem);
+}
+
+.about-letter__card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xs);
+  padding: clamp(1.75rem, 4vw, 2.75rem) clamp(1.5rem, 4vw, 2.5rem);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* Cabeçalho interno da carta */
+.about-letter__head {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  margin-bottom: clamp(1rem, 2vw, 1.5rem);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
-.about-hero__bg-wrapper {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-.about-hero__picture,
-.about-hero__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-  /*
-    Mais brilhante que antes (era brightness(0.96)).
-    Warm lift leve: contrast 1.01 adiciona profundidade sem escurecer.
-    Tons de pele e joias ficam mais quentes e luxuosos.
-  */
-  filter: brightness(1.04) saturate(0.88) contrast(1.01);
-}
-
-/*
-   Overlay reformulado:
-   1. Vignette radial muito suave nas bordas (profundidade cinematográfica)
-   2. Creme quente no topo (integração com nav)
-   3. Toque sage suave no fundo (identidade Barrs)
-   Era: rgba(20,18,14, 0.12) — agora 0.08, muito mais transparente
-*/
-.about-hero__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background:
-    radial-gradient(ellipse 88% 75% at 50% 50%,
-      transparent 42%,
-      rgba(18, 15, 10, 0.08) 100%),
-    linear-gradient(to bottom,
-      rgba(248, 245, 236, 0.22) 0%,
-      transparent 28%,
-      transparent 74%,
-      rgba(238, 241, 225, 0.15) 100%);
-}
-
-/* Grain atmosférico mínimo */
-.about-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background-image: var(--grain-url);
-  opacity: 0.028;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-
-.about-hero__container {
-  position: relative;
-  z-index: 4;
-  width: min(calc(100% - 40px), 640px);
-  text-align: center;
-  padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem);
-  border-radius: var(--radius-sm);
-  /* Máscara de gradiente muito suave e editorial em creme quente/sage */
-  background: radial-gradient(
-    ellipse at center,
-    rgba(245, 246, 238, 0.95) 0%,
-    rgba(245, 246, 238, 0.86) 45%,
-    rgba(245, 246, 238, 0) 80%
-  );
-  /* Filtro de desfoque sutil para suavizar a textura/detalhes da imagem atrás do texto */
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-}
-
-.about-hero__container::before {
-  content: '';
-  display: block;
-  width: 28px;
-  height: 1px;
-  background: var(--color-ink);
-  opacity: 0.28;
-  margin: 0 auto var(--space-4);
-}
-
-.about-hero__eyebrow {
-  display: inline-block;
+.about-letter__from {
   font-family: var(--font-body);
   font-size: 0.5rem;
   font-weight: 700;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--color-ink);
-  opacity: 0.68;
-  margin-bottom: var(--space-3);
-}
-
-.about-hero__title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  color: var(--color-ink);
-  margin-bottom: var(--space-4);
-  /* Sombra sutil creme/sage para separar da imagem de fundo se necessário */
-  text-shadow: 0 2px 12px rgba(245, 246, 238, 0.70);
-}
-
-.about-hero__subtitle {
-  font-family: var(--font-body);
-  font-size: clamp(0.875rem, 1.5vw, 1rem);
-  font-weight: 400;
-  line-height: 1.75;
-  color: var(--color-ink-soft);
-  opacity: 1; /* Forçar 100% de opacidade para contraste AA robusto */
-  max-width: 480px;
-  margin: 0 auto var(--space-5);
-  letter-spacing: 0.02em;
-}
-
-.about-hero__actions {
-  display: flex;
-  justify-content: center;
-}
-
-/* ==========================================================================
-   HISTÓRIA — SPLIT EDITORIAL
-   ========================================================================== */
-.about-story {
-  padding: clamp(1.5rem, 3vw, 2.5rem) 0;
-}
-
-.about-story__container {
-  width: min(calc(100% - 40px), var(--container));
-  margin: 0 auto;
-}
-
-.about-story__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(1.5rem, 3.5vw, 2.5rem);
-  align-items: center;
-}
-
-.about-story__content {
-  max-width: 680px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0;
-}
-
-.about-story__text {
-  font-family: var(--font-body);
-  font-size: clamp(0.8125rem, 1.3vw, 0.9125rem);
-  line-height: 1.88;      /* mais espaço para respirar */
-  color: var(--color-ink-soft);   /* era ink-muted — mais escuro, mais legível */
-  font-weight: 300;
-  margin-bottom: var(--space-4);
-}
-.about-story__text + .btn-editorial {
-  margin-top: var(--space-2);
-}
-
-.about-story__image-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 320px;
-  aspect-ratio: 3/4;
-  border-radius: 2px;
-  overflow: hidden;
-  /* Sombra em camadas: offset editorial + profundidade real */
-  box-shadow:
-    14px 14px 0 var(--color-bg-alt),
-    0 10px 36px rgba(107, 122, 100, 0.12);
-  transition: box-shadow 500ms var(--ease-luxury), transform 500ms var(--ease-luxury);
-}
-.about-story__image-wrapper:hover {
-  box-shadow:
-    18px 18px 0 var(--color-bg-alt),
-    0 14px 44px rgba(107, 122, 100, 0.16);
-  transform: translateY(-2px);
-}
-
-.about-story__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Mais brilhante: era brightness(0.97) */
-  filter: saturate(0.86) brightness(1.02);
-  transition: transform 1.2s var(--ease-luxury);
-}
-.about-story__image-wrapper:hover .about-story__img {
-  transform: scale(1.04);
-}
-
-/* ==========================================================================
-   PILARES — EDITORIAL NUMERADO
-   Fórmula: gradiente sutil no fundo + mais contraste no texto
-   ========================================================================== */
-.about-pillars {
-  padding: clamp(1.25rem, 2vw, 1.75rem) 0; /* Padding vertical reduzido para compactação */
-  /*
-    Gradiente suave no fundo — rompe com o flat.
-    Luz vinda do canto superior esquerdo (fonte de luz "editorial").
-  */
-  background: linear-gradient(
-    162deg,
-    rgba(228, 235, 216, 0.90) 0%,
-    var(--color-bg-alt) 45%,
-    rgba(235, 240, 224, 0.85) 100%
-  );
-  position: relative;
-}
-
-.about-pillars::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--grain-url);
-  opacity: 0.028;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.about-pillars__container {
-  width: min(calc(100% - 40px), var(--container));
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-.about-pillars__header {
-  text-align: center;
-  max-width: 560px;
-  margin: 0 auto clamp(0.75rem, 1.5vw, 1.15rem); /* Aproxima os cards do título */
-}
-
-.about-pillars__lead {
-  font-family: var(--font-body);
-  font-size: clamp(0.8125rem, 1.3vw, 0.9rem);
-  font-weight: 300;
-  line-height: 1.72;
-  color: var(--color-ink-soft);
-}
-
-.about-pillars__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(1.25rem, 2.5vw, 1.75rem); /* Gap menor para melhor coesão */
-}
-
-.pillar-col {
-  position: relative;
-  padding: clamp(1rem, 1.8vw, 1.3rem) clamp(1rem, 2vw, 1.25rem); /* Padding reduzido (cards compactos) */
-  border-top: 2px solid rgba(107, 122, 100, 0.15);
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  transition:
-    border-top-color 400ms var(--ease-luxury),
-    background 400ms var(--ease-luxury),
-    transform 400ms var(--ease-luxury),
-    box-shadow 400ms var(--ease-luxury);
-}
-.pillar-col:hover {
-  border-top-color: var(--color-brand);
-  background: var(--color-surface);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(107, 122, 100, 0.08);
-}
-
-/* Número do pilar ajustado para cards compactos */
-.pillar-col__num {
-  position: absolute;
-  top: clamp(0.5rem, 1.2vw, 0.85rem);
-  right: clamp(0.5rem, 1.2vw, 0.85rem);
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 3.8vw, 3rem); /* Número ajustado para card menor */
-  font-weight: 400;
   color: var(--color-brand);
-  opacity: 0.28;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  pointer-events: none;
-  user-select: none;
-  transition: opacity 400ms var(--ease-luxury);
-}
-.pillar-col:hover .pillar-col__num {
-  opacity: 0.42;
 }
 
-/* Contêiner circular refinado com margem reduzida */
-.pillar-col__icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--color-surface);
-  border: 1px solid rgba(107, 122, 100, 0.18);
-  color: var(--color-brand);
-  margin-bottom: var(--space-2); /* Margem reduzida */
-  box-shadow: 0 4px 10px rgba(107, 122, 100, 0.05);
-  transition:
-    transform 400ms var(--ease-luxury),
-    background 400ms var(--ease-luxury),
-    border-color 400ms var(--ease-luxury),
-    box-shadow 400ms var(--ease-luxury);
-}
-.pillar-col__icon svg {
-  width: 20px;
-  height: 20px;
-}
-.pillar-col:hover .pillar-col__icon {
-  transform: scale(1.08);
-  background: var(--color-brand-bg);
-  border-color: var(--color-brand);
-  box-shadow: 0 6px 14px rgba(107, 122, 100, 0.12);
+.about-letter__date {
+  font-family: var(--font-body);
+  font-size: 0.5rem;
+  color: var(--color-ink-muted);
+  letter-spacing: 0.12em;
 }
 
-/* Título com margem inferior reduzida */
-.pillar-col__title {
+/* Shared letter text styles */
+.about-letter__body p,
+.about-letter__closing {
   font-family: var(--font-display);
-  font-size: clamp(1rem, 1.5vw, 1.1rem);
-  font-weight: 500;
-  color: var(--color-ink);
-  margin-bottom: var(--space-1); /* Margem reduzida */
-  letter-spacing: -0.01em;
-  line-height: 1.35;
-}
-
-.pillar-col__text {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  line-height: 1.55; /* Entrelinha ligeiramente reduzida para compactar o texto */
+  font-size: clamp(0.9rem, 1.6vw, 1.0125rem);
+  line-height: 1.92;
   color: var(--color-ink-soft);
-  font-weight: 300;
-  margin: 0;
 }
 
-/* ==========================================================================
-   EMBALAGEM PREMIUM
-   ========================================================================== */
-.about-packaging {
-  padding: clamp(1.25rem, 2vw, 1.5rem) 0; /* Padding vertical reduzido (altura compacta) */
-  background: var(--color-surface);
-}
-
-.about-packaging__container {
-  width: min(calc(100% - 40px), 940px); /* Contêiner mais compacto */
-  margin: 0 auto;
-}
-
-.about-packaging__grid {
-  display: grid;
-  grid-template-columns: auto 1fr; /* Coluna da imagem com tamanho automático, trazendo texto para mais perto */
-  gap: clamp(1rem, 2.5vw, 2rem); /* Espaçamento menor e controlado */
-  align-items: center; /* Alinhamento vertical centralizado perfeito */
-}
-
-.about-packaging__visual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.about-packaging__image-wrapper {
-  width: 100%;
-  max-width: 240px;    /* Largura da imagem reduzida, mantendo-a de forma importante e charmosa */
-}
-
-.about-packaging__img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter:
-    drop-shadow(0 14px 32px rgba(107, 122, 100, 0.12))
-    drop-shadow(0 2px 6px rgba(26, 26, 26, 0.06))
-    saturate(0.88) brightness(1.0);
-  transition: filter 550ms var(--ease-luxury), transform 650ms var(--ease-luxury);
-}
-.about-packaging__image-wrapper:hover .about-packaging__img {
-  transform: translateY(-5px) rotate(0.4deg);
-  filter:
-    drop-shadow(0 22px 44px rgba(107, 122, 100, 0.16))
-    drop-shadow(0 4px 10px rgba(26, 26, 26, 0.08))
-    saturate(0.92) brightness(1.01);
-}
-
-.about-packaging__content {
-  display: flex;
-  flex-direction: column;
-}
-
-.about-packaging__text {
-  font-family: var(--font-body);
-  font-size: clamp(0.8125rem, 1.3vw, 0.9125rem);
-  line-height: 1.75; /* Altura de linha ajustada */
-  color: var(--color-ink-soft);    /* era ink-muted — mais legível */
-  font-weight: 300;
-  margin-bottom: var(--space-4); /* Margem inferior reduzida */
-}
-
-/* Lista de features com checkmarks sálvia minimalistas */
-.about-packaging__features {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;      /* gap vertical controlado */
-  margin: 0;
-  padding: 0;
-}
-
-.packaging-feature {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+/* Corpo da carta */
+.about-letter__body p {
   font-weight: 400;
-  color: var(--color-ink-soft);
-  letter-spacing: 0.01em;
-  padding: 0.2rem 0;   /* padding vertical reduzido */
-  transition: color 280ms var(--ease-luxury);
-}
-.packaging-feature:hover { color: var(--color-ink); }
-
-.packaging-feature::before {
-  content: '✓';
-  color: var(--color-brand);
-  font-weight: 600;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  line-height: 1;
+  margin-bottom: var(--space-5);
 }
 
-/* ==========================================================================
-  font-family: var(--font-body);
-  font-size: clamp(0.8125rem, 1.3vw, 0.9rem);
-  font-weight: 300;
-  line-height: 1.72;
-  color: var(--color-ink);
-  opacity: 0.85;    /* era 0.72 — mais legível */
-  max-width: 380px;
-  margin: 0 auto var(--space-5);
+/* Fechamento inline ("Com carinho, / Sabrina, / Fundadora") */
+.about-letter__closing {
+  font-style: italic;
+  margin-top: var(--space-6);
 }
 
-.about-cta__actions { display: flex; justify-content: center; }
-
-/* ==========================================================================
-   RESPONSIVIDADE
-   ========================================================================== */
-
-@media (max-width: 900px) {
-  .about-story__content { max-width: 100%; }
-
-  .about-packaging__grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
+/* ── RESPONSIVIDADE ──────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .about-letter__card {
+    padding: 1.5rem 1.25rem;
   }
-  .about-packaging__visual { order: -1; }
-  .about-packaging__image-wrapper { max-width: 180px; }
-
-  .about-pillars__grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
+  .about-header__title {
+    font-size: 1.5rem;
   }
-  .pillar-col__text { max-width: 100%; }
-
-  /* iOS Safari: overflow:hidden cria boundary de scroll que engole o 1º gesto */
-  .about-hero {
-    overflow: visible;
-  }
-
-  /* Remove compositing layers que travam o scroll no mobile */
-  .about-hero__container {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: radial-gradient(
-      ellipse at center,
-      rgba(245, 246, 238, 0.97) 0%,
-      rgba(245, 246, 238, 0.94) 50%,
-      rgba(245, 246, 238, 0) 80%
-    );
-    /* Visível imediatamente — sem esperar IO na main thread ocupada */
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-  .about-hero::after {
-    display: none;
-  }
-
-  /* feTurbulence numOctaves=4 é pesado demais na CPU mobile — desativa */
-  .about-pillars::before {
-    display: none;
-  }
-}
-
-@media (max-width: 620px) {
-  .about-hero__container::before { display: none; }
-}
-
-@media (max-width: 420px) {
-  .about-hero__title { font-size: 1.8rem; }
-  .pillar-col__num { opacity: 0.08; }
-  .about-packaging__image-wrapper { max-width: 100%; }
 }
