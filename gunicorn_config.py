@@ -7,7 +7,7 @@ workers = 4
 timeout = 120
 max_requests = 1000
 max_requests_jitter = 100
-accesslog = '-'
+accesslog = None
 
 _SKIP_UAS = (
     'SentryUptimeBot',

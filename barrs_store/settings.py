@@ -356,11 +356,6 @@ LOGGING = {
             'formatter': 'railway',
             'filters': ['bot_noise'],
         },
-        'gunicorn_access': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://sys.stdout',
-            'filters': ['bot_noise'],
-        },
     },
     'root': {
         'handlers': ['console'],
@@ -375,11 +370,6 @@ LOGGING = {
         'loja': {
             'handlers': ['console'],
             'level': os.environ.get('LOG_LEVEL', 'INFO'),
-            'propagate': False,
-        },
-        'gunicorn.access': {
-            'handlers': ['gunicorn_access'],
-            'level': 'INFO',
             'propagate': False,
         },
     },
