@@ -326,11 +326,14 @@ MERCADOPAGO_WEBHOOK_TOLERANCE_SECONDS = int(os.environ.get('MP_WEBHOOK_TOLERANCE
 
 class _BotNoiseFilter(logging.Filter):
     """Silencia requisições de bots/scanners em paths conhecidos como ruído."""
-    _MUTED_PATHS = {'/meta.json', '/favicon.ico', '/.env', '/robots.txt'}
+    _MUTED_PATHS = frozenset(['/meta.json', '/favicon.ico', '/.env', '/robots.txt'])
+    _MUTED_UAS = frozenset([
+        'SentryUptimeBot', 'facebookexternalhit', 'meta-externalads', 'Claude-SearchBot',
+    ])
 
     def filter(self, record):
         msg = record.getMessage()
-        return not any(path in msg for path in self._MUTED_PATHS)
+        return not any(x in msg for x in (*self._MUTED_PATHS, *self._MUTED_UAS))
 
 
 LOGGING = {
@@ -353,6 +356,11 @@ LOGGING = {
             'formatter': 'railway',
             'filters': ['bot_noise'],
         },
+        'gunicorn_access': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://sys.stdout',
+            'filters': ['bot_noise'],
+        },
     },
     'root': {
         'handlers': ['console'],
@@ -367,6 +375,11 @@ LOGGING = {
         'loja': {
             'handlers': ['console'],
             'level': os.environ.get('LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'gunicorn.access': {
+            'handlers': ['gunicorn_access'],
+            'level': 'INFO',
             'propagate': False,
         },
     },
