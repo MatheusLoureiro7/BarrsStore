@@ -109,7 +109,9 @@
       "Bash(xargs kill)",
       "Bash(node popup.js)",
       "Bash(node popup-close.js)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Read(//Users/bibico/Downloads/**)",
+      "Bash(./venv/bin/python manage.py test loja.tests -v 1)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Bibico\\Documents\\projetos\\BarrsStore\\ads-dashboard\\src"
