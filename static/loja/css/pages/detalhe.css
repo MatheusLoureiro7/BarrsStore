@@ -717,6 +717,12 @@
   .product-gallery__nav--next { right: var(--space-2); }
   .breadcrumb { padding: 0 var(--space-4); }
   .related { padding: 0 var(--space-4); }
+  .related h2 { font-size: var(--text-lg); margin-bottom: var(--space-4); }
+  .related__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+  .related__card-body { padding: var(--space-2) var(--space-3) var(--space-3); }
   .product__name { font-size: 1.5rem; }
   .product__price { font-size: 1.5rem; }
   .product__props {
