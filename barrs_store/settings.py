@@ -372,6 +372,15 @@ LOGGING = {
             'level': os.environ.get('LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
+        # O Railway inicia o Gunicorn com access log habilitado por fora do
+        # gunicorn_config.py, então o desligamento precisa acontecer aqui:
+        # o dictConfig do Django roda dentro do worker e remove os handlers
+        # do gunicorn.access, silenciando o access log por completo.
+        'gunicorn.access': {
+            'handlers': [],
+            'level': 'CRITICAL',
+            'propagate': False,
+        },
     },
 }
 
