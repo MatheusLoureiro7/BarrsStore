@@ -598,6 +598,28 @@ if (window.location.search.includes('added=1')) {
     swipeDelta = 0;
   }, { passive: true });
 })();
+
+// ─── STICKY DA GALERIA: trava imediata, sem deslocamento ──────────
+// O top do sticky precisa ser exatamente a distância natural da galeria
+// até o topo do viewport; valores fixos em CSS dessincronizam conforme
+// a altura real de nav/breadcrumb. Medimos no load e em resize.
+(function initGallerySticky() {
+  var gallery = document.querySelector('.product__gallery');
+  if (!gallery) return;
+
+  function setStickyTop() {
+    // position:static durante a medição para obter a posição natural
+    // mesmo que a galeria já esteja grudada por um scroll anterior.
+    gallery.style.position = 'static';
+    var naturalTop = gallery.getBoundingClientRect().top + window.scrollY;
+    gallery.style.position = '';
+    gallery.style.top = Math.round(naturalTop) + 'px';
+  }
+
+  setStickyTop();
+  window.addEventListener('resize', setStickyTop);
+  window.addEventListener('load', setStickyTop);
+})();
 </script>
 
 <!-- STICKY CTA MOBILE HTML -->
