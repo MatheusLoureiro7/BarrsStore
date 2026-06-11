@@ -540,12 +540,12 @@ def criar_preferencia(request, pedido_id, token):
         },
         "statement_descriptor": "BARRS STORE",
     }
-    # Em dev (DEBUG=True) o MP recusa auto_return e notification_url porque
-    # apontam para o dominio de producao, mas o pedido so existe no ambiente
-    # local. Em prod o comportamento permanece igual.
+    # Em dev (DEBUG=True) o MP recusa auto_return apontando para dominio
+    # nao publico. Notificacoes chegam apenas pelo webhook configurado no
+    # painel do MP; notification_url gerava duplicatas com assinatura propria
+    # que falhavam na validacao (403 + retries).
     if not settings.DEBUG:
         preference_data["auto_return"] = "approved"
-        preference_data["notification_url"] = site_url(reverse('webhook_mp'))
 
     try:
         preference_response = sdk.preference().create(preference_data)
@@ -615,10 +615,9 @@ def processar_pagamento_brick(request, pedido_id, token):
         },
         'statement_descriptor': 'BARRS STORE',
     }
-    # Em dev (DEBUG=True) o MP recusa notification_url apontando para dominio
-    # nao publico. Em prod o webhook continua ativo normalmente.
-    if not settings.DEBUG:
-        payment_data['notification_url'] = site_url(reverse('webhook_mp'))
+    # Notificacoes chegam apenas pelo webhook configurado no painel do MP;
+    # notification_url gerava duplicatas com assinatura propria que falhavam
+    # na validacao (403 + retries).
 
     # Cartao usa token/parcelas/emissor. Pix nao precisa desses campos.
     if form_data.get('token'):
