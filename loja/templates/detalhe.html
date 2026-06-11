@@ -213,6 +213,25 @@
 
       <button type="submit" class="product__cta">Adicionar ao carrinho</button>
     </form>
+
+    <!-- CALCULAR FRETE -->
+    <div class="shipping-calc">
+      <div class="shipping-calc__header">
+        <svg class="icon icon--16" aria-hidden="true"><use href="#i-truck"/></svg>
+        <span class="shipping-calc__title">Calcular frete e prazo</span>
+      </div>
+      <div class="shipping-calc__row">
+        <input type="text" id="cep-frete-produto" class="shipping-calc__input" placeholder="00000-000" maxlength="9" inputmode="numeric" autocomplete="postal-code" aria-label="CEP de entrega">
+        <button type="button" class="shipping-calc__btn" id="btn-frete-produto">Calcular</button>
+      </div>
+      <div class="shipping-calc__status" id="frete-produto-status"></div>
+      <div class="shipping-calc__loading" id="frete-produto-loading">
+        <span class="shipping-calc__spinner"></span>
+        Calculando opções de frete
+      </div>
+      <div class="shipping-calc__erro" id="frete-produto-erro">Não foi possível calcular o frete. Verifique o CEP.</div>
+      <div class="shipping-calc__options" id="frete-produto-opcoes"></div>
+    </div>
     {% else %}
     <div class="product__cta product__cta--disabled">Produto esgotado</div>
     {% endif %}
@@ -263,12 +282,6 @@
   </div>
 </section>
 {% endif %}
-
-<!-- TOAST -->
-<div id="toast-carrinho" class="toast" role="status" aria-live="polite">
-  <svg class="icon icon--16" aria-hidden="true"><use href="#i-check"/></svg>
-  Produto adicionado ao carrinho
-</div>
 
 <!-- WHATSAPP FLOAT -->
 <a href="https://wa.me/5511913225256?text=Olá!%20Vim%20pelo%20site%20da%20Barrs%20Store!"
@@ -371,15 +384,117 @@ if (formCarrinho) {
   });
 }
 
-// Toast pós-redirect (?added=1)
+// Toast pós-redirect (?added=1) — bsToast é definido no base.js, que carrega depois
 if (window.location.search.includes('added=1')) {
-  const toast = document.getElementById('toast-carrinho');
-  if (toast) {
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.bsToast === 'function') {
+      window.bsToast('Produto adicionado ao carrinho', {
+        action: { label: 'Ver carrinho', href: "{% url 'carrinho' %}" },
+      });
+    }
+  });
   history.replaceState(null, '', window.location.pathname);
 }
+
+// ─── CALCULAR FRETE NA PÁGINA DO PRODUTO ──────────────────
+(function initFreteProduto() {
+  const input = document.getElementById('cep-frete-produto');
+  const btn = document.getElementById('btn-frete-produto');
+  if (!input || !btn) return;
+
+  const status = document.getElementById('frete-produto-status');
+  const loading = document.getElementById('frete-produto-loading');
+  const erro = document.getElementById('frete-produto-erro');
+  const opcoes = document.getElementById('frete-produto-opcoes');
+
+  function formatarPreco(valor) {
+    const num = Number(valor);
+    return Number.isFinite(num) ? num.toFixed(2).replace('.', ',') : '--';
+  }
+
+  async function calcularFreteProduto() {
+    const cep = input.value.replace(/\D/g, '');
+
+    if (cep.length !== 8) {
+      status.textContent = 'Digite um CEP válido.';
+      status.className = 'shipping-calc__status erro';
+      return;
+    }
+
+    input.value = cep.slice(0, 5) + '-' + cep.slice(5);
+    status.textContent = '';
+    status.className = 'shipping-calc__status';
+    erro.classList.remove('show');
+    opcoes.innerHTML = '';
+    loading.classList.add('show');
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`/frete/melhor-envio/?cep=${cep}`);
+      const data = await res.json();
+      loading.classList.remove('show');
+      btn.disabled = false;
+
+      if (data.erro || !data.opcoes || data.opcoes.length === 0) {
+        erro.classList.add('show');
+        return;
+      }
+
+      status.textContent = 'Opções de entrega para o seu CEP';
+      status.className = 'shipping-calc__status ok';
+
+      data.opcoes.forEach((op) => {
+        const div = document.createElement('div');
+        div.className = 'shipping-calc__option';
+
+        const info = document.createElement('div');
+        info.className = 'shipping-calc__option-info';
+        const nome = document.createElement('div');
+        nome.className = 'shipping-calc__option-name';
+        nome.textContent = op.nome || '';
+        const prazo = document.createElement('div');
+        prazo.className = 'shipping-calc__option-prazo';
+        prazo.textContent = `${op.empresa || ''} · até ${op.prazo} dias úteis`;
+        info.appendChild(nome);
+        info.appendChild(prazo);
+
+        const preco = document.createElement('div');
+        preco.className = 'shipping-calc__option-preco';
+        preco.textContent = `R$ ${formatarPreco(op.preco)}`;
+
+        div.appendChild(info);
+        div.appendChild(preco);
+        opcoes.appendChild(div);
+      });
+
+      const nota = document.createElement('p');
+      nota.className = 'shipping-calc__note';
+      nota.textContent = 'Valor final confirmado no carrinho, conforme a quantidade de peças.';
+      opcoes.appendChild(nota);
+
+    } catch (e) {
+      loading.classList.remove('show');
+      btn.disabled = false;
+      erro.classList.add('show');
+    }
+  }
+
+  input.addEventListener('input', () => {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5, 8);
+    input.value = v;
+    if (v.replace('-', '').length === 8) calcularFreteProduto();
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      calcularFreteProduto();
+    }
+  });
+
+  btn.addEventListener('click', calcularFreteProduto);
+})();
 
 // Sticky CTA Mobile behavior
 (function initStickyCtaMobile() {
