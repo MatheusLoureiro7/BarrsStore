@@ -532,6 +532,15 @@ class Lead(models.Model):
     origem = models.CharField(max_length=50, default='home')
     criado_em = models.DateTimeField(auto_now_add=True)
     sessao_key = models.CharField(max_length=40, blank=True, null=True)
+    cupom = models.CharField(max_length=30, blank=True, default='')
+    usado_em_pedido = models.ForeignKey(
+        'Pedido',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='leads_cupom',
+        help_text='Pedido em que o cupom deste lead foi utilizado.',
+    )
 
     class Meta:
         ordering = ['-criado_em']
@@ -539,6 +548,7 @@ class Lead(models.Model):
         verbose_name_plural = 'Leads'
         indexes = [
             models.Index(fields=['sessao_key', 'telefone']),
+            models.Index(fields=['telefone', 'cupom']),
         ]
 
     def __str__(self):

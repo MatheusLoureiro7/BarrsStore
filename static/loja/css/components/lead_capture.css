@@ -1,12 +1,12 @@
-﻿.lead-gate {
+.lead-gate {
     position: fixed !important;
     inset: 0 !important;
     z-index: 9999 !important;
     display: grid;
     place-items: center;
     padding: 20px;
-    background: rgba(61, 45, 32, 0.34);
-    backdrop-filter: blur(7px);
+    background: rgba(48, 38, 28, 0.48);
+    backdrop-filter: blur(8px);
     opacity: 0;
     transition: opacity 280ms var(--ease, ease);
   }
@@ -61,11 +61,12 @@ body > .lead-gate .lead-gate__box {
     width: min(100%, 420px);
     background: linear-gradient(180deg, #fff 0%, var(--color-surface, #fff) 100%);
     border: 1px solid rgba(120, 105, 84, 0.16);
-    border-radius: 18px;
-    padding: 28px;
-    box-shadow: 0 24px 80px rgba(61, 45, 32, 0.18);
+    border-radius: 20px;
+    padding: 32px 30px 26px;
+    box-shadow: 0 24px 80px rgba(61, 45, 32, 0.22);
     transform: translateY(10px) scale(0.985);
     transition: transform 360ms var(--ease, ease), opacity 280ms var(--ease, ease);
+    outline: none;
   }
   .lead-gate.is-visible .lead-gate__box {
     transform: translateY(0) scale(1);
@@ -73,12 +74,15 @@ body > .lead-gate .lead-gate__box {
   .lead-gate.is-leaving .lead-gate__box {
     transform: translateY(8px) scale(0.985);
   }
+  .lead-gate__handle {
+    display: none;
+  }
   .lead-gate__close {
     position: absolute;
     top: 14px;
     right: 14px;
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -101,29 +105,67 @@ body > .lead-gate .lead-gate__box {
     transform: translateY(-1px);
   }
   .lead-gate__close:active { transform: scale(0.96); }
-  .lead-gate__mark {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: var(--color-brand-bg, #e8ede3);
-    color: var(--color-brand, #8a947c);
-    margin-bottom: 16px;
+
+  /* ── Cabeçalho: benefício em primeiro lugar ─────────────── */
+  .lead-gate__header {
+    text-align: center;
+    margin-bottom: 6px;
+    padding: 0 8px;
+  }
+  .lead-gate__eyebrow {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted, #9e9488);
+    margin-bottom: 10px;
   }
   .lead-gate h2 {
     font-family: var(--font-display, Georgia, serif);
-    font-size: 1.55rem;
     color: var(--color-ink, #3d2d20);
     margin: 0 0 8px;
     letter-spacing: 0;
   }
-  .lead-gate p {
-    font-size: 0.92rem;
-    line-height: 1.65;
-    color: var(--color-ink-muted, #9e9488);
-    margin: 0 0 18px;
+  /* Lockup "10% OFF": o número protagoniza, % acompanha, OFF complementa. */
+  .lead-gate__off {
+    display: block;
+    font-size: 3.2rem;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--color-brand, #6B7A64);
+    letter-spacing: -0.01em;
   }
+  .lead-gate__off-pct {
+    font-size: 0.56em;
+    vertical-align: 0.5em;
+    margin-left: 0.02em;
+  }
+  .lead-gate__off-tag {
+    font-family: var(--font-body, sans-serif);
+    font-size: 0.26em;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    vertical-align: 0.62em;
+    margin-left: 0.42em;
+  }
+  .lead-gate__off-sub {
+    display: block;
+    font-size: 1.14rem;
+    font-weight: 600;
+    margin-top: 6px;
+    color: var(--color-ink, #3d2d20);
+  }
+  .lead-gate__lead,
+  .lead-gate p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--color-ink-muted, #9e9488);
+    margin: 0 0 14px;
+  }
+  .lead-gate__header .lead-gate__lead { margin-bottom: 4px; }
+
+  /* ── Campos ─────────────────────────────────────────────── */
   .lead-gate label {
     display: block;
     font-size: 0.72rem;
@@ -131,20 +173,24 @@ body > .lead-gate .lead-gate__box {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-ink-muted, #9e9488);
-    margin: 14px 0 6px;
+    margin: 16px 0 6px;
+    text-align: left;
   }
   .lead-gate input {
     width: 100%;
     border: 1px solid var(--color-border, #d9d3c7);
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--color-bg, #f5f2ec);
-    padding: 13px 14px;
-    font: inherit;
+    padding: 14px 15px;
+    font-family: inherit;
+    font-size: 1rem; /* 16px: evita zoom automático do iOS ao focar */
     color: var(--color-ink-soft, #6b5e53);
     outline: none;
+    min-height: 50px;
   }
   .lead-gate input:focus {
     border-color: var(--color-brand, #8a947c);
+    background: #fff;
     box-shadow: var(--shadow-focus, 0 0 0 4px rgba(115, 130, 105, 0.12));
   }
   .lead-gate__error {
@@ -155,22 +201,25 @@ body > .lead-gate .lead-gate__box {
   }
   .lead-gate__submit {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
     border: 0;
-    border-radius: 10px;
-    padding: 14px 18px;
+    border-radius: 12px;
+    padding: 15px 18px;
+    min-height: 52px;
     background: var(--color-brand, #8a947c);
     color: #fff;
+    font-size: 0.98rem;
     font-weight: 700;
+    letter-spacing: 0.01em;
     cursor: pointer;
-    box-shadow: 0 10px 22px rgba(83, 98, 76, 0.16);
+    box-shadow: 0 10px 22px rgba(83, 98, 76, 0.18);
     transition: background 220ms var(--ease, ease),
                 box-shadow 220ms var(--ease, ease),
                 transform 220ms var(--ease, ease);
   }
   .lead-gate__submit:hover {
-    background: var(--color-ink-soft, #6b5e53);
-    box-shadow: var(--shadow-button, 0 10px 22px rgba(83, 98, 76, 0.18));
+    background: var(--color-brand-soft, #7E8F78);
+    box-shadow: var(--shadow-button, 0 10px 22px rgba(83, 98, 76, 0.22));
     transform: translateY(-1px);
   }
   .lead-gate__submit:active { transform: translateY(0) scale(0.99); }
@@ -179,14 +228,103 @@ body > .lead-gate .lead-gate__box {
     cursor: wait;
     transform: none;
   }
+  .lead-gate__submit.is-copied {
+    background: var(--color-ink, #3F4B3A);
+    box-shadow: none;
+  }
   .lead-gate__consent {
     display: block;
     margin-top: 12px;
     font-size: 0.72rem;
-    line-height: 1.45;
+    line-height: 1.5;
     color: var(--color-ink-muted, #9e9488);
     text-align: center;
   }
+
+  /* ── Etapa de sucesso ───────────────────────────────────── */
+  .lead-gate__success {
+    text-align: center;
+  }
+  .lead-gate__mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(107, 122, 100, 0.12);
+    color: var(--color-brand, #6B7A64);
+    margin: 0 auto 14px;
+  }
+  .lead-gate__mark--success {
+    box-shadow: 0 0 0 8px rgba(107, 122, 100, 0.07);
+    animation: lead-pop 460ms var(--ease, ease) both;
+  }
+  .lead-gate__success h2 {
+    font-size: 1.32rem;
+    margin-bottom: 2px;
+  }
+  .lead-gate__code-label {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted, #9e9488);
+    margin: 18px 0 8px;
+  }
+  /* Codigo em sans geometrica: elimina ambiguidade 1/I e 0/O da serifa. */
+  .lead-gate__coupon {
+    margin: 0 0 16px;
+    padding: 19px 20px;
+    text-align: center;
+    font-family: var(--font-body, sans-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.26em;
+    text-indent: 0.26em; /* compensa o letter-spacing do último caractere */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'zero' 1;
+    color: var(--color-brand, #6B7A64);
+    background: rgba(107, 122, 100, 0.08);
+    border: 1.5px dashed var(--color-brand, #6B7A64);
+    border-radius: 14px;
+    user-select: all;
+    animation: lead-rise 520ms 120ms var(--ease, ease) both;
+  }
+  /* CTA secundario: presenca discreta para nao competir com o botao. */
+  .lead-gate__shop {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-ink-muted, #9e9488);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-border, #d9d3c7);
+    padding-bottom: 2px;
+    transition: color 220ms var(--ease, ease), border-color 220ms var(--ease, ease);
+  }
+  .lead-gate__shop:hover {
+    color: var(--color-brand, #6B7A64);
+    border-color: var(--color-brand, #6B7A64);
+  }
+
+  @keyframes lead-pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    70% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes lead-rise {
+    from { transform: translateY(8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lead-gate__mark--success,
+    .lead-gate__coupon {
+      animation: none;
+    }
+  }
+
+  /* ── Mobile: sheet com cara de app ──────────────────────── */
   @media (max-width: 640px) {
     body > .lead-gate {
       align-items: end !important;
@@ -195,29 +333,57 @@ body > .lead-gate .lead-gate__box {
 
     .lead-gate {
       align-items: end;
-      padding: 14px;
-      background: rgba(61, 45, 32, 0.28);
+      padding: 0;
+      background: rgba(48, 38, 28, 0.44);
     }
     .lead-gate__box {
       width: 100%;
-      max-width: 430px;
-      padding: 24px 20px 20px;
-      border-radius: 18px;
-      box-shadow: 0 -8px 50px rgba(61, 45, 32, 0.16);
+      max-width: none;
+      padding: 14px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+      border-radius: 24px 24px 0 0;
+      border-bottom: 0;
+      box-shadow: 0 -8px 50px rgba(61, 45, 32, 0.2);
       transform: translateY(24px);
     }
     .lead-gate.is-visible .lead-gate__box {
       transform: translateY(0);
     }
-    .lead-gate h2 {
-      font-size: 1.42rem;
-      padding-right: 38px;
+    .lead-gate__handle {
+      display: block;
+      width: 40px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--color-border, #d9d3c7);
+      margin: 0 auto 16px;
     }
-    .lead-gate p {
-      font-size: 0.88rem;
-      margin-bottom: 14px;
+    .lead-gate__close {
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+    }
+    .lead-gate__header {
+      padding: 0 30px;
+    }
+    .lead-gate__off {
+      font-size: 2.9rem;
+    }
+    .lead-gate__off-sub {
+      font-size: 1.06rem;
+    }
+    .lead-gate label {
+      margin-top: 14px;
     }
     .lead-gate input {
-      padding: 14px;
+      padding: 15px;
+      min-height: 52px;
+    }
+    .lead-gate__submit {
+      min-height: 54px;
+      margin-top: 10px;
+    }
+    .lead-gate__coupon {
+      font-size: 1.32rem;
+      padding: 17px 18px;
     }
   }

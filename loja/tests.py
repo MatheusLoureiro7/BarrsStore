@@ -17,12 +17,13 @@ from .models import (
     Cupom,
     ItemCarrinho,
     ItemPedido,
+    Lead,
     Pedido,
     Produto,
     calcular_frete_por_estado,
 )
 from .validators import cpf_valido
-from .views import baixar_estoque_pedido
+from .views import baixar_estoque_pedido, validar_cupom_primeira_compra
 
 
 class ProdutoSeoTests(TestCase):
@@ -254,6 +255,124 @@ class CupomTests(TestCase):
         )
         valido, _motivo = cupom.valido_para(Decimal('100'))
         self.assertTrue(valido)
+
+
+class CupomPrimeiraCompraTests(TestCase):
+    """Regras do PRIMEIRA10: lead obrigatório, sem reuso e só primeira compra."""
+
+    TELEFONE = '11987654321'
+
+    def _criar_pedido(self, telefone, status='confirmado'):
+        return Pedido.objects.create(
+            nome='Cliente Teste',
+            email='cliente@teste.com',
+            telefone=telefone,
+            cep='01310-100',
+            rua='Av. Paulista',
+            numero='1000',
+            bairro='Bela Vista',
+            cidade='Sao Paulo',
+            estado='SP',
+            forma_pagamento='pix',
+            status=status,
+            subtotal=Decimal('100'),
+            total=Decimal('100'),
+        )
+
+    def test_data_migration_criou_cupom_primeira10(self):
+        cupom = Cupom.objects.get(codigo='PRIMEIRA10')
+        self.assertEqual(cupom.tipo, 'percentual')
+        self.assertEqual(cupom.valor, Decimal('10.00'))
+        self.assertTrue(cupom.ativo)
+
+    def test_desconto_incide_apenas_no_subtotal_frete_fora(self):
+        cupom = Cupom.objects.get(codigo='PRIMEIRA10')
+        subtotal = Decimal('100.00')
+        frete = Decimal('15.00')
+        desconto = cupom.calcular_desconto(subtotal, frete)
+        self.assertEqual(desconto, Decimal('10.00'))
+        self.assertEqual(subtotal - desconto + frete, Decimal('105.00'))
+
+    def test_endpoint_cria_lead_e_retorna_cupom(self):
+        resposta = Client().post('/lead/cupom/', {
+            'nome': 'Maria',
+            'telefone': '(11) 98765-4321',
+        })
+        self.assertEqual(resposta.status_code, 200)
+        data = resposta.json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(data['cupom'], 'PRIMEIRA10')
+        lead = Lead.objects.get(telefone=self.TELEFONE)
+        self.assertEqual(lead.cupom, 'PRIMEIRA10')
+        self.assertEqual(lead.origem, 'popup_cupom')
+
+    def test_endpoint_nao_duplica_lead_pelo_whatsapp(self):
+        cliente = Client()
+        cliente.post('/lead/cupom/', {'nome': 'Maria', 'telefone': self.TELEFONE})
+        cliente.post('/lead/cupom/', {'nome': 'Maria Silva', 'telefone': '(11) 98765-4321'})
+        leads = Lead.objects.filter(telefone=self.TELEFONE)
+        self.assertEqual(leads.count(), 1)
+        self.assertEqual(leads.first().nome, 'Maria Silva')
+
+    def test_endpoint_rejeita_telefone_invalido(self):
+        resposta = Client().post('/lead/cupom/', {'nome': 'Maria', 'telefone': '123'})
+        self.assertEqual(resposta.status_code, 400)
+        resposta = Client().post('/lead/cupom/', {'nome': 'Maria', 'telefone': '11887654321'})
+        self.assertEqual(resposta.status_code, 400)
+
+    def test_endpoint_rejeita_nome_vazio(self):
+        resposta = Client().post('/lead/cupom/', {'nome': '', 'telefone': self.TELEFONE})
+        self.assertEqual(resposta.status_code, 400)
+
+    def test_cupom_sem_lead_retorna_erro_orientando_cadastro(self):
+        valido, motivo, lead = validar_cupom_primeira_compra('PRIMEIRA10', self.TELEFONE)
+        self.assertFalse(valido)
+        self.assertEqual(motivo, 'Para usar este cupom, gere seu desconto informando seu WhatsApp.')
+        self.assertIsNone(lead)
+
+    def test_cupom_com_lead_cadastrado_valido(self):
+        Lead.objects.create(nome='Maria', telefone=self.TELEFONE, cupom='PRIMEIRA10')
+        valido, motivo, lead = validar_cupom_primeira_compra('PRIMEIRA10', '(11) 98765-4321')
+        self.assertTrue(valido)
+        self.assertEqual(motivo, '')
+        self.assertIsNotNone(lead)
+
+    def test_cupom_ja_usado_pelo_whatsapp_invalido(self):
+        pedido = self._criar_pedido(self.TELEFONE, status='pendente')
+        Lead.objects.create(
+            nome='Maria', telefone=self.TELEFONE, cupom='PRIMEIRA10', usado_em_pedido=pedido,
+        )
+        valido, motivo, _lead = validar_cupom_primeira_compra('PRIMEIRA10', self.TELEFONE)
+        self.assertFalse(valido)
+        self.assertIn('ja foi utilizado', motivo)
+
+    def test_cupom_liberado_novamente_se_pedido_foi_cancelado(self):
+        pedido = self._criar_pedido(self.TELEFONE, status='cancelado')
+        Lead.objects.create(
+            nome='Maria', telefone=self.TELEFONE, cupom='PRIMEIRA10', usado_em_pedido=pedido,
+        )
+        valido, _motivo, lead = validar_cupom_primeira_compra('PRIMEIRA10', self.TELEFONE)
+        self.assertTrue(valido)
+        self.assertIsNotNone(lead)
+
+    def test_cupom_invalido_se_telefone_ja_tem_compra_paga(self):
+        self._criar_pedido('(11) 98765-4321', status='confirmado')
+        Lead.objects.create(nome='Maria', telefone=self.TELEFONE, cupom='PRIMEIRA10')
+        valido, motivo, _lead = validar_cupom_primeira_compra('PRIMEIRA10', self.TELEFONE)
+        self.assertFalse(valido)
+        self.assertIn('primeira compra', motivo)
+
+    def test_pedido_pendente_anterior_nao_bloqueia_primeira_compra(self):
+        self._criar_pedido(self.TELEFONE, status='pendente')
+        Lead.objects.create(nome='Maria', telefone=self.TELEFONE, cupom='PRIMEIRA10')
+        valido, _motivo, _lead = validar_cupom_primeira_compra('PRIMEIRA10', self.TELEFONE)
+        self.assertTrue(valido)
+
+    def test_outros_cupons_nao_passam_pela_regra(self):
+        valido, motivo, lead = validar_cupom_primeira_compra('BARRS10', self.TELEFONE)
+        self.assertTrue(valido)
+        self.assertEqual(motivo, '')
+        self.assertIsNone(lead)
 
 
 class CalcularFreteTests(TestCase):

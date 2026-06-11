@@ -36,6 +36,59 @@ from .emails import enviar_whatsapp_pedido
 
 logger = logging.getLogger(__name__)
 
+# Cupom de primeira compra liberado pelo popup de captura de WhatsApp.
+CUPOM_PRIMEIRA_COMPRA = 'PRIMEIRA10'
+ERRO_CUPOM_SEM_LEAD = 'Para usar este cupom, gere seu desconto informando seu WhatsApp.'
+
+
+def _telefone_whatsapp_valido(telefone):
+    """Valida celular/fixo brasileiro: DDD 11-99 e 10 ou 11 dígitos (celular começa com 9)."""
+    if len(telefone) not in (10, 11):
+        return False
+    ddd = int(telefone[:2])
+    if ddd < 11 or ddd > 99:
+        return False
+    if len(telefone) == 11 and telefone[2] != '9':
+        return False
+    return True
+
+
+def validar_cupom_primeira_compra(codigo, telefone):
+    """Regras do PRIMEIRA10: WhatsApp cadastrado no popup, sem uso anterior e primeira compra.
+
+    Retorna (ok, motivo, lead). Para outros cupons retorna (True, '', None).
+    """
+    if (codigo or '').strip().upper() != CUPOM_PRIMEIRA_COMPRA:
+        return True, '', None
+
+    tel = apenas_digitos(telefone or '')
+    if len(tel) < 10:
+        return False, ERRO_CUPOM_SEM_LEAD, None
+
+    lead = Lead.objects.filter(telefone=tel).order_by('criado_em').first()
+    if not lead:
+        return False, ERRO_CUPOM_SEM_LEAD, None
+
+    cupom_usado = (
+        Lead.objects.filter(telefone=tel, usado_em_pedido__isnull=False)
+        .exclude(usado_em_pedido__status='cancelado')
+        .exists()
+    )
+    if cupom_usado:
+        return False, 'Este cupom ja foi utilizado com este WhatsApp.', None
+
+    # Primeira compra: nenhum pedido pago com esse telefone. O telefone do
+    # Pedido pode estar mascarado, entao filtramos pelos ultimos 4 digitos
+    # (contiguos em qualquer formato) e comparamos normalizado em Python.
+    telefones_pagos = Pedido.objects.filter(
+        status__in=['confirmado', 'enviado', 'entregue'],
+        telefone__contains=tel[-4:],
+    ).values_list('telefone', flat=True)
+    if any(apenas_digitos(t) == tel for t in telefones_pagos):
+        return False, 'O cupom PRIMEIRA10 e valido apenas para a primeira compra.', None
+
+    return True, '', lead
+
 
 def _validar_form_checkout(request, carrinho):
     campos_obrigatorios = {
@@ -96,7 +149,17 @@ def _validar_form_checkout(request, carrinho):
         if not valido:
             messages.error(request, motivo)
             return None
+        valido, motivo, lead_cupom = validar_cupom_primeira_compra(
+            cupom_codigo, request.POST.get('telefone', ''),
+        )
+        if not valido:
+            messages.error(request, motivo)
+            return None
+        # Desconto percentual incide apenas sobre o subtotal dos produtos;
+        # o frete entra na soma do total sem participar do desconto.
         desconto = cupom.calcular_desconto(subtotal, frete)
+    else:
+        lead_cupom = None
 
     try:
         frete_service_id = int(request.POST.get('frete_service_id') or 0) or None
@@ -120,6 +183,7 @@ def _validar_form_checkout(request, carrinho):
         'subtotal': subtotal,
         'desconto': desconto,
         'cupom': cupom,
+        'lead_cupom': lead_cupom,
         'total': subtotal - desconto + frete,
         'observacoes': request.POST.get('observacoes', '').strip()[:500],
     }
@@ -461,6 +525,54 @@ def salvar_lead_cliente(request):
 
 
 @require_POST
+@ratelimit(key='ip', rate='10/m', method='POST', block=True)
+def gerar_cupom_lead(request):
+    """Popup de cupom: salva nome + WhatsApp e libera o PRIMEIRA10 (dedupe por telefone)."""
+    nome = request.POST.get('nome', '').strip()
+    telefone = apenas_digitos(request.POST.get('telefone', ''))
+
+    if len(nome) < 2:
+        return JsonResponse({'ok': False, 'erro': 'Informe seu nome.'}, status=400)
+    if not _telefone_whatsapp_valido(telefone):
+        return JsonResponse({'ok': False, 'erro': 'Informe um WhatsApp valido com DDD.'}, status=400)
+
+    salvar_lead_na_sessao(request, nome, telefone)
+    carrinho_id = request.session.get('carrinho_id')
+    if carrinho_id:
+        try:
+            aplicar_lead_no_carrinho(request, Carrinho.objects.get(id=carrinho_id))
+        except Carrinho.DoesNotExist:
+            request.session.pop('carrinho_id', None)
+
+    if not request.session.session_key:
+        request.session.save()
+
+    lead = Lead.objects.filter(telefone=telefone).order_by('criado_em').first()
+    if lead:
+        lead.nome = nome
+        if not lead.cupom:
+            lead.cupom = CUPOM_PRIMEIRA_COMPRA
+        lead.save(update_fields=['nome', 'cupom'])
+    else:
+        lead = Lead.objects.create(
+            nome=nome,
+            telefone=telefone,
+            aceita_whatsapp=True,
+            origem='popup_cupom',
+            sessao_key=request.session.session_key,
+            cupom=CUPOM_PRIMEIRA_COMPRA,
+        )
+        logger.info('[LEAD] Lead de cupom salvo: telefone=%s', telefone)
+
+    return JsonResponse({
+        'ok': True,
+        'cupom': CUPOM_PRIMEIRA_COMPRA,
+        'nome': nome,
+        'telefone': telefone,
+    })
+
+
+@require_POST
 @ratelimit(key='ip', rate='15/m', method='POST', block=True)
 def salvar_contato_carrinho(request):
     carrinho_id = request.session.get('carrinho_id')
@@ -518,6 +630,17 @@ def aplicar_cupom_ajax(request):
     if not valido:
         erro = 'Cupom invalido.' if motivo in _CUPOM_GENERICOS else motivo
         return JsonResponse({'ok': False, 'erro': erro}, status=400)
+
+    # PRIMEIRA10 exige WhatsApp cadastrado via popup. Usa o telefone informado
+    # no formulario do checkout ou, na falta dele, o capturado na sessao.
+    telefone_cliente = (
+        request.POST.get('telefone', '').strip()
+        or request.session.get('lead_telefone', '')
+        or carrinho.telefone_cliente
+    )
+    valido, motivo, _lead = validar_cupom_primeira_compra(codigo, telefone_cliente)
+    if not valido:
+        return JsonResponse({'ok': False, 'erro': motivo}, status=400)
 
     desconto = cupom.calcular_desconto(subtotal)
     return JsonResponse({
@@ -604,6 +727,9 @@ def checkout(request):
             return render_checkout()
 
         pedido = _criar_pedido_com_itens(carrinho, itens, dados, cliente, request.session.get('utm') or {})
+        if dados.get('lead_cupom'):
+            dados['lead_cupom'].usado_em_pedido = pedido
+            dados['lead_cupom'].save(update_fields=['usado_em_pedido'])
         request.session.pop('carrinho_id', None)
         # E-mail "Finalize seu pagamento" e disparado pelo cron apos 20min,
         # evitando SPAM para quem fechou a aba logo em seguida.

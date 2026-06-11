@@ -1,30 +1,51 @@
 {% if not lead_capturado and not request.user.is_staff %}
 <div class="lead-gate" id="lead-gate" role="dialog" aria-modal="true" aria-labelledby="lead-title" hidden>
-  <form class="lead-gate__box" id="lead-form">
-    {% csrf_token %}
-    <button type="button" class="lead-gate__close" id="lead-close" aria-label="Fechar atendimento">&times;</button>
-    <div class="lead-gate__mark">
-      <svg class="icon icon--21" aria-hidden="true"><use href="#i-whatsapp"/></svg>
+  <div class="lead-gate__box" tabindex="-1">
+    <div class="lead-gate__handle" aria-hidden="true"></div>
+    <button type="button" class="lead-gate__close" id="lead-close" aria-label="Fechar">&times;</button>
+
+    <!-- ETAPA 1: CAPTURA -->
+    <form id="lead-form">
+      {% csrf_token %}
+      <div class="lead-gate__header">
+        <span class="lead-gate__eyebrow">Boas-vindas à Barrs</span>
+        <h2 id="lead-title">
+          <span class="lead-gate__off"><span class="lead-gate__off-num">10</span><span class="lead-gate__off-pct">%</span><span class="lead-gate__off-tag">OFF</span></span>
+          <span class="lead-gate__off-sub">na sua primeira compra</span>
+        </h2>
+        <p class="lead-gate__lead">Deixe seu nome e WhatsApp para liberar seu cupom exclusivo.</p>
+      </div>
+
+      <label for="lead-nome">Nome</label>
+      <input id="lead-nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome" required>
+
+      <label for="lead-telefone">WhatsApp</label>
+      <input id="lead-telefone" name="telefone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(11) 99999-9999" required>
+
+      <div class="lead-gate__error" id="lead-error" role="alert"></div>
+      <button type="submit" class="lead-gate__submit">Liberar meu cupom</button>
+      <span class="lead-gate__consent">Ao continuar, você aceita receber novidades da Barrs pelo WhatsApp.</span>
+    </form>
+
+    <!-- ETAPA 2: SUCESSO -->
+    <div id="lead-success" class="lead-gate__success" hidden>
+      <div class="lead-gate__mark lead-gate__mark--success" aria-hidden="true">
+        <svg class="icon icon--21" aria-hidden="true"><use href="#i-check"/></svg>
+      </div>
+      <h2>Seu cupom foi liberado!</h2>
+
+      <span class="lead-gate__code-label" id="lead-code-label">Seu código</span>
+      <div class="lead-gate__coupon" id="lead-coupon-code" aria-labelledby="lead-code-label">PRIMEIRA10</div>
+
+      <button type="button" class="lead-gate__submit" id="lead-copy" aria-live="polite">Copiar cupom</button>
+      <span class="lead-gate__consent">Cole o código no checkout para aplicar seu desconto.</span>
+      <a class="lead-gate__shop" href="/#produtos" id="lead-shop">Escolher minhas semijoias →</a>
     </div>
-    <h2 id="lead-title">Atendimento Barrs Store</h2>
-    <p>Para continuar, informe seu nome e WhatsApp. Assim conseguimos te atender melhor e preencher seus dados automaticamente na compra.</p>
-
-    <label for="lead-nome">Nome</label>
-    <input id="lead-nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome" required value="{{ lead_nome }}">
-
-    <label for="lead-telefone">WhatsApp</label>
-    <input id="lead-telefone" name="telefone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(11) 99999-9999" required value="{{ lead_telefone }}">
-
-    <div class="lead-gate__error" id="lead-error"></div>
-    <button type="submit" class="lead-gate__submit">Continuar</button>
-    <span class="lead-gate__consent">Ao continuar, você aceita receber atendimento e novidades da Barrs Store pelo WhatsApp.</span>
-  </form>
+  </div>
 </div>
 
 <script nonce="{{ csp_nonce }}">
   (function () {
-    const form = document.getElementById('lead-form');
-    if (!form) return;
     const gate = document.getElementById('lead-gate');
     if (!gate) return;
     document.querySelectorAll('.lead-gate').forEach(function (item) {
@@ -33,14 +54,20 @@
     if (gate.parentElement !== document.body) {
       document.body.appendChild(gate);
     }
+    const box = gate.querySelector('.lead-gate__box');
+    const form = document.getElementById('lead-form');
+    const success = document.getElementById('lead-success');
     const close = document.getElementById('lead-close');
     const erro = document.getElementById('lead-error');
+    const nome = document.getElementById('lead-nome');
     const telefone = document.getElementById('lead-telefone');
     const submit = form.querySelector('.lead-gate__submit');
+    const copyBtn = document.getElementById('lead-copy');
+    const shopLink = document.getElementById('lead-shop');
 
     const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-    const CLOSED_UNTIL_KEY = 'barrsLeadPopupClosedUntil';
-    const CAPTURED_KEY = 'barrsLeadPhoneCaptured';
+    const CLOSED_UNTIL_KEY = 'barrsCupomPopupClosedUntil';
+    const CAPTURED_KEY = 'barrsCupomLiberado';
 
     function setCookie(name, value, maxAgeSeconds) {
       document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAgeSeconds}; path=/; samesite=lax`;
@@ -52,7 +79,7 @@
     }
 
     function getStored(key) {
-      try { return localStorage.getItem(key); } catch (e) { return getCookie(key); }
+      try { return localStorage.getItem(key) || getCookie(key); } catch (e) { return getCookie(key); }
     }
 
     function setStored(key, value, maxAgeSeconds) {
@@ -60,13 +87,10 @@
       setCookie(key, value, maxAgeSeconds);
     }
 
-    function hasValidPhone() {
-      return telefone.value.replace(/\D/g, '').length >= 10;
-    }
-
     function hideGate() {
       gate.classList.add('is-leaving');
       gate.classList.remove('is-visible');
+      document.removeEventListener('keydown', onKeydown);
       window.setTimeout(function () {
         gate.remove();
       }, 280);
@@ -78,13 +102,11 @@
       hideGate();
     }
 
-    if (getStored(CAPTURED_KEY) === '1' || Number(getStored(CLOSED_UNTIL_KEY) || 0) > Date.now()) {
-      gate.remove();
-      return;
+    function onKeydown(event) {
+      if (event.key === 'Escape') closeWithCooldown();
     }
 
-    if (hasValidPhone()) {
-      setStored(CAPTURED_KEY, '1', 365 * 24 * 60 * 60);
+    if (getStored(CAPTURED_KEY) === '1' || Number(getStored(CLOSED_UNTIL_KEY) || 0) > Date.now()) {
       gate.remove();
       return;
     }
@@ -93,10 +115,18 @@
       gate.removeAttribute('hidden');
       requestAnimationFrame(function () {
         gate.classList.add('is-visible');
+        // No mobile, autofocus abriria o teclado por cima do modal antes da
+        // leitura do benefício; foca o container e deixa o toque decidir.
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+          nome.focus();
+        } else {
+          box.focus({ preventScroll: true });
+        }
       });
     }, 900);
 
     close.addEventListener('click', closeWithCooldown);
+    document.addEventListener('keydown', onKeydown);
 
     telefone.addEventListener('input', function () {
       let v = telefone.value.replace(/\D/g, '').slice(0, 11);
@@ -105,17 +135,35 @@
       telefone.value = v;
     });
 
+    function telefoneValido(digitos) {
+      if (digitos.length !== 10 && digitos.length !== 11) return false;
+      const ddd = Number(digitos.slice(0, 2));
+      if (ddd < 11 || ddd > 99) return false;
+      if (digitos.length === 11 && digitos[2] !== '9') return false;
+      return true;
+    }
+
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
       erro.textContent = '';
-      const body = new URLSearchParams(new FormData(form));
-      if (submit) {
-        submit.disabled = true;
-        submit.textContent = 'Enviando...';
+
+      if (nome.value.trim().length < 2) {
+        erro.textContent = 'Informe seu nome.';
+        nome.focus();
+        return;
+      }
+      if (!telefoneValido(telefone.value.replace(/\D/g, ''))) {
+        erro.textContent = 'Informe um WhatsApp válido com DDD.';
+        telefone.focus();
+        return;
       }
 
+      const body = new URLSearchParams(new FormData(form));
+      submit.disabled = true;
+      submit.textContent = 'Liberando...';
+
       try {
-        const response = await fetch("{% url 'salvar_lead_cliente' %}", {
+        const response = await fetch("{% url 'gerar_cupom_lead' %}", {
           method: 'POST',
           headers: {
             'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value,
@@ -126,11 +174,9 @@
         });
         const data = await response.json();
         if (!response.ok || !data.ok) {
-          erro.textContent = data.erro || 'Nao foi possivel salvar seus dados.';
-          if (submit) {
-            submit.disabled = false;
-            submit.textContent = 'Continuar';
-          }
+          erro.textContent = data.erro || 'Não foi possível liberar seu cupom.';
+          submit.disabled = false;
+          submit.textContent = 'Liberar meu cupom';
           return;
         }
 
@@ -139,14 +185,49 @@
         if (nomeCheckout && !nomeCheckout.value) nomeCheckout.value = data.nome;
         if (telefoneCheckout && !telefoneCheckout.value) telefoneCheckout.value = data.telefone;
         setStored(CAPTURED_KEY, '1', 365 * 24 * 60 * 60);
-        hideGate();
+
+        document.getElementById('lead-coupon-code').textContent = data.cupom;
+        form.hidden = true;
+        success.hidden = false;
+        copyBtn.focus({ preventScroll: true });
       } catch (e) {
-        erro.textContent = 'Nao foi possivel salvar agora. Tente novamente.';
-        if (submit) {
-          submit.disabled = false;
-          submit.textContent = 'Continuar';
-        }
+        erro.textContent = 'Não foi possível liberar agora. Tente novamente.';
+        submit.disabled = false;
+        submit.textContent = 'Liberar meu cupom';
       }
+    });
+
+    copyBtn.addEventListener('click', async function () {
+      const codigo = document.getElementById('lead-coupon-code').textContent.trim();
+      let copiado = false;
+      try {
+        await navigator.clipboard.writeText(codigo);
+        copiado = true;
+      } catch (e) {
+        const area = document.createElement('textarea');
+        area.value = codigo;
+        area.setAttribute('readonly', '');
+        area.style.position = 'absolute';
+        area.style.left = '-9999px';
+        document.body.appendChild(area);
+        area.select();
+        try { copiado = document.execCommand('copy'); } catch (err) {}
+        area.remove();
+      }
+      if (copiado) {
+        copyBtn.classList.add('is-copied');
+        copyBtn.textContent = '✓ Cupom copiado';
+      } else {
+        copyBtn.textContent = codigo;
+      }
+      window.setTimeout(function () {
+        copyBtn.classList.remove('is-copied');
+        copyBtn.textContent = 'Copiar cupom';
+      }, 2200);
+    });
+
+    shopLink.addEventListener('click', function () {
+      hideGate();
     });
   })();
 </script>

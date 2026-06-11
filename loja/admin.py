@@ -271,11 +271,11 @@ class CarrinhoAdmin(admin.ModelAdmin):
 
 @admin.register(Lead)
 class LeadAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'telefone', 'aceita_whatsapp', 'origem', 'criado_em')
-    list_filter = ('origem', 'aceita_whatsapp')
+    list_display = ('nome', 'telefone', 'aceita_whatsapp', 'origem', 'cupom', 'usado_em_pedido', 'criado_em')
+    list_filter = ('origem', 'aceita_whatsapp', 'cupom')
     search_fields = ('nome', 'telefone')
     ordering = ('-criado_em',)
-    readonly_fields = ('nome', 'telefone', 'aceita_whatsapp', 'origem', 'criado_em', 'sessao_key')
+    readonly_fields = ('nome', 'telefone', 'aceita_whatsapp', 'origem', 'criado_em', 'sessao_key', 'cupom', 'usado_em_pedido')
 
     def has_add_permission(self, request):
         return False
