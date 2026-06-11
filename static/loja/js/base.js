@@ -226,6 +226,46 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 })();
 
+// ── Toast programático — window.bsToast(msg, { action: { label, href } }) ──
+window.bsToast = function (msg, options) {
+  var opts = options || {};
+  var stack = document.querySelector('.bs-toast-stack');
+  if (!stack) {
+    stack = document.createElement('div');
+    stack.className = 'bs-toast-stack';
+    stack.setAttribute('role', 'status');
+    stack.setAttribute('aria-live', 'polite');
+    document.body.appendChild(stack);
+  }
+  var toast = document.createElement('div');
+  toast.className = 'bs-toast bs-toast--success';
+  toast.setAttribute('data-bs-toast', '');
+  toast.innerHTML =
+    '<svg class="bs-toast__icon" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
+      '<path d="m8 12 3 3 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg>' +
+    '<span class="bs-toast__msg"></span>' +
+    '<button type="button" class="bs-toast__close" aria-label="Fechar" data-bs-toast-close>×</button>';
+  toast.querySelector('.bs-toast__msg').textContent = msg;
+  if (opts.action && opts.action.href && opts.action.label) {
+    var link = document.createElement('a');
+    link.className = 'bs-toast__action';
+    link.href = opts.action.href;
+    link.textContent = opts.action.label;
+    toast.insertBefore(link, toast.querySelector('[data-bs-toast-close]'));
+  }
+  stack.appendChild(toast);
+  function dismiss() {
+    if (toast.classList.contains('is-leaving')) return;
+    toast.classList.add('is-leaving');
+    setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 240);
+  }
+  toast.querySelector('[data-bs-toast-close]').addEventListener('click', dismiss);
+  setTimeout(dismiss, opts.duration || 3000);
+  return toast;
+};
+
 // ── Newsletter footer — captura celular e salva como Lead ─────────
 (function () {
   var forms = document.querySelectorAll('[data-bs-newsletter]');

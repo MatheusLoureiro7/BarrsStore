@@ -128,33 +128,8 @@
   }
 
   function showBsToast(msg) {
-    let stack = document.querySelector('.bs-toast-stack');
-    if (!stack) {
-      stack = document.createElement('div');
-      stack.className = 'bs-toast-stack';
-      stack.setAttribute('role', 'status');
-      stack.setAttribute('aria-live', 'polite');
-      document.body.appendChild(stack);
-    }
-    const toast = document.createElement('div');
-    toast.className = 'bs-toast bs-toast--success';
-    toast.setAttribute('data-bs-toast', '');
-    toast.innerHTML =
-      '<svg class="bs-toast__icon" viewBox="0 0 24 24" aria-hidden="true">' +
-        '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
-        '<path d="m8 12 3 3 5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '</svg>' +
-      '<span class="bs-toast__msg">' + msg + '</span>' +
-      '<button type="button" class="bs-toast__close" aria-label="Fechar" data-bs-toast-close>×</button>';
-    stack.appendChild(toast);
-    const close = toast.querySelector('[data-bs-toast-close]');
-    function dismiss() {
-      if (toast.classList.contains('is-leaving')) return;
-      toast.classList.add('is-leaving');
-      window.setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 240);
-    }
-    if (close) close.addEventListener('click', dismiss);
-    window.setTimeout(dismiss, 3600);
+    if (typeof window.bsToast !== 'function') return;
+    window.bsToast(msg, { action: { label: 'Ver carrinho', href: '/carrinho/' } });
   }
 
   document.addEventListener('submit', function (event) {
