@@ -619,9 +619,9 @@ def processar_pagamento_brick(request, pedido_id, token):
     ) and not tem_token
     valor_cobranca = pedido.total_pix if pagamento_pix else pedido.total
     logger.info(
-        '[MP-BRICK] %s pedido=%s total_pedido=%s valor_cobranca=%s',
+        '[MP-BRICK] %s pedido=%s subtotal=%s desconto=%s frete=%s total=%s valor_cobranca=%s',
         'Pix com desconto' if pagamento_pix else 'Cartao/outro',
-        pedido.id, pedido.total, valor_cobranca,
+        pedido.id, pedido.subtotal, pedido.desconto, pedido.frete, pedido.total, valor_cobranca,
     )
 
     payment_data = {
