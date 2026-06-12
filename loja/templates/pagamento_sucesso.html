@@ -280,6 +280,7 @@
           <div class="su-crosssell__info">
             <span class="su-crosssell__name">{{ produto.nome }}</span>
             <span class="su-crosssell__price">R$ {{ produto.preco }}</span>
+            {% include "partials/price_note.html" with produto=produto compact=True %}
           </div>
         </a>
       {% endfor %}

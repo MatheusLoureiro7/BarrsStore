@@ -918,6 +918,15 @@
   font-size: 1.1em;
   letter-spacing: 0.005em;
 }
+.sticky-cta-mobile__pix {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  white-space: nowrap;
+  margin-left: 0.3rem;
+  opacity: 0.9;
+}
 .sticky-cta-mobile__btn {
   flex: 0 0 auto;
   padding: 0.75rem 1.75rem;

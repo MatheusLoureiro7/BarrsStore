@@ -65,7 +65,7 @@ class PedidoAdminForm(forms.ModelForm):
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
     form = PedidoAdminForm
-    list_display = ('id', 'nome', 'email', 'cpf', 'cidade', 'status', 'total', 'melhor_envio_order_id', 'codigo_rastreio', 'criado_em')
+    list_display = ('id', 'nome', 'email', 'cpf', 'cidade', 'status', 'forma_pagamento', 'total', 'valor_cobrado_display', 'melhor_envio_order_id', 'codigo_rastreio', 'criado_em')
     list_editable = ('status',)
     list_filter = ('status', 'forma_pagamento', 'estado')
     search_fields = ('nome', 'email', 'cpf', 'cidade', 'codigo_rastreio', 'melhor_envio_order_id')
@@ -80,6 +80,7 @@ class PedidoAdmin(admin.ModelAdmin):
         'melhor_envio_status',
         'melhor_envio_erro',
         'origem_utm',
+        'desconto_pix_aplicado',
     )
     fieldsets = (
         ('Resumo do pedido', {
@@ -92,7 +93,7 @@ class PedidoAdmin(admin.ModelAdmin):
             'fields': ('cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado')
         }),
         ('Pagamento', {
-            'fields': ('forma_pagamento', 'status', 'subtotal', 'desconto', 'cupom_codigo', 'frete', 'total')
+            'fields': ('forma_pagamento', 'status', 'subtotal', 'desconto', 'cupom_codigo', 'frete', 'total', 'desconto_pix_aplicado')
         }),
         ('Observações do cliente', {
             'fields': ('observacoes',),
@@ -148,6 +149,23 @@ class PedidoAdmin(admin.ModelAdmin):
             )
         )
 
+        tfoot_extra = ''
+        if obj.desconto_pix_aplicado and obj.desconto_pix_aplicado > 0:
+            tfoot_extra = (
+                '<tr style="color:#2e7d32">'
+                '<td colspan="4" style="padding:6px 10px;text-align:right;font-weight:700">'
+                '⬇ Desconto Pix (4%)</td>'
+                f'<td style="padding:6px 10px;text-align:right;font-weight:700">'
+                f'− R$ {obj.desconto_pix_aplicado}</td>'
+                '</tr>'
+                '<tr style="color:#2e7d32;background:#f1f8f2">'
+                '<td colspan="4" style="padding:10px;text-align:right;font-weight:800">'
+                '✓ Valor cobrado (Pix)</td>'
+                f'<td style="padding:10px;text-align:right;font-weight:800">'
+                f'R$ {obj.total - obj.desconto_pix_aplicado}</td>'
+                '</tr>'
+            )
+
         return format_html(
             '<table style="width:100%;border-collapse:collapse;background:#fff">'
             '<thead>'
@@ -165,11 +183,24 @@ class PedidoAdmin(admin.ModelAdmin):
             '<td colspan="4" style="padding:10px;text-align:right;font-weight:700">Total do pedido</td>'
             '<td style="padding:10px;text-align:right;font-weight:700">R$ {}</td>'
             '</tr>'
+            '{}'
             '</tfoot>'
             '</table>',
             linhas,
             obj.total,
+            format_html(tfoot_extra),
         )
+
+    @admin.display(description='Cobrado', ordering='total')
+    def valor_cobrado_display(self, obj):
+        if obj.desconto_pix_aplicado and obj.desconto_pix_aplicado > 0:
+            cobrado = obj.total - obj.desconto_pix_aplicado
+            return format_html(
+                '<span style="color:#2e7d32;font-weight:700">R$ {}</span>'
+                '<br><small style="color:#888">Pix</small>',
+                cobrado,
+            )
+        return format_html('R$ {}', obj.total)
 
     def save_model(self, request, obj, form, change):
         codigo_anterior = ''

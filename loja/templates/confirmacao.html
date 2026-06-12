@@ -110,6 +110,12 @@
           </div>
         </div>
 
+        {% if pedido.desconto_pix > 0 %}
+        <div class="co-pix-incentive" role="note">
+          <strong>No Pix: R$ {{ pedido.total_pix }}</strong> · 4% de desconto aplicado automaticamente. No cartão, parcele em até 6x.
+        </div>
+        {% endif %}
+
         <!-- Loading -->
         <div id="mp-loading" class="co-loading">
           <div class="co-loading__ring"></div>
@@ -137,7 +143,12 @@
               <h2 class="co-pix-title">Pix gerado com sucesso</h2>
               <p class="co-pix-copy">Escaneie o QR Code ou copie o codigo Pix abaixo para concluir seu pagamento.</p>
             </div>
-            <div class="co-pix-total">R$ {{ pedido.total }}</div>
+            <div>
+              <div class="co-pix-total">R$ {{ pedido.total_pix }}</div>
+              {% if pedido.desconto_pix > 0 %}
+              <div class="co-pix-total-off">4% de desconto Pix aplicado</div>
+              {% endif %}
+            </div>
           </div>
           <div class="co-pix-grid">
             <img id="mp-pix-qr" class="co-pix-qr" src="" alt="QR Code Pix" hidden>
@@ -216,6 +227,12 @@
           <span class="co-row__label">Total</span>
           <span class="co-row__value">R$ {{ pedido.total }}</span>
         </div>
+        {% if pedido.desconto_pix > 0 %}
+        <div class="co-row co-row--pix">
+          <span class="co-row__label">Pagando no Pix</span>
+          <span class="co-row__value">R$ {{ pedido.total_pix }}</span>
+        </div>
+        {% endif %}
       </div>
 
       <!-- Entrega -->

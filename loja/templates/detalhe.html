@@ -127,6 +127,7 @@
       <span class="price__currency">R$</span>
       <span class="price__amount">{{ produto.preco }}</span>
     </div>
+    {% include "partials/price_note.html" with produto=produto %}
 
     {% if produto.disponivel %}
       {% if produto.estoque_baixo %}
@@ -276,6 +277,7 @@
           <span class="price__currency">R$</span>
           <span class="price__amount">{{ p.preco }}</span>
         </div>
+        {% include "partials/price_note.html" with produto=p compact=True %}
       </div>
     </a>
     {% endfor %}
@@ -755,6 +757,7 @@ if (window.location.search.includes('added=1')) {
         <span class="sticky-cta-mobile__price">
           <span class="price__currency">R$</span>
           <span class="price__amount">{{ produto.preco }}</span>
+          <span class="sticky-cta-mobile__pix">R$ {{ produto.preco_pix }} no Pix</span>
         </span>
       </div>
     </div>

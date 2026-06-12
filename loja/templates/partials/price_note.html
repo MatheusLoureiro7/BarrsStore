@@ -1,0 +1,13 @@
+{% comment %}
+Condições de pagamento abaixo do preço do produto.
+Uso: {% include "partials/price_note.html" with produto=produto %}
+     {% include "partials/price_note.html" with produto=produto compact=True %}
+O preço Pix (4% off) é informativo, derivado de produto.preco_pix; o preço
+original não muda. Cartão não menciona juros nem valor de parcela.
+{% endcomment %}
+{% if produto.disponivel %}
+<div class="price-note{% if compact %} price-note--compact{% endif %}">
+  <span class="price-note__pix">R$ {{ produto.preco_pix }} no Pix <em>· 4% de desconto</em></span>
+  <span class="price-note__card">ou em até 6x no cartão</span>
+</div>
+{% endif %}

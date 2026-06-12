@@ -604,10 +604,21 @@ def processar_pagamento_brick(request, pedido_id, token):
     if not payer.get('identification') and isinstance(payer_front.get('identification'), dict):
         payer['identification'] = payer_front['identification']
 
+    # Pix paga com desconto (total_pix); cartão e demais métodos pagam o total.
+    # O total do pedido no banco não muda: o desconto vale só na transação.
+    metodo_escolhido = form_data.get('payment_method_id')
+    pagamento_pix = metodo_escolhido == 'pix' and not form_data.get('token')
+    valor_cobranca = pedido.total_pix if pagamento_pix else pedido.total
+    if pagamento_pix:
+        logger.info(
+            '[MP-BRICK] Pix com desconto pedido=%s total=%s cobrado=%s',
+            pedido.id, pedido.total, valor_cobranca,
+        )
+
     payment_data = {
-        'transaction_amount': float(pedido.total),
+        'transaction_amount': float(valor_cobranca),
         'description': f'Pedido #{pedido.id} - Barrs Store',
-        'payment_method_id': form_data.get('payment_method_id'),
+        'payment_method_id': metodo_escolhido,
         'payer': payer,
         'external_reference': str(pedido.id),
         'metadata': {
@@ -720,6 +731,20 @@ def processar_pagamento_brick(request, pedido_id, token):
 
     if payment_id:
         confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=str(pedido.id))
+        pedido.refresh_from_db()
+
+    # Registra o método real e o desconto Pix efetivamente cobrado.
+    # Feito após confirmar_pagamento_mercadopago para não pisar em atualizações
+    # feitas pelo sinal de confirmação.
+    forma_real = 'pix' if pagamento_pix else 'cartao'
+    campos_registrar = {}
+    if pedido.forma_pagamento != forma_real:
+        campos_registrar['forma_pagamento'] = forma_real
+    if pagamento_pix and pedido.desconto_pix_aplicado == 0:
+        from decimal import Decimal as _D
+        campos_registrar['desconto_pix_aplicado'] = pedido.desconto_pix
+    if campos_registrar:
+        Pedido.objects.filter(pk=pedido.pk).update(**campos_registrar)
         pedido.refresh_from_db()
 
     if status == 'approved' or pedido.status == 'confirmado':

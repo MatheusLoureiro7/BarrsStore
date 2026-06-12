@@ -38,6 +38,11 @@ class Categoria(models.Model):
         return self.nome
 
 
+# Desconto aplicado ao pagar no Pix. O preço cadastrado do produto nunca
+# muda: o valor Pix é derivado na exibição e na criação do pagamento.
+PIX_DESCONTO_PERCENTUAL = Decimal('0.04')
+
+
 # ── PRODUTO ───────────────────────────────────────────────────────
 class Produto(models.Model):
     TIPO_CHOICES = [
@@ -104,6 +109,10 @@ class Produto(models.Model):
 
     def get_absolute_url(self):
         return reverse('detalhe_produto', kwargs={'slug': self.slug})
+
+    @property
+    def preco_pix(self):
+        return (self.preco * (Decimal('1') - PIX_DESCONTO_PERCENTUAL)).quantize(Decimal('0.01'))
 
     @staticmethod
     def _clean_seo_text(text):
@@ -349,6 +358,7 @@ class Pedido(models.Model):
     ]
 
     PAGAMENTO_CHOICES = [
+        ('pendente', 'Não informado'),
         ('pix', 'PIX'),
         ('cartao', 'Cartão de crédito'),
         ('boleto', 'Boleto bancário'),
@@ -373,6 +383,9 @@ class Pedido(models.Model):
     cupom_codigo = models.CharField(max_length=30, blank=True, default='')
     frete = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    # Desconto Pix efetivamente aplicado no momento do pagamento (0 = não foi Pix).
+    # Permite que admin e relatórios mostrem o valor real cobrado sem alterar 'total'.
+    desconto_pix_aplicado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     criado_em = models.DateTimeField(auto_now_add=True, db_index=True)
     codigo_rastreio = models.CharField(max_length=100, blank=True, default='', help_text='Código de rastreio dos Correios')
     email_rastreio_enviado = models.BooleanField(default=False, help_text='Email de rastreio já foi enviado')
@@ -396,6 +409,16 @@ class Pedido(models.Model):
 
     def __str__(self):
         return f'Pedido #{self.id} - {self.nome}'
+
+    @property
+    def desconto_pix(self):
+        # 4% sobre os produtos (após cupom); frete não entra no desconto.
+        base = max(self.subtotal - self.desconto, Decimal('0'))
+        return (base * PIX_DESCONTO_PERCENTUAL).quantize(Decimal('0.01'))
+
+    @property
+    def total_pix(self):
+        return (self.total - self.desconto_pix).quantize(Decimal('0.01'))
 
     def rastreio_url(self):
         if not self.codigo_rastreio:

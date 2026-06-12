@@ -291,7 +291,7 @@
               debitCardTitle:      'Cartão de débito',
               debitCardValueProp:  'Aprovação imediata',
               ticketTitle:         'Pix',
-              ticketValueProp:     'Aprovação instantânea',
+              ticketValueProp:     '4% de desconto · aprovação instantânea',
             },
             reviewConfirm: {
               componentTitle:           'Revise seu pedido',

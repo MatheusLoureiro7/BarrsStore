@@ -61,6 +61,7 @@
         <div class="cart-item__info">
           <div class="cart-item__name">{{ item.produto.nome }}</div>
           <div class="cart-item__unit">R$ {{ item.produto.preco }} / unidade</div>
+          {% include "partials/price_note.html" with produto=item.produto compact=True %}
           {% if item.tamanho %}<div class="cart-item__size">Tamanho {{ item.tamanho }}</div>{% endif %}
           <div class="cart-item__details" aria-label="Diferenciais do produto">
             <span><svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg> Banho premium</span>
@@ -142,6 +143,10 @@
       <div class="summary-row summary-row--muted"><span>Descontos</span><span>-</span></div>
       <hr class="summary-divider">
       <div class="summary-total"><span>Total</span><span id="total-display">R$ {{ total }}</span></div>
+      <div class="summary-row summary-row--pix">
+        <span>Pagando no Pix <em>· 4% de desconto</em></span>
+        <span id="pix-total-display"></span>
+      </div>
 
       <form method="GET" action="{% url 'finalizar_compra' %}" id="form-checkout">
         <input type="hidden" name="cep" id="hidden-cep">
@@ -225,6 +230,17 @@
 
   const subtotal = parseMoney("{{ total|unlocalize }}");
   let freteValorSelecionado = null;
+
+  // Espelha PIX_DESCONTO_PERCENTUAL (loja/models.py): 4% sobre os produtos,
+  // frete fora do desconto. Valor informativo; a cobrança real é no backend.
+  const PIX_FATOR = 0.96;
+  function atualizarPixTotal() {
+    const frete = freteValorSelecionado || 0;
+    const pixTotal = subtotal * PIX_FATOR + frete;
+    document.getElementById('pix-total-display').textContent =
+      'R$ ' + pixTotal.toFixed(2).replace('.', ',');
+  }
+  atualizarPixTotal();
 
   function mascaraCepFrete(input) {
     let v = input.value.replace(/\D/g, '');
@@ -321,6 +337,7 @@
     document.getElementById('hidden-frete-nome').value = nome;
     document.getElementById('hidden-frete-service-id').value = serviceId;
     document.getElementById('btn-finalizar').disabled = false;
+    atualizarPixTotal();
   }
 
   const cepFreteInput = document.getElementById('cep-frete');

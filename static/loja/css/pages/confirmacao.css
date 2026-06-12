@@ -471,6 +471,25 @@ body {
   font-size: 0.8125rem;
   font-weight: 700;
 }
+.co-pix-total-off {
+  margin-top: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  text-align: center;
+  opacity: 0.9;
+}
+/* Incentivo Pix exibido antes do Brick: valor com 4% off vs cartão em 6x. */
+.co-pix-incentive {
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.co-pix-incentive strong { font-weight: 700; }
 .co-pix-grid {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr);
@@ -688,6 +707,11 @@ body {
   font-size: 1.1875rem;
   font-weight: 800;
   color: var(--color-brand);
+}
+.co-row--pix .co-row__label,
+.co-row--pix .co-row__value {
+  color: var(--color-brand);
+  font-weight: 700;
 }
 
 /* Entrega */

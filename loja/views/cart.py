@@ -256,7 +256,7 @@ def _criar_pedido_com_itens(carrinho, itens, dados, cliente, utm):
         bairro=dados['bairro'],
         cidade=dados['cidade'],
         estado=dados['estado'],
-        forma_pagamento='pix',
+        forma_pagamento='pendente',
         subtotal=dados['subtotal'],
         desconto=dados['desconto'],
         cupom_codigo=dados['cupom'].codigo.upper() if dados['cupom'] else '',

@@ -218,6 +218,10 @@
         <span>Total</span>
         <span id="total-display">R$ {{ total }}</span>
       </div>
+      <div class="summary-row summary-row--pix">
+        <span>Pagando no Pix <em>· 4% de desconto</em></span>
+        <span id="pix-total-display"></span>
+      </div>
 
       <!-- TRUST -->
       <div class="trust-list">
@@ -349,6 +353,11 @@
   function atualizarTotalCheckout() {
     const total = Math.max(0, subtotal + freteGet - descontoCupom);
     document.getElementById('total-display').textContent = formatarMoeda(total);
+    // Espelha Pedido.desconto_pix (loja/models.py): 4% sobre os produtos
+    // após cupom, frete fora. Informativo; a cobrança real é no backend.
+    const descontoPix = Math.max(0, subtotal - descontoCupom) * 0.04;
+    document.getElementById('pix-total-display').textContent =
+      formatarMoeda(Math.max(0, total - descontoPix));
   }
 
   window.addEventListener('load', () => {
