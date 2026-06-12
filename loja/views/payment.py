@@ -607,13 +607,22 @@ def processar_pagamento_brick(request, pedido_id, token):
     # Pix paga com desconto (total_pix); cartão e demais métodos pagam o total.
     # O total do pedido no banco não muda: o desconto vale só na transação.
     metodo_escolhido = form_data.get('payment_method_id')
-    pagamento_pix = metodo_escolhido == 'pix' and not form_data.get('token')
+    tipo_escolhido = form_data.get('payment_type_id', '')
+    tem_token = bool(form_data.get('token'))
+    logger.info(
+        '[MP-BRICK] Metodo recebido pedido=%s payment_method_id=%r payment_type_id=%r tem_token=%s',
+        pedido.id, metodo_escolhido, tipo_escolhido, tem_token,
+    )
+    # Pix: method_id=='pix' OU type_id=='bank_transfer', nunca tem token de cartão.
+    pagamento_pix = (
+        metodo_escolhido == 'pix' or tipo_escolhido == 'bank_transfer'
+    ) and not tem_token
     valor_cobranca = pedido.total_pix if pagamento_pix else pedido.total
-    if pagamento_pix:
-        logger.info(
-            '[MP-BRICK] Pix com desconto pedido=%s total=%s cobrado=%s',
-            pedido.id, pedido.total, valor_cobranca,
-        )
+    logger.info(
+        '[MP-BRICK] %s pedido=%s total_pedido=%s valor_cobranca=%s',
+        'Pix com desconto' if pagamento_pix else 'Cartao/outro',
+        pedido.id, pedido.total, valor_cobranca,
+    )
 
     payment_data = {
         'transaction_amount': float(valor_cobranca),
