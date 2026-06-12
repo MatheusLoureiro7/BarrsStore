@@ -19,6 +19,7 @@
 
 {% block page_css %}<style>
 {% inline_static 'loja/css/pages/home.css' %}
+{% inline_static 'loja/css/components/lead_capture.css' %}
 </style>{% endblock %}
 
 {% block content %}
@@ -376,4 +377,5 @@
 <script nonce="{{ csp_nonce }}">
 {% inline_static 'loja/js/home.js' %}
 </script>
+{% include "partials/lead_capture.html" %}
 {% endblock %}

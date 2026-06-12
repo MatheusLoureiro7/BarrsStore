@@ -111,7 +111,15 @@
       return;
     }
 
-    window.setTimeout(function () {
+    // Tráfego frio de anúncio precisa ver o produto antes do pedido de
+    // contato: o modal só abre em sinal de saída ou engajamento, nunca no load.
+    let gateExibido = false;
+
+    function showGate() {
+      if (gateExibido || !document.body.contains(gate)) return;
+      gateExibido = true;
+      window.removeEventListener('scroll', onScrollMeio);
+      document.removeEventListener('mouseout', onExitIntent);
       gate.removeAttribute('hidden');
       requestAnimationFrame(function () {
         gate.classList.add('is-visible');
@@ -123,7 +131,23 @@
           box.focus({ preventScroll: true });
         }
       });
-    }, 900);
+    }
+
+    // Desktop: exit-intent — mouse saindo pela borda superior da janela.
+    function onExitIntent(event) {
+      if (!event.relatedTarget && event.clientY <= 0) showGate();
+    }
+    document.addEventListener('mouseout', onExitIntent);
+
+    // Mobile (sem exit-intent): abre ao passar de 50% do scroll da página.
+    function onScrollMeio() {
+      const alcance = document.documentElement.scrollHeight - window.innerHeight;
+      if (alcance > 0 && window.scrollY >= alcance * 0.5) showGate();
+    }
+    window.addEventListener('scroll', onScrollMeio, { passive: true });
+
+    // Fallback: visitante parada na página há 30s.
+    window.setTimeout(showGate, 30000);
 
     close.addEventListener('click', closeWithCooldown);
     document.addEventListener('keydown', onKeydown);
