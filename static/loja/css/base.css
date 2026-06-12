@@ -44,35 +44,18 @@ input, button, textarea, select { font: inherit; color: inherit; }
   transition: letter-spacing var(--duration) var(--ease);
 }
 
-/* Condições de pagamento exibidas logo abaixo de qualquer preço de produto.
-   Preço Pix é informativo (4% off, calculado na exibição); o preço original
-   do produto não muda. Cartão nunca menciona juros nem valor de parcela. */
+/* Condição de pagamento abaixo do preço — linha única, discreta. */
 .price-note {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  margin-top: 0.3rem;
+  margin-top: 0.2rem;
   font-family: var(--font-body);
-  line-height: 1.35;
-  font-variant-numeric: lining-nums tabular-nums;
-}
-.price-note__pix {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-brand);
-}
-.price-note__pix em {
-  font-style: normal;
-  font-weight: 500;
-  opacity: 0.85;
 }
 .price-note__card {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: var(--color-ink-muted);
+  letter-spacing: 0.01em;
 }
-.price-note--compact .price-note__pix { font-size: 0.74rem; }
-.price-note--compact .price-note__card { font-size: 0.7rem; }
+.price-note--compact .price-note__card { font-size: 0.68rem; }
 
 /* Linha "Pagando no Pix" nos resumos de carrinho e checkout. */
 .summary-row--pix {
