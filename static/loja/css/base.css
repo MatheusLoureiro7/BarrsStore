@@ -69,6 +69,14 @@ input, button, textarea, select { font: inherit; color: inherit; }
   font-weight: 600;
   color: var(--color-brand);
 }
+.summary-row--pix > span:first-child {
+  flex-shrink: 1;
+  min-width: 0;
+}
+.summary-row--pix > span:last-child {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .summary-row--pix em {
   font-style: normal;
   font-weight: 500;
