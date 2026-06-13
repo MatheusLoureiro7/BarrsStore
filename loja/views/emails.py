@@ -696,7 +696,7 @@ def _enviar_whatsapp_admin(mensagem):
     Prefere Evolution API (WHATSAPP_API_URL + WHATSAPP_API_KEY). Cai em
     CallMeBot quando Evolution nao esta configurada ou falha. Nunca propaga erro.
     """
-    whatsapp_phone = os.environ.get('WHATSAPP_ADMIN_PHONE', '5511913225256').strip()
+    whatsapp_phone = os.environ.get('WHATSAPP_ADMIN_PHONE', '5511978801001').strip()
 
     if os.environ.get('WHATSAPP_API_URL', '').strip() and os.environ.get('WHATSAPP_API_KEY', '').strip():
         try:
@@ -727,10 +727,36 @@ def _enviar_whatsapp_admin(mensagem):
 def enviar_whatsapp_pedido(pedido):
     """Envia notificação no WhatsApp quando chegar um novo pedido."""
     painel_url = site_url(f'/painel/loja/pedido/{pedido.id}/change/')
+
+    itens = pedido.itens.select_related('produto').all()
+    linhas_itens = []
+    for item in itens:
+        tamanho = f' (Nº {item.tamanho})' if item.tamanho else ''
+        linhas_itens.append(f'  • {item.quantidade}x {item.nome_produto}{tamanho}')
+    produtos_texto = '\n'.join(linhas_itens) if linhas_itens else '  (sem itens)'
+
+    complemento = f', {pedido.complemento}' if pedido.complemento else ''
+    endereco = (
+        f'{pedido.rua}, {pedido.numero}{complemento}\n'
+        f'  {pedido.bairro} — {pedido.cidade}/{pedido.estado}\n'
+        f'  CEP: {pedido.cep}'
+    )
+
+    valores = f'Subtotal: R$ {pedido.subtotal}'
+    if pedido.desconto and pedido.desconto > 0:
+        valores += f'\nDesconto: -R$ {pedido.desconto}'
+    if pedido.frete and pedido.frete > 0:
+        valores += f'\nFrete: R$ {pedido.frete}'
+    valores += f'\nTotal: R$ {pedido.total}'
+
     mensagem = (
-        f"Novo pedido #{pedido.id}\n\n"
-        f"Total: R$ {pedido.total}\n"
-        f"Status: {pedido.get_status_display()}\n"
+        f"*Novo pedido #{pedido.id}* 🛒\n\n"
+        f"*Cliente:* {pedido.nome}\n"
+        f"*Pagamento:* {pedido.get_forma_pagamento_display()}\n"
+        f"*Status:* {pedido.get_status_display()}\n\n"
+        f"*Produtos:*\n{produtos_texto}\n\n"
+        f"*Valores:*\n{valores}\n\n"
+        f"*Endereço de entrega:*\n  {endereco}\n\n"
         f"Ver no painel: {painel_url}"
     )
     _enviar_whatsapp_admin(mensagem)
