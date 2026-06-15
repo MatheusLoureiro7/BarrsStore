@@ -456,7 +456,9 @@ if (window.location.search.includes('added=1')) {
         nome.textContent = op.nome || '';
         const prazo = document.createElement('div');
         prazo.className = 'shipping-calc__option-prazo';
-        prazo.textContent = `${op.empresa || ''} · até ${op.prazo} dias úteis`;
+        prazo.textContent = op.prazo === 0
+          ? `${op.empresa || ''} · ${op.eta || 'Entrega hoje'}`
+          : `${op.empresa || ''} · até ${op.prazo} dias úteis`;
         info.appendChild(nome);
         info.appendChild(prazo);
 
