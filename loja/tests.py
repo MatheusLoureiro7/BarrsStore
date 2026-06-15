@@ -761,3 +761,58 @@ class IsSaoPauloCepTests(TestCase):
 
     def test_cep_com_letras(self):
         self.assertFalse(is_sao_paulo_cep('0131010X'))
+
+
+from unittest.mock import Mock, patch
+
+from loja.integrations.lalamove import cep_to_coordinates
+
+
+class CepToCoordinatesTests(TestCase):
+    @patch('loja.integrations.lalamove.http_requests.get')
+    def test_retorna_coordenadas(self, mock_get):
+        mock_viacep = Mock()
+        mock_viacep.raise_for_status = Mock()
+        mock_viacep.json.return_value = {
+            'logradouro': 'Avenida Paulista',
+            'bairro': 'Bela Vista',
+            'localidade': 'São Paulo',
+            'uf': 'SP',
+        }
+        mock_nom = Mock()
+        mock_nom.raise_for_status = Mock()
+        mock_nom.json.return_value = [{'lat': '-23.5614', 'lon': '-46.6564'}]
+        mock_get.side_effect = [mock_viacep, mock_nom]
+
+        result = cep_to_coordinates('01310100')
+
+        self.assertEqual(result['lat'], '-23.5614')
+        self.assertEqual(result['lng'], '-46.6564')
+        self.assertIn('São Paulo', result['address'])
+        self.assertEqual(result['cep'], '01310100')
+
+    @patch('loja.integrations.lalamove.http_requests.get')
+    def test_levanta_runtime_error_cep_nao_encontrado(self, mock_get):
+        mock_viacep = Mock()
+        mock_viacep.raise_for_status = Mock()
+        mock_viacep.json.return_value = {'erro': True}
+        mock_get.return_value = mock_viacep
+
+        with self.assertRaises(RuntimeError):
+            cep_to_coordinates('00000000')
+
+    @patch('loja.integrations.lalamove.http_requests.get')
+    def test_levanta_runtime_error_nominatim_vazio(self, mock_get):
+        mock_viacep = Mock()
+        mock_viacep.raise_for_status = Mock()
+        mock_viacep.json.return_value = {
+            'logradouro': 'Rua X', 'bairro': 'Y',
+            'localidade': 'São Paulo', 'uf': 'SP',
+        }
+        mock_nom = Mock()
+        mock_nom.raise_for_status = Mock()
+        mock_nom.json.return_value = []
+        mock_get.side_effect = [mock_viacep, mock_nom]
+
+        with self.assertRaises(RuntimeError):
+            cep_to_coordinates('01310100')
