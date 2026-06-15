@@ -8,7 +8,7 @@
 
 ## Contexto
 
-O projeto já possui um calculador de frete via Melhor Envio (`/frete/melhor-envio/`) que retorna um array `opcoes`. A UI em `detalhe.html` e `carrinho.html` renderiza cada item do array sem distinção de fornecedor. A integração Lalamove aproveita essa estrutura sem alterar nenhum arquivo de template ou JavaScript.
+O projeto já possui um calculador de frete via Melhor Envio (`/frete/melhor-envio/`) que retorna um array `opcoes`. A UI em `detalhe.html` e `carrinho.html` renderiza cada item do array sem distinção de fornecedor. A integração Lalamove aproveita essa estrutura com mudanças mínimas de frontend: apenas 1 linha em cada template para tratar o prazo de entrega no mesmo dia.
 
 ---
 
@@ -26,12 +26,15 @@ loja/
 │   └── lalamove.py           ← NOVO
 ├── views/
 │   └── shipping.py           ← MODIFICADO (bloco Lalamove no fim de calcular_frete_melhor_envio)
+├── templates/
+│   ├── detalhe.html          ← MODIFICADO (1 linha JS — renderização do prazo)
+│   └── carrinho.html         ← MODIFICADO (1 linha JS — renderização do prazo)
 barrs_store/
 └── settings.py               ← MODIFICADO (6 novas variáveis)
 .env.example                  ← MODIFICADO (6 novas entradas)
 ```
 
-**Não mudam:** `urls.py`, `detalhe.html`, `carrinho.html`, CSS, JS.
+**Não mudam:** `urls.py`, CSS.
 
 ---
 
@@ -124,6 +127,32 @@ A opção Lalamove aparece **primeiro** na lista (entrega mais rápida no topo).
 
 ---
 
+## Mudanças de Frontend (mínimas)
+
+O campo `prazo` é renderizado como `"até X dias úteis"` em ambos os templates. Para o item Lalamove (`prazo: 0`), esse texto ficaria "até 0 dias úteis" — incorreto. A correção usa o campo `eta` quando `prazo === 0`.
+
+**`detalhe.html:459`** — antes:
+```javascript
+prazo.textContent = `${op.empresa || ''} · até ${op.prazo} dias úteis`;
+```
+depois:
+```javascript
+prazo.textContent = op.prazo === 0
+  ? `${op.empresa || ''} · ${op.eta || 'Entrega hoje'}`
+  : `${op.empresa || ''} · até ${op.prazo} dias úteis`;
+```
+
+**`carrinho.html:304`** — antes:
+```javascript
+`<div class="opcao-prazo">${op.empresa} · ${op.prazo} dias úteis</div>`
+```
+depois:
+```javascript
+`<div class="opcao-prazo">${op.prazo === 0 ? `${op.empresa} · ${op.eta || 'Entrega hoje'}` : `${op.empresa} · ${op.prazo} dias úteis`}</div>`
+```
+
+---
+
 ## Configurações
 
 ### `settings.py`
@@ -156,7 +185,7 @@ LALAMOVE_ORIGIN_ADDRESS=
 
 | Decisão | Escolha | Motivo |
 |---|---|---|
-| Ponto de integração | Backend aggregation no endpoint existente | Zero mudanças em frontend/templates |
+| Ponto de integração | Backend aggregation no endpoint existente | Mudanças mínimas em frontend (2 linhas) |
 | Geocoding | Nominatim (OpenStreetMap) | Gratuito, sem chave API, suficiente com cache |
 | Falha Lalamove | Silenciosa com `logger.warning` | Não degrada as opções do Melhor Envio |
 | Cache coordenadas | 1 hora | Endereço de um CEP não muda |
