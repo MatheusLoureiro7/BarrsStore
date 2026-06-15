@@ -64,3 +64,76 @@ def cep_to_coordinates(cep: str) -> dict:
     }
     cache.set(cache_key, result, 3600)
     return result
+
+
+def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
+    from django.conf import settings as django_settings
+
+    api_key = getattr(django_settings, 'LALAMOVE_API_KEY', '')
+    api_secret = getattr(django_settings, 'LALAMOVE_API_SECRET', '')
+    sandbox = getattr(django_settings, 'LALAMOVE_SANDBOX', True)
+
+    if not api_key or not api_secret:
+        raise RuntimeError('Lalamove não configurada: LALAMOVE_API_KEY ou LALAMOVE_API_SECRET ausentes.')
+
+    cache_key = f'lalamove:quote:{destination["cep"]}'
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    base_url = 'https://rest.sandbox.lalamove.com' if sandbox else 'https://rest.lalamove.com'
+
+    payload = {
+        'data': {
+            'serviceType': 'MOTORCYCLE',
+            'language': 'pt_BR',
+            'stops': [
+                {
+                    'coordinates': {'lat': str(origin['lat']), 'lng': str(origin['lng'])},
+                    'address': origin['address'],
+                },
+                {
+                    'coordinates': {'lat': str(destination['lat']), 'lng': str(destination['lng'])},
+                    'address': destination['address'],
+                },
+            ],
+        }
+    }
+
+    ts = str(int(time.time() * 1000))
+    body = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
+    message = f"{ts}\r\nPOST\r\n/v3/quotations\r\n\r\n{body}"
+    signature = hmac_lib.new(
+        api_secret.encode('utf-8'),
+        message.encode('utf-8'),
+        hashlib.sha256,
+    ).hexdigest()
+
+    headers = {
+        'Authorization': f'hmac {api_key}:{ts}:{signature}',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Market': 'BR',
+    }
+
+    resp = http_requests.post(
+        f'{base_url}/v3/quotations',
+        headers=headers,
+        data=body.encode('utf-8'),
+        timeout=10,
+    )
+
+    if resp.status_code >= 400:
+        logger.error('[Lalamove] Erro na cotação: %s %s', resp.status_code, resp.text[:300])
+        raise RuntimeError(f'Lalamove retornou erro {resp.status_code}.')
+
+    data = resp.json()
+    price_str = data['data']['priceBreakdown']['total']
+    quotation_id = data['data']['quotationId']
+
+    result = {
+        'price': float(price_str),
+        'eta': '30-45 min',
+        'quotation_id': quotation_id,
+    }
+    cache.set(cache_key, result, 600)
+    return result

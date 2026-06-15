@@ -816,3 +816,86 @@ class CepToCoordinatesTests(TestCase):
 
         with self.assertRaises(RuntimeError):
             cep_to_coordinates('01310100')
+
+
+from loja.integrations.lalamove import get_lalamove_quotation
+
+
+class GetLalamoveQuotationTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache as _cache
+        _cache.clear()
+        self.origin = {
+            'lat': '-23.541', 'lng': '-46.638',
+            'address': 'Rua Equestre 170, Fazenda Aricanduva, São Paulo, SP, Brasil',
+            'cep': '08275700',
+        }
+        self.dest = {
+            'lat': '-23.561', 'lng': '-46.656',
+            'address': 'Avenida Paulista, Bela Vista, São Paulo, SP, Brasil',
+            'cep': '01310100',
+        }
+
+    @override_settings(
+        LALAMOVE_API_KEY='test_key',
+        LALAMOVE_API_SECRET='test_secret',
+        LALAMOVE_SANDBOX=True,
+    )
+    @patch('loja.integrations.lalamove.http_requests.post')
+    def test_retorna_preco_e_quotation_id(self, mock_post):
+        mock_resp = Mock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            'data': {
+                'quotationId': 'QT-TEST-123',
+                'priceBreakdown': {'total': '18.50'},
+            }
+        }
+        mock_post.return_value = mock_resp
+
+        result = get_lalamove_quotation(self.origin, self.dest)
+
+        self.assertAlmostEqual(result['price'], 18.50)
+        self.assertEqual(result['quotation_id'], 'QT-TEST-123')
+        self.assertIn('eta', result)
+
+    @override_settings(
+        LALAMOVE_API_KEY='test_key',
+        LALAMOVE_API_SECRET='test_secret',
+        LALAMOVE_SANDBOX=True,
+    )
+    @patch('loja.integrations.lalamove.http_requests.post')
+    def test_levanta_erro_em_resposta_4xx(self, mock_post):
+        mock_resp = Mock()
+        mock_resp.status_code = 400
+        mock_resp.text = '{"message": "invalid stops"}'
+        mock_post.return_value = mock_resp
+
+        with self.assertRaises(RuntimeError):
+            get_lalamove_quotation(self.origin, self.dest)
+
+    @override_settings(LALAMOVE_API_KEY='', LALAMOVE_API_SECRET='')
+    def test_levanta_erro_sem_configuracao(self):
+        with self.assertRaises(RuntimeError):
+            get_lalamove_quotation(self.origin, self.dest)
+
+    @override_settings(
+        LALAMOVE_API_KEY='test_key',
+        LALAMOVE_API_SECRET='test_secret',
+        LALAMOVE_SANDBOX=True,
+    )
+    @patch('loja.integrations.lalamove.http_requests.post')
+    def test_cabecalho_authorization_e_market(self, mock_post):
+        mock_resp = Mock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            'data': {'quotationId': 'QT-X', 'priceBreakdown': {'total': '10.00'}}
+        }
+        mock_post.return_value = mock_resp
+
+        get_lalamove_quotation(self.origin, self.dest)
+
+        _, kwargs = mock_post.call_args
+        auth = kwargs['headers']['Authorization']
+        self.assertTrue(auth.startswith('hmac test_key:'))
+        self.assertEqual(kwargs['headers']['Market'], 'BR')
