@@ -899,3 +899,94 @@ class GetLalamoveQuotationTests(TestCase):
         auth = kwargs['headers']['Authorization']
         self.assertTrue(auth.startswith('hmac test_key:'))
         self.assertEqual(kwargs['headers']['Market'], 'BR')
+
+
+class LalamoveViewIntegrationTests(TestCase):
+    @override_settings(
+        LALAMOVE_API_KEY='key',
+        LALAMOVE_API_SECRET='secret',
+        LALAMOVE_SANDBOX=True,
+        LALAMOVE_ORIGIN_LAT='-23.541',
+        LALAMOVE_ORIGIN_LNG='-46.638',
+        LALAMOVE_ORIGIN_ADDRESS='Rua Equestre 170, São Paulo',
+        MELHOR_ENVIO_TOKEN='fake_token',
+    )
+    @patch('loja.views.shipping.get_lalamove_quotation')
+    @patch('loja.views.shipping.cep_to_coordinates')
+    @patch('loja.views.shipping.http_requests.post')
+    def test_sp_cep_inclui_lalamove_como_primeira_opcao(
+        self, mock_me_post, mock_coords, mock_quote
+    ):
+        mock_me_resp = Mock()
+        mock_me_resp.status_code = 200
+        mock_me_resp.json.return_value = [
+            {'company': {'name': 'CORREIOS'}, 'name': 'PAC', 'price': '12.50', 'delivery_time': 7}
+        ]
+        mock_me_post.return_value = mock_me_resp
+
+        mock_coords.return_value = {
+            'lat': '-23.561', 'lng': '-46.656',
+            'address': 'Avenida Paulista, São Paulo', 'cep': '01310100',
+        }
+        mock_quote.return_value = {
+            'price': 19.90, 'eta': '30-45 min', 'quotation_id': 'QT-001',
+        }
+
+        resp = self.client.get('/frete/melhor-envio/?cep=01310100')
+        data = resp.json()
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertGreaterEqual(len(data['opcoes']), 1)
+        primeira = data['opcoes'][0]
+        self.assertEqual(primeira['empresa'], 'Lalamove')
+        self.assertAlmostEqual(primeira['preco'], 19.90)
+        self.assertEqual(primeira['prazo'], 0)
+        self.assertEqual(primeira['eta'], '30-45 min')
+
+    @override_settings(MELHOR_ENVIO_TOKEN='fake_token')
+    @patch('loja.views.shipping.http_requests.post')
+    def test_cep_fora_de_sp_nao_chama_lalamove(self, mock_me_post):
+        mock_me_resp = Mock()
+        mock_me_resp.status_code = 200
+        mock_me_resp.json.return_value = [
+            {'company': {'name': 'CORREIOS'}, 'name': 'PAC', 'price': '16.90', 'delivery_time': 10}
+        ]
+        mock_me_post.return_value = mock_me_resp
+
+        with patch('loja.views.shipping.cep_to_coordinates') as mock_coords:
+            resp = self.client.get('/frete/melhor-envio/?cep=20040020')
+            mock_coords.assert_not_called()
+
+        data = resp.json()
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(any(op.get('empresa') == 'Lalamove' for op in data.get('opcoes', [])))
+
+    @override_settings(
+        LALAMOVE_ORIGIN_LAT='-23.541',
+        LALAMOVE_ORIGIN_LNG='-46.638',
+        LALAMOVE_ORIGIN_ADDRESS='Rua Equestre 170',
+        MELHOR_ENVIO_TOKEN='fake_token',
+    )
+    @patch('loja.views.shipping.get_lalamove_quotation')
+    @patch('loja.views.shipping.cep_to_coordinates')
+    @patch('loja.views.shipping.http_requests.post')
+    def test_falha_lalamove_nao_quebra_opcoes_me(self, mock_me_post, mock_coords, mock_quote):
+        mock_me_resp = Mock()
+        mock_me_resp.status_code = 200
+        mock_me_resp.json.return_value = [
+            {'company': {'name': 'CORREIOS'}, 'name': 'PAC', 'price': '12.50', 'delivery_time': 7}
+        ]
+        mock_me_post.return_value = mock_me_resp
+
+        mock_coords.return_value = {
+            'lat': '-23.561', 'lng': '-46.656',
+            'address': 'Av Paulista, São Paulo', 'cep': '01310100',
+        }
+        mock_quote.side_effect = RuntimeError('Lalamove timeout')
+
+        resp = self.client.get('/frete/melhor-envio/?cep=01310100')
+        data = resp.json()
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertGreater(len(data['opcoes']), 0)
+        self.assertFalse(any(op.get('empresa') == 'Lalamove' for op in data['opcoes']))

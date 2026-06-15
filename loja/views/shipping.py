@@ -3,7 +3,9 @@ import os
 from decimal import Decimal
 
 import requests as http_requests
+from django.conf import settings
 
+from ..integrations.lalamove import is_sao_paulo_cep, cep_to_coordinates, get_lalamove_quotation
 from ..shipping import calcular_frete_por_estado  # noqa: F401 — re-exportado
 from .utils import (
     apenas_digitos,
@@ -316,6 +318,28 @@ def calcular_frete_melhor_envio(request):
                 })
 
         opcoes.sort(key=lambda x: x['preco'])
+
+        if is_sao_paulo_cep(cep_destino):
+            try:
+                dest = cep_to_coordinates(cep_destino)
+                origin = {
+                    'lat': settings.LALAMOVE_ORIGIN_LAT,
+                    'lng': settings.LALAMOVE_ORIGIN_LNG,
+                    'address': settings.LALAMOVE_ORIGIN_ADDRESS,
+                }
+                lala = get_lalamove_quotation(origin, dest)
+                opcoes.insert(0, {
+                    'id': 'lalamove-moto',
+                    'nome': 'Motoboy · Entrega no mesmo dia',
+                    'empresa': 'Lalamove',
+                    'preco': lala['price'],
+                    'prazo': 0,
+                    'eta': lala['eta'],
+                    'quotation_id': lala['quotation_id'],
+                })
+            except Exception:
+                logger.warning('[Lalamove] Falha ao cotar CEP %s', cep_destino)
+
         return JsonResponse({'opcoes': opcoes})
 
     except Exception:
