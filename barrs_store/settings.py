@@ -57,6 +57,13 @@ WHATSAPP_INSTANCE = os.environ.get('WHATSAPP_INSTANCE', 'loja').strip() or 'loja
 ERP_WEBHOOK_URL = os.environ.get('ERP_WEBHOOK_URL', '')
 ERP_WEBHOOK_TOKEN = os.environ.get('ERP_WEBHOOK_TOKEN', '')
 
+LALAMOVE_API_KEY        = os.environ.get('LALAMOVE_API_KEY', '')
+LALAMOVE_API_SECRET     = os.environ.get('LALAMOVE_API_SECRET', '')
+LALAMOVE_SANDBOX        = os.environ.get('LALAMOVE_SANDBOX', 'True') == 'True'
+LALAMOVE_ORIGIN_LAT     = os.environ.get('LALAMOVE_ORIGIN_LAT', '')
+LALAMOVE_ORIGIN_LNG     = os.environ.get('LALAMOVE_ORIGIN_LNG', '')
+LALAMOVE_ORIGIN_ADDRESS = os.environ.get('LALAMOVE_ORIGIN_ADDRESS', '')
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
