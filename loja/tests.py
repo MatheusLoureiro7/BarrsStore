@@ -812,7 +812,10 @@ class CepToCoordinatesTests(TestCase):
         mock_nom = Mock()
         mock_nom.raise_for_status = Mock()
         mock_nom.json.return_value = []
-        mock_get.side_effect = [mock_viacep, mock_nom]
+        mock_nom_fallback = Mock()
+        mock_nom_fallback.raise_for_status = Mock()
+        mock_nom_fallback.json.return_value = []
+        mock_get.side_effect = [mock_viacep, mock_nom, mock_nom_fallback]
 
         with self.assertRaises(RuntimeError):
             cep_to_coordinates('01310100')

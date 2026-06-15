@@ -53,6 +53,19 @@ def cep_to_coordinates(cep: str) -> dict:
     nom_resp.raise_for_status()
     nom_data = nom_resp.json()
 
+    # Fallback: endereço completo não encontrado — tenta só cidade+estado
+    if not nom_data:
+        localidade = via_data.get('localidade', '')
+        uf = via_data.get('uf', '')
+        nom_resp2 = http_requests.get(
+            'https://nominatim.openstreetmap.org/search',
+            params={'city': localidade, 'state': uf, 'country': 'br', 'format': 'json', 'limit': 1},
+            timeout=8,
+            headers={'User-Agent': 'BarrsStore contato.barrsstore@gmail.com'},
+        )
+        nom_resp2.raise_for_status()
+        nom_data = nom_resp2.json()
+
     if not nom_data:
         raise RuntimeError(f'Não foi possível geocodificar o CEP {cep}.')
 
@@ -85,7 +98,7 @@ def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
 
     payload = {
         'data': {
-            'serviceType': 'MOTORCYCLE',
+            'serviceType': 'LALAGO',
             'language': 'pt_BR',
             'stops': [
                 {
