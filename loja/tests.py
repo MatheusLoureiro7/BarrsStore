@@ -720,3 +720,44 @@ class WebhookSignalTests(TestCase):
         from loja.signals import _chamar_webhook_erp
         # não deve levantar exceção
         _chamar_webhook_erp(42)
+
+
+from loja.integrations.lalamove import is_sao_paulo_cep
+
+
+class IsSaoPauloCepTests(TestCase):
+    def test_range_baixo_sp(self):
+        self.assertTrue(is_sao_paulo_cep('01310100'))   # Av. Paulista
+
+    def test_range_baixo_sp_com_hifen(self):
+        self.assertTrue(is_sao_paulo_cep('01310-100'))
+
+    def test_limite_inferior_range_baixo(self):
+        self.assertTrue(is_sao_paulo_cep('01000000'))
+
+    def test_limite_superior_range_baixo(self):
+        self.assertTrue(is_sao_paulo_cep('05999999'))
+
+    def test_range_alto_sp(self):
+        self.assertTrue(is_sao_paulo_cep('08250000'))
+
+    def test_limite_superior_range_alto(self):
+        self.assertTrue(is_sao_paulo_cep('08499999'))
+
+    def test_entre_os_dois_ranges_nao_e_sp(self):
+        self.assertFalse(is_sao_paulo_cep('06000000'))  # Osasco/Grande SP, não SP capital
+
+    def test_acima_dos_ranges_nao_e_sp(self):
+        self.assertFalse(is_sao_paulo_cep('08500000'))
+
+    def test_rio_de_janeiro_nao_e_sp(self):
+        self.assertFalse(is_sao_paulo_cep('20040020'))
+
+    def test_cep_invalido_7_digitos(self):
+        self.assertFalse(is_sao_paulo_cep('0131010'))
+
+    def test_cep_vazio(self):
+        self.assertFalse(is_sao_paulo_cep(''))
+
+    def test_cep_com_letras(self):
+        self.assertFalse(is_sao_paulo_cep('0131010X'))
