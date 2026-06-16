@@ -179,11 +179,19 @@ def dados_pagador_mercadopago(pedido):
     cpf_limpo = apenas_digitos(pedido.cpf)
     partes_nome = (pedido.nome or '').strip().split()
 
+    # Em DEBUG, o MP sandbox rejeita e-mails reais (500) e o e-mail do vendedor
+    # (403 code 4390). Usa um e-mail de comprador de teste se configurado.
+    email_pagador = pedido.email
+    if settings.DEBUG:
+        email_pagador = getattr(settings, 'MP_TEST_BUYER_EMAIL', None) or pedido.email
+        
+    logger.warning(f"[MP-BRICK] EMAIL PAGADOR ENVIADO AO MP: {email_pagador}")
+     
     payer = {
         "name": pedido.nome,
         "first_name": partes_nome[0] if partes_nome else pedido.nome,
         "last_name": " ".join(partes_nome[1:]) if len(partes_nome) > 1 else "",
-        "email": pedido.email,
+        "email": email_pagador,
     }
     if len(cpf_limpo) == 11:
         payer["identification"] = {
@@ -290,8 +298,11 @@ def confirmar_pedido_pago(pedido):
             pedido.email_confirmacao_enviado = True
             pedido.save(update_fields=['email_confirmacao_enviado'])
 
-    envio_criado = criar_envio_melhor_envio(pedido)
-    logger.info('[PAGAMENTO] Melhor Envio pedido %s criado=%s', pedido.id, envio_criado)
+    if pedido.frete_transportadora == 'lalamove':
+        logger.info('[PAGAMENTO] Pedido %s usa Lalamove — entrega aguarda solicitação manual no admin.', pedido.id)
+    else:
+        envio_criado = criar_envio_melhor_envio(pedido)
+        logger.info('[PAGAMENTO] Melhor Envio pedido %s criado=%s', pedido.id, envio_criado)
 
 
 def buscar_referencia_pedido_por_merchant_order(sdk, merchant_order_id):
@@ -883,3 +894,4 @@ def webhook_mercadopago(request):
             logger.exception('[MP] Erro ao confirmar merchant_order webhook id=%s: %s', payment_id, exc)
 
     return HttpResponse(status=200)
+

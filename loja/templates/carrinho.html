@@ -301,7 +301,7 @@
             aria-label="Selecionar frete ${nomeFrete}">
           <div class="opcao-info">
             <div class="opcao-nome">${op.nome}</div>
-            <div class="opcao-prazo">${op.prazo === 0 ? `${op.empresa} · ${op.eta || 'Entrega hoje'}` : `${op.empresa} · ${op.prazo} dias úteis`}</div>
+            <div class="opcao-prazo">${op.prazo === 0 ? (op.eta || 'Entrega hoje') : `${op.empresa} · ${op.prazo} dias úteis`}</div>
           </div>
           <div class="opcao-preco">R$ ${preco.toFixed(2).replace('.', ',')}</div>
         `;

@@ -330,8 +330,8 @@ def calcular_frete_melhor_envio(request):
                 lala = get_lalamove_quotation(origin, dest)
                 opcoes.insert(0, {
                     'id': 'lalamove-moto',
-                    'nome': 'Motoboy · Entrega no mesmo dia',
-                    'empresa': 'Lalamove',
+                    'nome': 'Entrega Expressa ⚡',
+                    'empresa': '',
                     'preco': lala['price'],
                     'prazo': 0,
                     'eta': lala['eta'],

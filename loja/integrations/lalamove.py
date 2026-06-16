@@ -2,12 +2,39 @@ import hashlib
 import hmac as hmac_lib
 import json
 import logging
+import os
 import time
 
 import requests as http_requests
 from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
+
+
+def _lalamove_headers(api_key: str, api_secret: str, method: str, path: str, body: str) -> dict:
+    ts = str(int(time.time() * 1000))
+    message = f"{ts}\r\n{method}\r\n{path}\r\n\r\n{body}"
+    signature = hmac_lib.new(
+        api_secret.encode('utf-8'),
+        message.encode('utf-8'),
+        hashlib.sha256,
+    ).hexdigest()
+    return {
+        'Authorization': f'hmac {api_key}:{ts}:{signature}',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Market': 'BR',
+    }
+
+
+def _lalamove_config():
+    from django.conf import settings as s
+    api_key = getattr(s, 'LALAMOVE_API_KEY', '')
+    api_secret = getattr(s, 'LALAMOVE_API_SECRET', '')
+    sandbox = getattr(s, 'LALAMOVE_SANDBOX', True)
+    if not api_key or not api_secret:
+        raise RuntimeError('Lalamove não configurada: LALAMOVE_API_KEY ou LALAMOVE_API_SECRET ausentes.')
+    base_url = 'https://rest.sandbox.lalamove.com' if sandbox else 'https://rest.lalamove.com'
+    return api_key, api_secret, base_url
 
 
 def is_sao_paulo_cep(cep: str) -> bool:
@@ -79,23 +106,7 @@ def cep_to_coordinates(cep: str) -> dict:
     return result
 
 
-def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
-    from django.conf import settings as django_settings
-
-    api_key = getattr(django_settings, 'LALAMOVE_API_KEY', '')
-    api_secret = getattr(django_settings, 'LALAMOVE_API_SECRET', '')
-    sandbox = getattr(django_settings, 'LALAMOVE_SANDBOX', True)
-
-    if not api_key or not api_secret:
-        raise RuntimeError('Lalamove não configurada: LALAMOVE_API_KEY ou LALAMOVE_API_SECRET ausentes.')
-
-    cache_key = f'lalamove:quote:{destination["cep"]}'
-    cached = cache.get(cache_key)
-    if cached:
-        return cached
-
-    base_url = 'https://rest.sandbox.lalamove.com' if sandbox else 'https://rest.lalamove.com'
-
+def _quotation_payload(origin: dict, destination: dict) -> str:
     payload = {
         'data': {
             'serviceType': 'LALAGO',
@@ -112,21 +123,19 @@ def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
             ],
         }
     }
+    return json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
 
-    ts = str(int(time.time() * 1000))
-    body = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
-    message = f"{ts}\r\nPOST\r\n/v3/quotations\r\n\r\n{body}"
-    signature = hmac_lib.new(
-        api_secret.encode('utf-8'),
-        message.encode('utf-8'),
-        hashlib.sha256,
-    ).hexdigest()
 
-    headers = {
-        'Authorization': f'hmac {api_key}:{ts}:{signature}',
-        'Content-Type': 'application/json; charset=utf-8',
-        'Market': 'BR',
-    }
+def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
+    api_key, api_secret, base_url = _lalamove_config()
+
+    cache_key = f'lalamove:quote:{destination["cep"]}'
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    body = _quotation_payload(origin, destination)
+    headers = _lalamove_headers(api_key, api_secret, 'POST', '/v3/quotations', body)
 
     resp = http_requests.post(
         f'{base_url}/v3/quotations',
@@ -139,14 +148,97 @@ def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
         logger.error('[Lalamove] Erro na cotação: %s %s', resp.status_code, resp.text[:300])
         raise RuntimeError(f'Lalamove retornou erro {resp.status_code}.')
 
-    data = resp.json()
-    price_str = data['data']['priceBreakdown']['total']
-    quotation_id = data['data']['quotationId']
-
+    data = resp.json()['data']
     result = {
-        'price': float(price_str),
-        'eta': '30-45 min',
-        'quotation_id': quotation_id,
+        'price': float(data['priceBreakdown']['total']),
+        'eta': 'Receba hoje',
+        'quotation_id': data['quotationId'],
     }
     cache.set(cache_key, result, 600)
     return result
+
+
+def create_lalamove_order(pedido) -> dict:
+    """
+    Faz cotação fresca e cria o pedido de entrega na Lalamove.
+    Retorna {'order_id', 'tracking_url', 'quotation_id'}.
+    Lança RuntimeError com mensagem legível em caso de falha.
+    """
+    from django.conf import settings as s
+
+    api_key, api_secret, base_url = _lalamove_config()
+
+    origin = {
+        'lat': getattr(s, 'LALAMOVE_ORIGIN_LAT', ''),
+        'lng': getattr(s, 'LALAMOVE_ORIGIN_LNG', ''),
+        'address': getattr(s, 'LALAMOVE_ORIGIN_ADDRESS', ''),
+    }
+    if not origin['lat'] or not origin['lng']:
+        raise RuntimeError('Coordenadas de origem não configuradas (LALAMOVE_ORIGIN_LAT/LNG).')
+
+    dest = cep_to_coordinates(pedido.cep.replace('-', ''))
+
+    # 1. Cotação fresca para obter quotationId + stopIds
+    q_body = _quotation_payload(origin, dest)
+    q_headers = _lalamove_headers(api_key, api_secret, 'POST', '/v3/quotations', q_body)
+    q_resp = http_requests.post(
+        f'{base_url}/v3/quotations',
+        headers=q_headers,
+        data=q_body.encode('utf-8'),
+        timeout=10,
+    )
+    if q_resp.status_code >= 400:
+        logger.error('[Lalamove] Cotação para pedido %s: %s %s', pedido.id, q_resp.status_code, q_resp.text[:300])
+        raise RuntimeError(f'Lalamove cotação: erro {q_resp.status_code} — {q_resp.text[:120]}')
+
+    q_data = q_resp.json()['data']
+    quotation_id = q_data['quotationId']
+    stops = q_data['stops']
+    origin_stop_id = stops[0]['stopId']
+    dest_stop_id = stops[1]['stopId']
+
+    # 2. Criar pedido de entrega
+    sender_phone = os.environ.get('ME_REMETENTE_TELEFONE', '11913225256').replace(' ', '').replace('-', '')
+    recipient_phone = ''.join(c for c in (pedido.telefone or sender_phone) if c.isdigit())
+    if not recipient_phone.startswith('55'):
+        recipient_phone = '55' + recipient_phone
+
+    order_payload = {
+        'data': {
+            'quotationId': quotation_id,
+            'sender': {
+                'stopId': origin_stop_id,
+                'name': 'Barrs Store',
+                'phone': f'+55{sender_phone}',
+            },
+            'recipients': [
+                {
+                    'stopId': dest_stop_id,
+                    'name': pedido.nome,
+                    'phone': f'+{recipient_phone}',
+                    'remarks': pedido.complemento or '',
+                }
+            ],
+            'isRecipientSMSEnabled': True,
+            'isPODEnabled': False,
+        }
+    }
+
+    o_body = json.dumps(order_payload, separators=(',', ':'), ensure_ascii=False)
+    o_headers = _lalamove_headers(api_key, api_secret, 'POST', '/v3/orders', o_body)
+    o_resp = http_requests.post(
+        f'{base_url}/v3/orders',
+        headers=o_headers,
+        data=o_body.encode('utf-8'),
+        timeout=15,
+    )
+    if o_resp.status_code >= 400:
+        logger.error('[Lalamove] Criar pedido %s: %s %s', pedido.id, o_resp.status_code, o_resp.text[:300])
+        raise RuntimeError(f'Lalamove criar pedido: erro {o_resp.status_code} — {o_resp.text[:120]}')
+
+    o_data = o_resp.json()['data']
+    return {
+        'order_id': o_data['orderId'],
+        'tracking_url': o_data.get('shareLink', ''),
+        'quotation_id': quotation_id,
+    }

@@ -1,11 +1,17 @@
+import logging
+
 from django.contrib import admin
 from django import forms
-from django.utils.html import format_html, format_html_join
+from django.http import HttpResponseRedirect
+from django.urls import path, reverse
+from django.utils.html import format_html, format_html_join, mark_safe
 from django.contrib import messages
 from .models import (
     Produto, Carrinho, ItemCarrinho, Pedido, Categoria, TamanhoAnel, Cupom, EmailPendente,
     DispositivoTOTP, TokenEmergencia, Lead,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @admin.register(Categoria)
@@ -81,6 +87,11 @@ class PedidoAdmin(admin.ModelAdmin):
         'melhor_envio_erro',
         'origem_utm',
         'desconto_pix_aplicado',
+        'lalamove_order_id',
+        'lalamove_tracking_url',
+        'status_lalamove',
+        'lalamove_quotation_id',
+        'botao_solicitar_lalamove',
     )
     fieldsets = (
         ('Resumo do pedido', {
@@ -109,6 +120,17 @@ class PedidoAdmin(admin.ModelAdmin):
                 'melhor_envio_status',
                 'melhor_envio_erro',
             )
+        }),
+        ('Lalamove — Entrega Motoboy', {
+            'fields': (
+                'frete_transportadora',
+                'status_lalamove',
+                'lalamove_quotation_id',
+                'lalamove_order_id',
+                'lalamove_tracking_url',
+                'botao_solicitar_lalamove',
+            ),
+            'classes': ('collapse',),
         }),
         ('Origem (atribuição)', {
             'fields': ('origem_utm',),
@@ -188,7 +210,94 @@ class PedidoAdmin(admin.ModelAdmin):
             '</table>',
             linhas,
             obj.total,
-            format_html(tfoot_extra),
+            mark_safe(tfoot_extra),
+        )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path(
+                '<int:pedido_id>/solicitar-lalamove/',
+                self.admin_site.admin_view(self._view_solicitar_lalamove),
+                name='loja_pedido_solicitar_lalamove',
+            ),
+        ]
+        return custom + urls
+
+    def _view_solicitar_lalamove(self, request, pedido_id):
+        from .integrations.lalamove import create_lalamove_order
+
+        pedido = Pedido.objects.get(pk=pedido_id)
+        redirect_url = reverse('admin:loja_pedido_change', args=[pedido_id])
+
+        if pedido.frete_transportadora != 'lalamove':
+            self.message_user(request, 'Este pedido não usa Lalamove.', messages.WARNING)
+            return HttpResponseRedirect(redirect_url)
+
+        if pedido.lalamove_order_id:
+            self.message_user(
+                request,
+                f'Entrega já solicitada (order_id: {pedido.lalamove_order_id}). Nenhuma ação realizada.',
+                messages.WARNING,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        if pedido.status != 'confirmado':
+            self.message_user(
+                request,
+                'O pedido precisa estar confirmado (pago) antes de solicitar a entrega.',
+                messages.ERROR,
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        try:
+            resultado = create_lalamove_order(pedido)
+            pedido.lalamove_order_id = resultado['order_id']
+            pedido.lalamove_tracking_url = resultado['tracking_url']
+            pedido.lalamove_quotation_id = resultado['quotation_id']
+            pedido.status_lalamove = 'ASSIGNING_DRIVER'
+            pedido.save(update_fields=[
+                'lalamove_order_id',
+                'lalamove_tracking_url',
+                'lalamove_quotation_id',
+                'status_lalamove',
+            ])
+            self.message_user(
+                request,
+                f'✅ Entrega Lalamove solicitada! Order ID: {resultado["order_id"]} — '
+                f'Rastreio: {resultado["tracking_url"]}',
+                messages.SUCCESS,
+            )
+        except Exception as exc:
+            logger.exception('[Lalamove] Falha ao solicitar entrega pedido %s', pedido_id)
+            self.message_user(request, f'❌ Erro ao solicitar entrega Lalamove: {exc}', messages.ERROR)
+
+        return HttpResponseRedirect(redirect_url)
+
+    @admin.display(description='Solicitar entrega Lalamove')
+    def botao_solicitar_lalamove(self, obj):
+        if not obj.pk:
+            return '—'
+        if obj.frete_transportadora != 'lalamove':
+            return '—'
+        if obj.lalamove_order_id:
+            link = obj.lalamove_tracking_url or '—'
+            return format_html(
+                '<span style="color:#2e7d32;font-weight:600">✅ Entrega solicitada</span><br>'
+                '<small>Order ID: {}</small><br>'
+                '<small><a href="{}" target="_blank">{}</a></small>',
+                obj.lalamove_order_id,
+                link,
+                link,
+            )
+        url = reverse('admin:loja_pedido_solicitar_lalamove', args=[obj.pk])
+        disabled = '' if obj.status == 'confirmado' else 'disabled title="Pedido não confirmado"'
+        return format_html(
+            '<a href="{}" class="button" style="background:#e65100;color:#fff;padding:6px 14px;'
+            'border-radius:4px;text-decoration:none;font-weight:600" {}>'
+            '🛵 Solicitar entrega Lalamove</a>',
+            url,
+            disabled,
         )
 
     @admin.display(description='Cobrado', ordering='total')
@@ -215,14 +324,21 @@ class PedidoAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
         if obj.status == 'confirmado' and status_anterior != 'confirmado':
-            try:
-                from .views import criar_envio_melhor_envio
-                if criar_envio_melhor_envio(obj):
-                    self.message_user(request, 'Envio criado no Melhor Envio.', messages.SUCCESS)
-                else:
-                    self.message_user(request, 'Pedido confirmado, mas o Melhor Envio não gerou etiqueta. Veja o campo de erro.', messages.WARNING)
-            except Exception as exc:
-                self.message_user(request, f'Erro ao criar envio no Melhor Envio: {exc}', messages.ERROR)
+            if obj.frete_transportadora == 'lalamove':
+                self.message_user(
+                    request,
+                    'Pedido confirmado. Frete via Lalamove — use o botão "Solicitar entrega Lalamove" quando pronto para despachar.',
+                    messages.SUCCESS,
+                )
+            else:
+                try:
+                    from .views import criar_envio_melhor_envio
+                    if criar_envio_melhor_envio(obj):
+                        self.message_user(request, 'Envio criado no Melhor Envio.', messages.SUCCESS)
+                    else:
+                        self.message_user(request, 'Pedido confirmado, mas o Melhor Envio não gerou etiqueta. Veja o campo de erro.', messages.WARNING)
+                except Exception as exc:
+                    self.message_user(request, f'Erro ao criar envio no Melhor Envio: {exc}', messages.ERROR)
 
         if not enviar_rastreio:
             return
