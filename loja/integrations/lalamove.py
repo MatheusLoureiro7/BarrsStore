@@ -137,6 +137,8 @@ def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
     body = _quotation_payload(origin, destination)
     headers = _lalamove_headers(api_key, api_secret, 'POST', '/v3/quotations', body)
 
+    logger.info('[Lalamove][DEBUG] REQUEST PAYLOAD: %s', json.dumps(json.loads(body), indent=2, ensure_ascii=False))
+
     resp = http_requests.post(
         f'{base_url}/v3/quotations',
         headers=headers,
@@ -144,11 +146,22 @@ def get_lalamove_quotation(origin: dict, destination: dict) -> dict:
         timeout=10,
     )
 
+    logger.info('[Lalamove][DEBUG] RESPONSE STATUS: %s', resp.status_code)
+    logger.info('[Lalamove][DEBUG] RESPONSE BODY: %s', resp.text[:2000])
+    try:
+        logger.info('[Lalamove][DEBUG] RESPONSE JSON: %s', json.dumps(resp.json(), indent=2, ensure_ascii=False))
+    except Exception:
+        pass
+
     if resp.status_code >= 400:
         logger.error('[Lalamove] Erro na cotação: %s %s', resp.status_code, resp.text[:300])
         raise RuntimeError(f'Lalamove retornou erro {resp.status_code}.')
 
     data = resp.json()['data']
+    logger.info('[Lalamove][DEBUG] serviceType usado: %s', json.loads(body)['data'].get('serviceType'))
+    logger.info('[Lalamove][DEBUG] priceBreakdown: %s', json.dumps(data.get('priceBreakdown', {}), indent=2, ensure_ascii=False))
+    logger.info('[Lalamove][DEBUG] specialRequests: %s', data.get('specialRequests'))
+    logger.info('[Lalamove][DEBUG] campos completos do data: %s', json.dumps({k: v for k, v in data.items() if k != 'stops'}, indent=2, ensure_ascii=False))
     result = {
         'price': float(data['priceBreakdown']['total']),
         'eta': 'Receba hoje',
@@ -181,12 +194,23 @@ def create_lalamove_order(pedido) -> dict:
     # 1. Cotação fresca para obter quotationId + stopIds
     q_body = _quotation_payload(origin, dest)
     q_headers = _lalamove_headers(api_key, api_secret, 'POST', '/v3/quotations', q_body)
+
+    logger.info('[Lalamove][DEBUG] create_order REQUEST PAYLOAD: %s', json.dumps(json.loads(q_body), indent=2, ensure_ascii=False))
+
     q_resp = http_requests.post(
         f'{base_url}/v3/quotations',
         headers=q_headers,
         data=q_body.encode('utf-8'),
         timeout=10,
     )
+
+    logger.info('[Lalamove][DEBUG] create_order RESPONSE STATUS: %s', q_resp.status_code)
+    logger.info('[Lalamove][DEBUG] create_order RESPONSE BODY: %s', q_resp.text[:2000])
+    try:
+        logger.info('[Lalamove][DEBUG] create_order RESPONSE JSON: %s', json.dumps(q_resp.json(), indent=2, ensure_ascii=False))
+    except Exception:
+        pass
+
     if q_resp.status_code >= 400:
         logger.error('[Lalamove] Cotação para pedido %s: %s %s', pedido.id, q_resp.status_code, q_resp.text[:300])
         raise RuntimeError(f'Lalamove cotação: erro {q_resp.status_code} — {q_resp.text[:120]}')
