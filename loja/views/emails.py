@@ -370,6 +370,63 @@ def enviar_email_confirmacao(pedido):
         return False
 
 
+def enviar_email_conta_criada(pedido, senha):
+    """Email imediato quando conta é criada automaticamente no checkout sem senha."""
+    try:
+        link_minha_conta = site_url(reverse('minha_conta'))
+        link_pagamento = site_url(reverse('confirmacao', kwargs={'pedido_id': pedido.id, 'token': pedido.access_token}))
+        primeiro_nome = pedido.nome.split()[0]
+
+        card_senha = (
+            '<div style="background:#FAFAF7;border:2px solid #C8A96A;border-radius:14px;'
+            'padding:18px 24px;margin:20px 0;text-align:center">'
+            '<p style="margin:0 0 6px;color:#8A8178;font-size:10px;font-weight:700;'
+            'letter-spacing:0.14em;text-transform:uppercase">Sua conta foi criada automaticamente</p>'
+            f'<p style="margin:0 0 4px;color:#4A4038;font-size:22px;font-weight:800;'
+            f'letter-spacing:0.08em;font-family:monospace">{senha}</p>'
+            '<p style="margin:6px 0 0;color:#8A8178;font-size:12px">'
+            'Voc&ecirc; pode alter&aacute;-la depois em Minha Conta</p>'
+            '</div>'
+        )
+        corpo = (
+            _paragrafo(f'Ol&aacute;, <strong style="color:#4A4038">{primeiro_nome}</strong>! '
+                       'Seu pedido foi criado com sucesso.')
+            + card_senha
+            + _email_pedido_resumo(pedido)
+            + f'<div style="text-align:center;margin:20px 0">'
+            f'{_btn("Finalizar pagamento", link_pagamento, "#C8A96A")}'
+            f'&nbsp;&nbsp;'
+            f'{_btn("Minha conta", link_minha_conta)}'
+            f'</div>'
+            + _paragrafo(
+                '<span style="color:#8A8178;font-size:13px">'
+                'Guarde sua senha em lugar seguro. D&uacute;vidas? Estamos no WhatsApp.'
+                '</span>'
+            )
+        )
+        html = _email_wrapper(
+            'Sua conta foi criada &#10024;',
+            corpo,
+            f'Pedido #{pedido.id} criado &middot; sua senha de acesso est&aacute; aqui',
+        )
+        payload = _brevo_payload(
+            pedido.email,
+            pedido.nome,
+            f'Sua conta na Barrs Store foi criada — pedido #{pedido.id}',
+            html,
+        )
+        ok, erro, resposta = enviar_brevo_payload(payload)
+        if not ok:
+            enfileirar_email_pendente(payload, erro, pedido_id=pedido.id, tipo='conta_criada')
+            logger.warning('[BREVO] Email conta_criada pedido %s enfileirado. erro=%s', pedido.id, erro)
+            return False
+        logger.info('[BREVO] Email conta_criada pedido %s enviado.', pedido.id)
+        return True
+    except Exception as exc:
+        logger.exception('Erro ao enviar email conta_criada pedido %s: %s', pedido.id, exc)
+        return False
+
+
 def enviar_email_pagamento_pendente(pedido):
     """Lembrete de pagamento pendente."""
     if pedido.email_pagamento_pendente_enviado:

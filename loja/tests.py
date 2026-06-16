@@ -3,7 +3,9 @@ import hmac
 import json
 import time
 from decimal import Decimal
+from unittest.mock import patch, MagicMock
 
+from django.contrib.auth.models import User
 from django.test import Client, TestCase, override_settings
 
 from .mercadopago_security import (
@@ -483,6 +485,135 @@ class CheckoutTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Informe um CPF valido.')
+
+
+class EnviarEmailContaCriadaTests(TestCase):
+    def _make_pedido(self):
+        from loja.models import Produto, Carrinho, ItemCarrinho, Pedido, ItemPedido
+        produto = Produto.objects.create(nome='Anel Teste', preco=100, estoque=5)
+        carrinho = Carrinho.objects.create()
+        ItemCarrinho.objects.create(carrinho=carrinho, produto=produto, quantidade=1)
+        from django.contrib.auth.models import User
+        user = User.objects.create_user(username='t@test.com', email='t@test.com', password='x')
+        pedido = Pedido.objects.create(
+            cliente=user,
+            nome='Ana Teste',
+            email='t@test.com',
+            telefone='11999999999',
+            cpf='12345678901',
+            cep='01001000',
+            rua='Rua Teste',
+            numero='1',
+            bairro='Centro',
+            cidade='São Paulo',
+            estado='SP',
+            forma_pagamento='pendente',
+            subtotal=100,
+            desconto=0,
+            frete=10,
+            total=110,
+        )
+        ItemPedido.objects.create(
+            pedido=pedido,
+            produto=produto,
+            nome_produto=produto.nome,
+            quantidade=1,
+            preco_unitario=produto.preco,
+        )
+        return pedido
+
+    @patch('loja.views.emails.enviar_brevo_payload')
+    def test_envia_email_com_senha_no_corpo(self, mock_brevo):
+        mock_brevo.return_value = (True, '', MagicMock())
+        from loja.views.emails import enviar_email_conta_criada
+        pedido = self._make_pedido()
+        resultado = enviar_email_conta_criada(pedido, 'SenhaXYZ123')
+        self.assertTrue(resultado)
+        mock_brevo.assert_called_once()
+        payload = mock_brevo.call_args[0][0]
+        self.assertIn('SenhaXYZ123', payload['htmlContent'])
+        self.assertEqual(payload['to'][0]['email'], pedido.email)
+
+    @patch('loja.views.emails.enviar_brevo_payload')
+    def test_enfileira_quando_brevo_falha(self, mock_brevo):
+        mock_brevo.return_value = (False, 'timeout', None)
+        from loja.views.emails import enviar_email_conta_criada
+        from loja.models import EmailPendente
+        pedido = self._make_pedido()
+        resultado = enviar_email_conta_criada(pedido, 'SenhaXYZ123')
+        self.assertFalse(resultado)
+        self.assertTrue(EmailPendente.objects.filter(destinatario_email=pedido.email).exists())
+
+
+class CheckoutSenhaOpcionalTests(TestCase):
+    def _setup_carrinho(self, client):
+        produto = Produto.objects.create(nome='Anel Teste', preco=100, estoque=5)
+        carrinho = Carrinho.objects.create()
+        ItemCarrinho.objects.create(carrinho=carrinho, produto=produto, quantidade=1)
+        session = client.session
+        session['carrinho_id'] = carrinho.id
+        session.save()
+        return carrinho
+
+    def _dados_base(self, email='novo@example.com', senha=''):
+        return {
+            'nome': 'Cliente Novo',
+            'email': email,
+            'telefone': '11999999999',
+            'cpf': '529.982.247-25',  # CPF válido
+            'cep': '01001000',
+            'rua': 'Rua Teste',
+            'numero': '10',
+            'bairro': 'Centro',
+            'cidade': 'São Paulo',
+            'estado': 'SP',
+            'frete_valor': '15.00',
+            'senha': senha,
+        }
+
+    @patch('loja.views.cart.enviar_email_conta_criada')
+    @patch('loja.views.cart.enviar_whatsapp_pedido')
+    def test_email_novo_sem_senha_cria_usuario_com_senha_gerada(self, mock_wa, mock_email_conta):
+        """Novo email sem senha: cria user, gera senha, chama enviar_email_conta_criada."""
+        c = Client()
+        self._setup_carrinho(c)
+        c.post('/finalizar/', self._dados_base(email='novo@example.com', senha=''))
+        user = User.objects.filter(email='novo@example.com').first()
+        self.assertIsNotNone(user, 'Usuário deve ter sido criado')
+        self.assertTrue(mock_email_conta.called, 'Email de conta criada deve ser disparado')
+        pedido_arg, senha_arg = mock_email_conta.call_args[0]
+        self.assertIsNotNone(senha_arg)
+        self.assertGreater(len(senha_arg), 0)
+        user.refresh_from_db()
+        self.assertTrue(user.check_password(senha_arg), 'A senha gerada deve ter sido definida no user')
+
+    @patch('loja.views.cart.enviar_email_conta_criada')
+    @patch('loja.views.cart.enviar_whatsapp_pedido')
+    def test_email_existente_sem_senha_usa_usuario_sem_login(self, mock_wa, mock_email_conta):
+        """Email existente sem senha: usa o user existente, não dispara email de conta criada."""
+        user_existente = User.objects.create_user(
+            username='existente@example.com',
+            email='existente@example.com',
+            password='SenhaAntiga123',
+        )
+        c = Client()
+        self._setup_carrinho(c)
+        c.post('/finalizar/', self._dados_base(email='existente@example.com', senha=''))
+        pedido = Pedido.objects.filter(email='existente@example.com').first()
+        self.assertIsNotNone(pedido, 'Pedido deve ter sido criado')
+        self.assertEqual(pedido.cliente, user_existente)
+        self.assertFalse(mock_email_conta.called, 'Email de conta criada NÃO deve ser disparado')
+
+    @patch('loja.views.cart.enviar_email_conta_criada')
+    @patch('loja.views.cart.enviar_whatsapp_pedido')
+    def test_com_senha_valida_nao_dispara_email_conta_criada(self, mock_wa, mock_email_conta):
+        """Com senha fornecida: fluxo normal, sem email de conta criada."""
+        c = Client()
+        self._setup_carrinho(c)
+        c.post('/finalizar/', self._dados_base(email='comsenha@example.com', senha='SenhaForte123!'))
+        self.assertFalse(mock_email_conta.called)
+        user = User.objects.filter(email='comsenha@example.com').first()
+        self.assertIsNotNone(user)
 
 
 class MercadoPagoWebhookSecurityTests(TestCase):

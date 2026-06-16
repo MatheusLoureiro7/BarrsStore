@@ -1,4 +1,5 @@
 import logging
+import secrets
 import time
 
 from decimal import Decimal, InvalidOperation
@@ -32,7 +33,7 @@ from .utils import (
     turnstile_error_json,
     verificar_turnstile,
 )
-from .emails import enviar_whatsapp_pedido
+from .emails import enviar_whatsapp_pedido, enviar_email_conta_criada
 
 logger = logging.getLogger(__name__)
 
@@ -161,10 +162,16 @@ def _validar_form_checkout(request, carrinho):
     else:
         lead_cupom = None
 
-    try:
-        frete_service_id = int(request.POST.get('frete_service_id') or 0) or None
-    except (TypeError, ValueError):
+    frete_service_id_raw = request.POST.get('frete_service_id', '')
+    if frete_service_id_raw == 'lalamove-moto':
         frete_service_id = None
+        frete_transportadora = 'lalamove'
+    else:
+        try:
+            frete_service_id = int(frete_service_id_raw or 0) or None
+        except (TypeError, ValueError):
+            frete_service_id = None
+        frete_transportadora = ''
 
     return {
         'nome': request.POST['nome'],
@@ -180,6 +187,7 @@ def _validar_form_checkout(request, carrinho):
         'estado': request.POST.get('estado', 'SP'),
         'frete': frete,
         'frete_service_id': frete_service_id,
+        'frete_transportadora': frete_transportadora,
         'subtotal': subtotal,
         'desconto': desconto,
         'cupom': cupom,
@@ -189,45 +197,68 @@ def _validar_form_checkout(request, carrinho):
     }
 
 
+def _gerar_senha():
+    return secrets.token_urlsafe(9)
+
+
 def _resolver_cliente(request, dados):
+    """Resolve o usuário do pedido. Retorna (user, senha_gerada|None).
+
+    senha_gerada é não-nula apenas quando uma nova conta foi criada sem senha
+    fornecida pelo cliente — sinaliza que o email de boas-vindas deve ser enviado.
+    """
     if request.user.is_authenticated:
-        return request.user
+        return request.user, None
 
     email_pedido = dados['email']
     senha = request.POST.get('senha', '').strip()
-
-    if not senha:
-        messages.error(request, 'Digite sua senha para entrar ou criar sua conta antes de finalizar.')
-        return None
+    senha_gerada = None
 
     usuario_existente = User.objects.filter(email__iexact=email_pedido).first()
+
     if usuario_existente:
-        user = authenticate(request, username=usuario_existente.username, password=senha)
-        if not user:
-            messages.error(request, 'Nao foi possivel validar suas credenciais. Confira os dados e tente novamente.')
-            return None
-        login(request, user)
+        if senha:
+            user = authenticate(request, username=usuario_existente.username, password=senha)
+            if not user:
+                messages.error(request, 'Nao foi possivel validar suas credenciais. Confira os dados e tente novamente.')
+                return None, None
+            login(request, user)
+        else:
+            # Sem senha: vincula o pedido ao usuário existente sem autenticar a sessão.
+            user = usuario_existente
     else:
-        partes = dados['nome'].split()
-        user_preview = User(
-            username=email_pedido,
-            email=email_pedido,
-            first_name=partes[0] if partes else '',
-            last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
-        )
-        try:
-            validate_password(senha, user_preview)
-        except ValidationError as exc:
-            messages.error(request, ' '.join(exc.messages))
-            return None
-        user = User.objects.create_user(
-            username=email_pedido,
-            email=email_pedido,
-            password=senha,
-            first_name=partes[0] if partes else '',
-            last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
-        )
-        login(request, user)
+        if senha:
+            partes = dados['nome'].split()
+            user_preview = User(
+                username=email_pedido,
+                email=email_pedido,
+                first_name=partes[0] if partes else '',
+                last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
+            )
+            try:
+                validate_password(senha, user_preview)
+            except ValidationError as exc:
+                messages.error(request, ' '.join(exc.messages))
+                return None, None
+            user = User.objects.create_user(
+                username=email_pedido,
+                email=email_pedido,
+                password=senha,
+                first_name=partes[0] if partes else '',
+                last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
+            )
+            login(request, user)
+        else:
+            partes = dados['nome'].split()
+            senha_gerada = _gerar_senha()
+            user = User.objects.create_user(
+                username=email_pedido,
+                email=email_pedido,
+                password=senha_gerada,
+                first_name=partes[0] if partes else '',
+                last_name=' '.join(partes[1:]) if len(partes) > 1 else '',
+            )
+            login(request, user)
 
     perfil, _ = PerfilCliente.objects.get_or_create(user=user)
     perfil.telefone = dados['telefone']
@@ -239,7 +270,7 @@ def _resolver_cliente(request, dados):
     perfil.cidade = dados['cidade']
     perfil.estado = dados['estado']
     perfil.save()
-    return user
+    return user, senha_gerada
 
 
 def _criar_pedido_com_itens(carrinho, itens, dados, cliente, utm):
@@ -263,6 +294,7 @@ def _criar_pedido_com_itens(carrinho, itens, dados, cliente, utm):
         frete=dados['frete'],
         total=dados['total'],
         melhor_envio_service_id=dados['frete_service_id'],
+        frete_transportadora=dados.get('frete_transportadora', ''),
         origem_utm=utm,
         observacoes=dados['observacoes'],
     )
@@ -722,7 +754,7 @@ def checkout(request):
         if dados is None:
             return render_checkout()
 
-        cliente = _resolver_cliente(request, dados)
+        cliente, senha_gerada = _resolver_cliente(request, dados)
         if cliente is None:
             return render_checkout()
 
@@ -731,8 +763,8 @@ def checkout(request):
             dados['lead_cupom'].usado_em_pedido = pedido
             dados['lead_cupom'].save(update_fields=['usado_em_pedido'])
         request.session.pop('carrinho_id', None)
-        # E-mail "Finalize seu pagamento" e disparado pelo cron apos 20min,
-        # evitando SPAM para quem fechou a aba logo em seguida.
+        if senha_gerada:
+            enviar_email_conta_criada(pedido, senha_gerada)
         _notificar_novo_pedido(pedido)
         return redirect('confirmacao', pedido_id=pedido.id, token=pedido.access_token)
 
