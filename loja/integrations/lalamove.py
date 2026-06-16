@@ -80,18 +80,43 @@ def cep_to_coordinates(cep: str) -> dict:
     nom_resp.raise_for_status()
     nom_data = nom_resp.json()
 
-    # Fallback: endereço completo não encontrado — tenta só cidade+estado
-    if not nom_data:
-        localidade = via_data.get('localidade', '')
-        uf = via_data.get('uf', '')
+    localidade = via_data.get('localidade', '')
+    uf = via_data.get('uf', '')
+    logradouro = via_data.get('logradouro', '')
+    bairro = via_data.get('bairro', '')
+
+    # Fallback 1: query estruturada rua+cidade+estado (mais precisa que q=)
+    if not nom_data and logradouro:
         nom_resp2 = http_requests.get(
             'https://nominatim.openstreetmap.org/search',
-            params={'city': localidade, 'state': uf, 'country': 'br', 'format': 'json', 'limit': 1},
+            params={'street': logradouro, 'city': localidade, 'state': uf, 'country': 'br', 'format': 'json', 'limit': 1},
             timeout=8,
             headers={'User-Agent': 'BarrsStore contato.barrsstore@gmail.com'},
         )
         nom_resp2.raise_for_status()
         nom_data = nom_resp2.json()
+
+    # Fallback 2: bairro+cidade (evita retornar centro da cidade)
+    if not nom_data and bairro:
+        nom_resp3 = http_requests.get(
+            'https://nominatim.openstreetmap.org/search',
+            params={'q': f'{bairro}, {localidade}, {uf}, Brasil', 'format': 'json', 'limit': 1, 'countrycodes': 'br'},
+            timeout=8,
+            headers={'User-Agent': 'BarrsStore contato.barrsstore@gmail.com'},
+        )
+        nom_resp3.raise_for_status()
+        nom_data = nom_resp3.json()
+
+    # Fallback 3 (último recurso): só cidade+estado
+    if not nom_data:
+        nom_resp4 = http_requests.get(
+            'https://nominatim.openstreetmap.org/search',
+            params={'city': localidade, 'state': uf, 'country': 'br', 'format': 'json', 'limit': 1},
+            timeout=8,
+            headers={'User-Agent': 'BarrsStore contato.barrsstore@gmail.com'},
+        )
+        nom_resp4.raise_for_status()
+        nom_data = nom_resp4.json()
 
     if not nom_data:
         raise RuntimeError(f'Não foi possível geocodificar o CEP {cep}.')

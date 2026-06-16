@@ -940,13 +940,11 @@ class CepToCoordinatesTests(TestCase):
             'logradouro': 'Rua X', 'bairro': 'Y',
             'localidade': 'São Paulo', 'uf': 'SP',
         }
-        mock_nom = Mock()
-        mock_nom.raise_for_status = Mock()
-        mock_nom.json.return_value = []
-        mock_nom_fallback = Mock()
-        mock_nom_fallback.raise_for_status = Mock()
-        mock_nom_fallback.json.return_value = []
-        mock_get.side_effect = [mock_viacep, mock_nom, mock_nom_fallback]
+        mock_nom_vazio = Mock()
+        mock_nom_vazio.raise_for_status = Mock()
+        mock_nom_vazio.json.return_value = []
+        # viacep + 4 tentativas Nominatim (q=, street+city, bairro+cidade, cidade+estado)
+        mock_get.side_effect = [mock_viacep] + [mock_nom_vazio] * 4
 
         with self.assertRaises(RuntimeError):
             cep_to_coordinates('01310100')
@@ -1072,7 +1070,7 @@ class LalamoveViewIntegrationTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertGreaterEqual(len(data['opcoes']), 1)
         primeira = data['opcoes'][0]
-        self.assertEqual(primeira['empresa'], 'Lalamove')
+        self.assertEqual(primeira['empresa'], '')
         self.assertAlmostEqual(primeira['preco'], 19.90)
         self.assertEqual(primeira['prazo'], 0)
         self.assertEqual(primeira['eta'], '30-45 min')

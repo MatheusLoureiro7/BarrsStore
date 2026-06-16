@@ -221,8 +221,55 @@ class PedidoAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self._view_solicitar_lalamove),
                 name='loja_pedido_solicitar_lalamove',
             ),
+            path(
+                '<int:pedido_id>/cotar-lalamove/',
+                self.admin_site.admin_view(self._view_cotar_lalamove),
+                name='loja_pedido_cotar_lalamove',
+            ),
         ]
         return custom + urls
+
+    def _view_cotar_lalamove(self, request, pedido_id):
+        from django.conf import settings as s
+        from django.core.cache import cache as _cache
+        from .integrations.lalamove import cep_to_coordinates, get_lalamove_quotation
+
+        pedido = Pedido.objects.get(pk=pedido_id)
+        redirect_url = reverse('admin:loja_pedido_change', args=[pedido_id])
+
+        if pedido.frete_transportadora != 'lalamove':
+            self.message_user(request, 'Este pedido não usa Lalamove.', messages.WARNING)
+            return HttpResponseRedirect(redirect_url)
+
+        try:
+            cep_destino = pedido.cep.replace('-', '')
+            dest = cep_to_coordinates(cep_destino)
+            # Bypassa o cache de 10min para garantir o preço mais atual possível.
+            _cache.delete(f'lalamove:quote:{dest["cep"]}')
+            origin = {
+                'lat': s.LALAMOVE_ORIGIN_LAT,
+                'lng': s.LALAMOVE_ORIGIN_LNG,
+                'address': s.LALAMOVE_ORIGIN_ADDRESS,
+            }
+            cotacao = get_lalamove_quotation(origin, dest)
+            diferenca = cotacao['price'] - float(pedido.frete)
+            if diferenca > 0:
+                sinal = f'🔴 R$ {diferenca:.2f} a mais que o cobrado do cliente'
+            elif diferenca < 0:
+                sinal = f'🟢 R$ {abs(diferenca):.2f} a menos que o cobrado do cliente'
+            else:
+                sinal = '⚪ igual ao cobrado do cliente'
+            self.message_user(
+                request,
+                f'💰 Cotação Lalamove agora: R$ {cotacao["price"]:.2f} — '
+                f'Cobrado do cliente: R$ {float(pedido.frete):.2f} — {sinal}',
+                messages.INFO,
+            )
+        except Exception as exc:
+            logger.exception('[Lalamove] Falha ao cotar pedido %s', pedido_id)
+            self.message_user(request, f'❌ Erro ao cotar Lalamove: {exc}', messages.ERROR)
+
+        return HttpResponseRedirect(redirect_url)
 
     def _view_solicitar_lalamove(self, request, pedido_id):
         from .integrations.lalamove import create_lalamove_order
@@ -290,12 +337,17 @@ class PedidoAdmin(admin.ModelAdmin):
                 link,
                 link,
             )
+        url_cotar = reverse('admin:loja_pedido_cotar_lalamove', args=[obj.pk])
         url = reverse('admin:loja_pedido_solicitar_lalamove', args=[obj.pk])
         disabled = '' if obj.status == 'confirmado' else 'disabled title="Pedido não confirmado"'
         return format_html(
+            '<a href="{}" class="button" style="background:#1565c0;color:#fff;padding:6px 14px;'
+            'border-radius:4px;text-decoration:none;font-weight:600;margin-right:8px">'
+            '💰 Cotar agora</a>'
             '<a href="{}" class="button" style="background:#e65100;color:#fff;padding:6px 14px;'
             'border-radius:4px;text-decoration:none;font-weight:600" {}>'
             '🛵 Solicitar entrega Lalamove</a>',
+            url_cotar,
             url,
             disabled,
         )
