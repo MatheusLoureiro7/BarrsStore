@@ -896,7 +896,7 @@
     display: none;
   }
   .hero__inner {
-    padding: 0 24px calc(150px + env(safe-area-inset-bottom));
+    padding: 0 24px calc(200px + env(safe-area-inset-bottom));
     max-width: 100%;
     display: flex;
     flex-direction: column;
@@ -931,12 +931,12 @@
   .hero__lead {
     display: block;
     font-family: 'Montserrat', sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 14px;
+    line-height: 1.55;
     max-width: 280px;
     margin-bottom: 1.25rem;
-    color: rgba(255, 255, 255, 0.88);
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.20);
+    color: rgba(255, 255, 255, 0.96);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   }
   .hero__cta {
     min-height: 44px;
