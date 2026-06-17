@@ -149,21 +149,22 @@
 </div>
 {% endif %}
 
-{% if listing_base_url != '/' and categoria_ativa %}
-<section class="categoria-intro">
-  <h1 class="categoria-intro__title">{{ categoria_nome_exibicao }}</h1>
-  {% if categoria and categoria.descricao_categoria %}
-  <div class="categoria-intro__texto">{{ categoria.descricao_categoria|linebreaks }}</div>
-  {% endif %}
-</section>
-{% endif %}
-
 <!-- GRID DE PRODUTOS -->
 <section class="section">
   <div class="section__head">
-    <h2 class="section__title">{% if busca %}Resultados{% else %}Coleção{% endif %}</h2>
+    {% if busca %}
+    <h2 class="section__title">Resultados</h2>
+    {% elif listing_base_url != '/' and categoria_ativa %}
+    <h1 class="section__title">{{ categoria_nome_exibicao }}</h1>
+    {% else %}
+    <h2 class="section__title">Coleção</h2>
+    {% endif %}
     <span class="section__count">{{ total_produtos }} produto{% if total_produtos != 1 %}s{% endif %}</span>
   </div>
+
+  {% if not busca and listing_base_url != '/' and categoria_ativa and categoria and categoria.descricao_categoria %}
+  <div class="categoria-intro__texto">{{ categoria.descricao_categoria|linebreaks }}</div>
+  {% endif %}
 
   {% if produtos %}
   <div class="product-grid" id="product-grid">
