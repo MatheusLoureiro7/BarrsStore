@@ -494,6 +494,24 @@
 }
 .section__count { font-size: var(--text-sm); color: var(--color-ink-muted); }
 
+.categoria-intro {
+  margin-bottom: var(--space-6);
+}
+.categoria-intro__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin-bottom: var(--space-2);
+}
+.categoria-intro__texto {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  max-width: 60ch;
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

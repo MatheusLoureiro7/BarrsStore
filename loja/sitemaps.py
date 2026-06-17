@@ -1,7 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
-from .models import Produto
+from .models import Produto, Categoria
 
 
 class ProdutoSitemap(Sitemap):
@@ -13,6 +13,17 @@ class ProdutoSitemap(Sitemap):
 
     def lastmod(self, obj):
         return obj.criado_em
+
+
+class CategoriaSitemap(Sitemap):
+    changefreq = 'weekly'
+    priority = 0.8
+
+    def items(self):
+        return Categoria.objects.all()
+
+    def location(self, obj):
+        return reverse('categoria_detalhe', kwargs={'categoria_slug': obj.slug})
 
 
 class StaticViewSitemap(Sitemap):

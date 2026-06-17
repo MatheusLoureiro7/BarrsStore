@@ -39,7 +39,7 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(
         'ALLOWED_HOSTS',
-        'barrsstore.com.br,www.barrsstore.com.br,web-production-c4971.up.railway.app,localhost,127.0.0.1,.ngrok-free.dev,.ngrok-free.app'
+        'barrsstore.com.br,www.barrsstore.com.br,web-production-c4971.up.railway.app,localhost,127.0.0.1,,192.168.15.56,.ngrok-free.dev,.ngrok-free.app'
     ).split(',')
     if host.strip()
 ]

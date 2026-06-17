@@ -1,16 +1,18 @@
 from django.urls import path
 from django.contrib.sitemaps.views import sitemap
 from . import views
-from .sitemaps import ProdutoSitemap, StaticViewSitemap
+from .sitemaps import ProdutoSitemap, StaticViewSitemap, CategoriaSitemap
 from django.views.generic.base import RedirectView
 
 sitemaps = {
     'produtos': ProdutoSitemap,
+    'categorias': CategoriaSitemap,
     'paginas': StaticViewSitemap,
 }
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('categoria/<slug:categoria_slug>/', views.categoria_view, name='categoria_detalhe'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
     path('google86e9062d166d5e41.html', views.google_site_verification, name='google_site_verification'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),

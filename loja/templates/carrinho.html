@@ -118,6 +118,9 @@
     <aside class="summary">
       <h2>Resumo do pedido</h2>
 
+      <!-- FRETE GRÁTIS -->
+      <div class="frete-gratis-bar" id="frete-gratis-bar" aria-live="polite"></div>
+
       <!-- CALCULAR FRETE -->
       <div class="shipping-block">
         <span class="shipping-block__label">Calcular frete</span>
@@ -231,6 +234,8 @@
   const subtotal = parseMoney("{{ total|unlocalize }}");
   let freteValorSelecionado = null;
 
+  const FRETE_GRATIS_MINIMO = 250;
+
   // Espelha PIX_DESCONTO_PERCENTUAL (loja/models.py): 4% sobre os produtos,
   // frete fora do desconto. Valor informativo; a cobrança real é no backend.
   const PIX_FATOR = 0.96;
@@ -241,6 +246,26 @@
       'R$ ' + pixTotal.toFixed(2).replace('.', ',');
   }
   atualizarPixTotal();
+
+  function atualizarBarraFreteGratis() {
+    const bar = document.getElementById('frete-gratis-bar');
+    if (!bar) return;
+    if (subtotal >= FRETE_GRATIS_MINIMO) {
+      bar.className = 'frete-gratis-bar fgb--ativado';
+      bar.innerHTML =
+        '<svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>' +
+        ' Frete grátis ativado no envio mais barato!';
+    } else {
+      const faltam = (FRETE_GRATIS_MINIMO - subtotal).toFixed(2).replace('.', ',');
+      const pct = Math.min((subtotal / FRETE_GRATIS_MINIMO) * 100, 100).toFixed(1);
+      bar.className = 'frete-gratis-bar';
+      bar.innerHTML =
+        '<div class="fgb-info">Faltam <strong>R$ ' + faltam + '</strong> para frete grátis</div>' +
+        '<div class="fgb-track" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100">' +
+        '<div class="fgb-fill" style="width:' + pct + '%"></div></div>';
+    }
+  }
+  atualizarBarraFreteGratis();
 
   function mascaraCepFrete(input) {
     let v = input.value.replace(/\D/g, '');
@@ -291,11 +316,22 @@
       status.textContent = 'Frete calculado com sucesso';
       status.className = 'shipping-status ok';
 
+      // Frete grátis: zera o menor preço disponível quando subtotal >= R$250
+      let precoMinimoGratis = null;
+      if (subtotal >= FRETE_GRATIS_MINIMO && data.opcoes.length > 0) {
+        precoMinimoGratis = Math.min(...data.opcoes.map(op => parseMoney(op.preco)));
+      }
+
       data.opcoes.forEach((op, i) => {
-        const preco = parseMoney(op.preco);
+        const precoOriginal = parseMoney(op.preco);
+        const isGratis = precoMinimoGratis !== null && precoOriginal === precoMinimoGratis;
+        const preco = isGratis ? 0 : precoOriginal;
         const nomeFrete = `${op.nome || ''} ${op.empresa || ''}`.trim();
         const div = document.createElement('div');
         div.className = 'opcao-frete' + (i === 0 ? ' selecionado' : '');
+        const precoHtml = isGratis
+          ? '<div class="opcao-preco opcao-preco--gratis">GRÁTIS</div>'
+          : `<div class="opcao-preco">R$ ${preco.toFixed(2).replace('.', ',')}</div>`;
         div.innerHTML = `
           <input type="radio" name="frete-opcao" value="${op.id}" ${i === 0 ? 'checked' : ''}
             aria-label="Selecionar frete ${nomeFrete}">
@@ -303,7 +339,7 @@
             <div class="opcao-nome">${op.nome}</div>
             <div class="opcao-prazo">${op.prazo === 0 ? (op.eta || 'Entrega hoje') : `${op.empresa} · ${op.prazo} dias úteis`}</div>
           </div>
-          <div class="opcao-preco">R$ ${preco.toFixed(2).replace('.', ',')}</div>
+          ${precoHtml}
         `;
         div.addEventListener('click', () => selecionarFrete(preco, nomeFrete, op.id, div));
         div.querySelector('input[type="radio"]').addEventListener('change', () => selecionarFrete(preco, nomeFrete, op.id, div));

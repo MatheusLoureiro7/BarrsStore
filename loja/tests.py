@@ -194,6 +194,90 @@ class HomeOrderingTests(TestCase):
         self.assertLess(html.index(destaque.nome), html.index(comum.nome))
 
 
+class HomeFiltroCategoriaQueryStringTests(TestCase):
+    def test_query_string_categoria_filtra_produtos(self):
+        categoria_aneis = Categoria.objects.create(nome='Aneis', slug='anel')
+        categoria_colares = Categoria.objects.create(nome='Colares', slug='colar')
+        anel = Produto.objects.create(
+            nome='Anel Solitario',
+            preco=Decimal('49.90'),
+            estoque=5,
+            categoria=categoria_aneis,
+        )
+        colar = Produto.objects.create(
+            nome='Colar Gota',
+            preco=Decimal('59.90'),
+            estoque=5,
+            categoria=categoria_colares,
+        )
+
+        response = Client().get('/?categoria=anel')
+        html = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(anel.nome, html)
+        self.assertNotIn(colar.nome, html)
+
+
+class CategoriaViewTests(TestCase):
+    @override_settings(SITE_URL='https://www.barrsstore.com.br')
+    def test_pagina_categoria_lista_so_produtos_da_categoria_e_tem_canonica_propria(self):
+        categoria_aneis = Categoria.objects.create(nome='Aneis', slug='anel')
+        categoria_colares = Categoria.objects.create(nome='Colares', slug='colar')
+        anel = Produto.objects.create(
+            nome='Anel Solitario',
+            preco=Decimal('49.90'),
+            estoque=5,
+            categoria=categoria_aneis,
+        )
+        colar = Produto.objects.create(
+            nome='Colar Gota',
+            preco=Decimal('59.90'),
+            estoque=5,
+            categoria=categoria_colares,
+        )
+
+        response = Client().get('/categoria/anel/')
+        html = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(anel.nome, html)
+        self.assertNotIn(colar.nome, html)
+        self.assertIn(
+            '<link rel="canonical" href="https://www.barrsstore.com.br/categoria/anel/">',
+            html,
+        )
+
+    def test_pagina_categoria_inexistente_retorna_404(self):
+        response = Client().get('/categoria/categoria-que-nao-existe/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_pagina_categoria_usa_meta_title_customizado_quando_definido(self):
+        Categoria.objects.create(
+            nome='Aneis',
+            slug='anel',
+            meta_title='Aneis femininos modernos | Barrs Store',
+        )
+
+        response = Client().get('/categoria/anel/')
+        html = response.content.decode('utf-8')
+
+        self.assertIn('<title>Aneis femininos modernos | Barrs Store</title>', html)
+
+    def test_pagina_mais_vendidos_funciona_sem_categoria_no_banco(self):
+        Produto.objects.create(
+            nome='Colar Destaque Mais Vendido',
+            preco=Decimal('99.90'),
+            estoque=5,
+            destaque=True,
+        )
+
+        response = Client().get('/categoria/mais-vendidos/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Colar Destaque Mais Vendido', response.content.decode('utf-8'))
+
+
 class ValidadorCPFTests(TestCase):
     def test_cpf_valido_com_mascara(self):
         self.assertTrue(cpf_valido('529.982.247-25'))

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static cloudinary_extras inline_static %}
 
-{% block title %}Barrs Store — Semijoias modernas e exclusivas{% endblock %}
+{% block title %}{% if categoria_ativa and listing_base_url != '/' %}{{ seo_title }}{% else %}Barrs Store — Semijoias modernas e exclusivas{% endif %}{% endblock %}
 
 {% block extra_head %}
 {# Preload hero LCP apenas na home sem filtros (hero visível) #}
@@ -122,17 +122,17 @@
 
 <!-- CONTROLES DE BUSCA -->
 <div class="controls" aria-label="Buscar e ordenar produtos">
-  <form method="GET" action="/" class="controls__search" role="search" id="product-search-form">
+  <form method="GET" action="{{ listing_base_url }}" class="controls__search" role="search" id="product-search-form">
     <svg class="icon controls__search-icon icon--16" aria-hidden="true"><use href="#i-search"/></svg>
     <input type="text" name="q" class="controls__search-input" placeholder="Buscar produtos..." value="{{ busca }}" aria-label="Buscar produtos">
     {% if ordem %}<input type="hidden" name="ordem" value="{{ ordem }}">{% endif %}
-    {% if categoria_ativa %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
+    {% if categoria_ativa and listing_base_url == '/' %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
   </form>
   <div class="controls__row">
     <button type="submit" form="product-search-form" class="controls__submit">Buscar</button>
-    <form method="GET" action="/" class="controls__sort-form">
+    <form method="GET" action="{{ listing_base_url }}" class="controls__sort-form">
       {% if busca %}<input type="hidden" name="q" value="{{ busca }}">{% endif %}
-      {% if categoria_ativa %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
+      {% if categoria_ativa and listing_base_url == '/' %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
       <select name="ordem" class="controls__sort" onchange="this.form.submit()" aria-label="Ordenar produtos">
         <option value="" {% if not ordem %}selected{% endif %}>Mais recentes</option>
         <option value="menor" {% if ordem == 'menor' %}selected{% endif %}>Menor preço</option>
@@ -145,8 +145,17 @@
 
 {% if busca %}
 <div class="search-result">
-  {{ total_produtos }} resultado{% if total_produtos != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" - <a href="/{% if categoria_ativa or ordem %}?{% if categoria_ativa %}categoria={{ categoria_ativa }}{% endif %}{% if categoria_ativa and ordem %}&{% endif %}{% if ordem %}ordem={{ ordem }}{% endif %}{% endif %}">Limpar busca</a>
+  {{ total_produtos }} resultado{% if total_produtos != 1 %}s{% endif %} para "<strong>{{ busca }}</strong>" - <a href="{{ clear_busca_url }}">Limpar busca</a>
 </div>
+{% endif %}
+
+{% if listing_base_url != '/' and categoria_ativa %}
+<section class="categoria-intro">
+  <h1 class="categoria-intro__title">{{ categoria_nome_exibicao }}</h1>
+  {% if categoria and categoria.descricao_categoria %}
+  <div class="categoria-intro__texto">{{ categoria.descricao_categoria|linebreaks }}</div>
+  {% endif %}
+</section>
 {% endif %}
 
 <!-- GRID DE PRODUTOS -->

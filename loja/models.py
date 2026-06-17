@@ -28,6 +28,18 @@ class Categoria(models.Model):
     nome = models.CharField(max_length=50)
     slug = models.SlugField(unique=True)
     icone = models.CharField(max_length=10, blank=True, default='💎', help_text='Emoji do ícone')
+    meta_title = models.CharField(
+        max_length=70, blank=True, default='',
+        help_text='Título customizado para Google/aba do navegador. Se vazio, usamos um título automático.',
+    )
+    meta_description = models.CharField(
+        max_length=160, blank=True, default='',
+        help_text='Resumo para Google, até 160 caracteres. Se vazio, usamos uma descrição automática.',
+    )
+    descricao_categoria = models.TextField(
+        blank=True, default='',
+        help_text='Texto introdutório exibido no topo da página da categoria (bom para SEO). Pode ficar vazio por enquanto.',
+    )
 
     class Meta:
         verbose_name = 'Categoria'

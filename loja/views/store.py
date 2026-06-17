@@ -5,6 +5,7 @@ from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from ..models import Categoria, Pedido, Produto
 from .utils import (
@@ -38,26 +39,28 @@ def _registrar_clique_produto(produto_id):
         cache.set('cliques:pendentes', pendentes, 60 * 60 * 24)
 
 
-def home(request):
-    busca = request.GET.get('q', '').strip()
-    ordem = request.GET.get('ordem', '')
-    categoria_slug = request.GET.get('categoria', '')
-    categoria_aliases = {
-        'aneis': ['anel', 'aneis'],
-        'anel': ['anel', 'aneis'],
-        'brincos': ['brinco', 'brincos'],
-        'brinco': ['brinco', 'brincos'],
-        'colares': ['colar', 'colares'],
-        'colar': ['colar', 'colares'],
-        'pulseiras': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
-        'pulseira': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
-        'braceletes-e-pulseiras': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
-        'chokers': ['choker', 'chokers'],
-        'choker': ['choker', 'chokers'],
-        'conjuntos': ['conjunto', 'conjuntos'],
-        'conjunto': ['conjunto', 'conjuntos'],
-    }
+CATEGORIA_ALIASES = {
+    'aneis': ['anel', 'aneis'],
+    'anel': ['anel', 'aneis'],
+    'brincos': ['brinco', 'brincos'],
+    'brinco': ['brinco', 'brincos'],
+    'colares': ['colar', 'colares'],
+    'colar': ['colar', 'colares'],
+    'pulseiras': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
+    'pulseira': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
+    'braceletes-e-pulseiras': ['pulseira', 'pulseiras', 'bracelete', 'braceletes', 'braceletes-e-pulseiras'],
+    'chokers': ['choker', 'chokers'],
+    'choker': ['choker', 'chokers'],
+    'conjuntos': ['conjunto', 'conjuntos'],
+    'conjunto': ['conjunto', 'conjuntos'],
+}
 
+
+def _filtrar_e_paginar_produtos(request, categoria_slug, busca, ordem):
+    """Filtra, ordena e pagina produtos. Usado por home() e categoria_view().
+
+    Se a requisicao for parcial (infinite scroll), retorna {'json_response': JsonResponse}.
+    """
     produtos = Produto.objects.filter(visivel=True).distinct()
 
     if busca:
@@ -68,7 +71,7 @@ def home(request):
     if categoria_slug == 'mais-vendidos':
         produtos = produtos.filter(destaque=True)
     elif categoria_slug:
-        produtos = produtos.filter(categoria__slug__in=categoria_aliases.get(categoria_slug, [categoria_slug]))
+        produtos = produtos.filter(categoria__slug__in=CATEGORIA_ALIASES.get(categoria_slug, [categoria_slug]))
 
     if ordem == 'menor':
         produtos = produtos.order_by('-destaque', 'preco', '-criado_em', '-id')
@@ -79,8 +82,6 @@ def home(request):
     else:
         produtos = produtos.order_by('-destaque', '-criado_em', '-id')
 
-    # Cache do count() (query potencialmente cara em catalogo grande). TTL 60s.
-    # Vary por filtros que mudam o resultado.
     total_cache_key = f'home:count:v=1:q={busca}:o={ordem}:c={categoria_slug}'
     total_produtos = cache.get(total_cache_key)
     if total_produtos is None:
@@ -96,7 +97,6 @@ def home(request):
     query_params.pop('partial', None)
     base_query = query_params.urlencode()
 
-    # Resposta parcial usada pelo infinite scroll do front: devolve so o chunk daquela pagina.
     is_partial = (
         request.GET.get('partial') == '1'
         or request.headers.get('x-requested-with') == 'XMLHttpRequest'
@@ -107,11 +107,13 @@ def home(request):
         fim = page_number * per_page
         chunk = list(produtos[inicio:fim])
         html = render_to_string('partials/product_cards_chunk.html', {'produtos': chunk}, request=request)
-        return JsonResponse({
-            'html': html,
-            'has_next': total_produtos > fim,
-            'next_page': page_number + 1 if total_produtos > fim else 0,
-        })
+        return {
+            'json_response': JsonResponse({
+                'html': html,
+                'has_next': total_produtos > fim,
+                'next_page': page_number + 1 if total_produtos > fim else 0,
+            })
+        }
 
     produtos_pagina = produtos[:page_number * per_page]
     has_next_page = total_produtos > page_number * per_page
@@ -120,6 +122,37 @@ def home(request):
         next_query = query_params.copy()
         next_query['page'] = page_number + 1
         next_page_url = f'?{next_query.urlencode()}#produtos'
+
+    return {
+        'produtos': produtos_pagina,
+        'has_next_page': has_next_page,
+        'next_page_url': next_page_url,
+        'next_page_number': page_number + 1 if has_next_page else 0,
+        'base_query': base_query,
+        'total_produtos': total_produtos,
+    }
+
+
+def _montar_clear_busca_url(listing_base_url, categoria_slug, ordem):
+    """Monta a URL do link 'Limpar busca', preservando categoria (so no modo query string) e ordem."""
+    partes = []
+    if listing_base_url == '/' and categoria_slug:
+        partes.append(f'categoria={categoria_slug}')
+    if ordem:
+        partes.append(f'ordem={ordem}')
+    if not partes:
+        return listing_base_url
+    return f"{listing_base_url}?{'&'.join(partes)}"
+
+
+def home(request):
+    busca = request.GET.get('q', '').strip()
+    ordem = request.GET.get('ordem', '')
+    categoria_slug = request.GET.get('categoria', '')
+
+    resultado = _filtrar_e_paginar_produtos(request, categoria_slug, busca, ordem)
+    if 'json_response' in resultado:
+        return resultado['json_response']
 
     # Lista de categorias raramente muda; cache 5min reduz query desnecessaria.
     categorias = cache.get('home:categorias:v=1')
@@ -135,17 +168,70 @@ def home(request):
     )
 
     context = {
-        'produtos': produtos_pagina,
-        'has_next_page': has_next_page,
-        'next_page_url': next_page_url,
-        'next_page_number': page_number + 1 if has_next_page else 0,
-        'base_query': base_query,
+        'produtos': resultado['produtos'],
+        'has_next_page': resultado['has_next_page'],
+        'next_page_url': resultado['next_page_url'],
+        'next_page_number': resultado['next_page_number'],
+        'base_query': resultado['base_query'],
         'qtd_carrinho': get_carrinho_info(request),
         'busca': busca,
         'ordem': ordem,
-        'total_produtos': total_produtos,
+        'total_produtos': resultado['total_produtos'],
         'categorias': categorias,
         'categoria_ativa': categoria_slug,
+        'categoria': None,
+        'listing_base_url': '/',
+        'clear_busca_url': _montar_clear_busca_url('/', categoria_slug, ordem),
+    }
+    context.update(seo)
+    return render(request, 'home.html', context)
+
+
+def categoria_view(request, categoria_slug):
+    categoria_obj = None
+    if categoria_slug != 'mais-vendidos':
+        categoria_obj = get_object_or_404(Categoria, slug=categoria_slug)
+
+    busca = request.GET.get('q', '').strip()
+    ordem = request.GET.get('ordem', '')
+
+    resultado = _filtrar_e_paginar_produtos(request, categoria_slug, busca, ordem)
+    if 'json_response' in resultado:
+        return resultado['json_response']
+
+    categorias = cache.get('home:categorias:v=1')
+    if categorias is None:
+        categorias = list(Categoria.objects.all())
+        cache.set('home:categorias:v=1', categorias, 300)
+
+    nome_categoria = categoria_obj.nome if categoria_obj else 'Mais vendidos'
+    titulo_padrao = f'{nome_categoria} | Barrs Store'
+    descricao_padrao = f'Confira {nome_categoria.lower()} na Barrs Store, com envio para todo o Brasil.'
+
+    titulo_seo = (categoria_obj.meta_title if categoria_obj and categoria_obj.meta_title else titulo_padrao)
+    descricao_seo = (
+        categoria_obj.meta_description if categoria_obj and categoria_obj.meta_description else descricao_padrao
+    )
+
+    seo = seo_context(request, titulo_seo, descricao_seo)
+    listing_base_url = reverse('categoria_detalhe', kwargs={'categoria_slug': categoria_slug})
+
+    context = {
+        'produtos': resultado['produtos'],
+        'has_next_page': resultado['has_next_page'],
+        'next_page_url': resultado['next_page_url'],
+        'next_page_number': resultado['next_page_number'],
+        'base_query': resultado['base_query'],
+        'qtd_carrinho': get_carrinho_info(request),
+        'busca': busca,
+        'ordem': ordem,
+        'total_produtos': resultado['total_produtos'],
+        'categorias': categorias,
+        'categoria_ativa': categoria_slug,
+        'categoria': categoria_obj,
+        'categoria_nome_exibicao': nome_categoria,
+        'listing_base_url': listing_base_url,
+        'clear_busca_url': _montar_clear_busca_url(listing_base_url, categoria_slug, ordem),
     }
     context.update(seo)
     return render(request, 'home.html', context)
