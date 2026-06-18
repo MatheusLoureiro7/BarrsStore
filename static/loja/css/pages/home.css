@@ -753,10 +753,14 @@
               box-shadow var(--duration) var(--ease),
               transform var(--duration) var(--ease);
 }
-.product-card__view:hover {
-  background: var(--color-brand-soft);
-  box-shadow: var(--shadow-button);
-  transform: translateY(-1px);
+/* :hover so em dispositivos com ponteiro real (mouse). Em telas de toque o
+   :hover "gruda" e faz o link exigir 2 toques para abrir. */
+@media (hover: hover) and (pointer: fine) {
+  .product-card__view:hover {
+    background: var(--color-brand-soft);
+    box-shadow: var(--shadow-button);
+    transform: translateY(-1px);
+  }
 }
 .product-card__view:active { transform: translateY(0) scale(0.99); }
 
@@ -780,12 +784,14 @@
               box-shadow var(--duration) var(--ease),
               transform var(--duration) var(--ease);
 }
-.product-card__add:hover {
-  border-color: var(--color-brand);
-  background: var(--color-brand);
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(107, 122, 100, 0.14);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .product-card__add:hover {
+    border-color: var(--color-brand);
+    background: var(--color-brand);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(107, 122, 100, 0.14);
+    transform: translateY(-1px);
+  }
 }
 .product-card__add.is-added {
   border-color: var(--color-brand);
@@ -799,12 +805,14 @@
   cursor: not-allowed;
   opacity: 0.75;
 }
-.product-card__add--disabled:hover {
-  border-color: var(--color-border);
-  background: var(--color-bg-alt);
-  color: var(--color-ink-muted);
-  box-shadow: none;
-  transform: none;
+@media (hover: hover) and (pointer: fine) {
+  .product-card__add--disabled:hover {
+    border-color: var(--color-border);
+    background: var(--color-bg-alt);
+    color: var(--color-ink-muted);
+    box-shadow: none;
+    transform: none;
+  }
 }
 
 .empty-state {
@@ -1977,9 +1985,11 @@
   box-shadow: 0 8px 18px rgba(83, 98, 76, 0.13);
 }
 
-.ph-todas .product-card__view:hover {
-  background: var(--color-ink-soft);
-  box-shadow: var(--shadow-button);
+@media (hover: hover) and (pointer: fine) {
+  .ph-todas .product-card__view:hover {
+    background: var(--color-ink-soft);
+    box-shadow: var(--shadow-button);
+  }
 }
 
 .ph-todas .product-card__add {
@@ -1991,9 +2001,11 @@
   transform: none;
 }
 
-.ph-todas .product-card__add:hover {
-  box-shadow: 0 8px 18px rgba(83, 98, 76, 0.18);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .ph-todas .product-card__add:hover {
+    box-shadow: 0 8px 18px rgba(83, 98, 76, 0.18);
+    transform: translateY(-1px);
+  }
 }
 
 @media (max-width: 767px) {
@@ -2132,9 +2144,11 @@
   box-shadow: 0 8px 18px rgba(83, 98, 76, 0.13);
 }
 
-.product-card__view:hover {
-  background: var(--color-ink-soft);
-  box-shadow: var(--shadow-button);
+@media (hover: hover) and (pointer: fine) {
+  .product-card__view:hover {
+    background: var(--color-ink-soft);
+    box-shadow: var(--shadow-button);
+  }
 }
 
 .product-card__add {
@@ -2146,9 +2160,11 @@
   transform: none;
 }
 
-.product-card__add:hover {
-  box-shadow: 0 8px 18px rgba(83, 98, 76, 0.18);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .product-card__add:hover {
+    box-shadow: 0 8px 18px rgba(83, 98, 76, 0.18);
+    transform: translateY(-1px);
+  }
 }
 
 @media (max-width: 767px) {
@@ -2601,14 +2617,18 @@
   transition: left 700ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
-.product-card__view:hover::after { left: 140%; }
+@media (hover: hover) and (pointer: fine) {
+  .product-card__view:hover::after { left: 140%; }
+}
 
 /* Botão "+" — círculo refinado em hover */
 .product-card__add {
   border-radius: 50%;
 }
-.product-card__add:hover {
-  box-shadow: 0 10px 22px rgba(107, 122, 100, 0.18), 0 0 0 3px rgba(212, 175, 55, 0.12);
+@media (hover: hover) and (pointer: fine) {
+  .product-card__add:hover {
+    box-shadow: 0 10px 22px rgba(107, 122, 100, 0.18), 0 0 0 3px rgba(212, 175, 55, 0.12);
+  }
 }
 
 /* Card: brilho sutil no border ao hover (linha gold quase invisível) */
@@ -2965,9 +2985,11 @@
   border-radius: var(--radius);
   box-shadow: 0 6px 14px rgba(107, 122, 100, 0.10);
 }
-.product-card__view:hover {
-  background: var(--color-brand-soft);
-  box-shadow: 0 12px 24px rgba(107, 122, 100, 0.18);
+@media (hover: hover) and (pointer: fine) {
+  .product-card__view:hover {
+    background: var(--color-brand-soft);
+    box-shadow: 0 12px 24px rgba(107, 122, 100, 0.18);
+  }
 }
 
 .product-card__add {
@@ -2981,11 +3003,13 @@
   font-weight: 500;
   box-shadow: 0 2px 6px rgba(43, 37, 32, 0.04);
 }
-.product-card__add:hover {
-  background: var(--color-brand);
-  color: #fff;
-  border-color: var(--color-brand);
-  box-shadow: 0 10px 22px rgba(107, 122, 100, 0.20), 0 0 0 3px rgba(212, 175, 55, 0.10);
+@media (hover: hover) and (pointer: fine) {
+  .product-card__add:hover {
+    background: var(--color-brand);
+    color: #fff;
+    border-color: var(--color-brand);
+    box-shadow: 0 10px 22px rgba(107, 122, 100, 0.20), 0 0 0 3px rgba(212, 175, 55, 0.10);
+  }
 }
 
 @media (max-width: 640px) {
