@@ -122,4 +122,10 @@ class ContentSecurityPolicyReportOnlyMiddleware:
         path = request.path_info or request.path
         if path.startswith(('/pagamento/', '/finalizar/', '/minha-conta/')):
             response['X-Robots-Tag'] = 'noindex, nofollow'
+        # O HTML e renderizado com CSS/JS inline; sem revalidacao, o navegador
+        # (sobretudo iOS Safari) reusa HTML+CSS antigos depois de um deploy.
+        # no-cache obriga revalidar a cada navegacao, sem desligar o bfcache.
+        ctype = response.get('Content-Type', '')
+        if ctype.startswith('text/html') and 'Cache-Control' not in response:
+            response['Cache-Control'] = 'no-cache, private'
         return response
