@@ -15,7 +15,15 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap">
 <link id="gfonts-stylesheet" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" media="print">
 <script nonce="{{ csp_nonce }}">
-document.getElementById('gfonts-stylesheet').addEventListener('load', function () { this.media = 'all'; });
+(function () {
+  var l = document.getElementById('gfonts-stylesheet');
+  if (!l) return;
+  function swap() { l.media = 'all'; }
+  // Se o CSS ja foi parseado antes deste script rodar (cache/preload), aplica
+  // na hora; senao espera o load. Evita corrida que deixaria a fonte em "print".
+  if (l.sheet) { swap(); }
+  else { l.addEventListener('load', swap); l.addEventListener('error', swap); }
+})();
 </script>
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap"></noscript>
 {# extra_head primeiro: garante que preloads de LCP (ex.: hero da home) sejam descobertos antes dos scripts de tracking #}
