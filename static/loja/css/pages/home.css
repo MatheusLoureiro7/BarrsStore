@@ -1891,10 +1891,12 @@
               transform var(--duration) var(--ease);
 }
 
-.ph-todas .product-card:hover {
-  border-color: rgba(115, 130, 105, 0.34);
-  box-shadow: 0 12px 34px rgba(43, 37, 32, 0.09);
-  transform: translateY(-3px);
+@media (hover: hover) and (pointer: fine) {
+  .ph-todas .product-card:hover {
+    border-color: rgba(115, 130, 105, 0.34);
+    box-shadow: 0 12px 34px rgba(43, 37, 32, 0.09);
+    transform: translateY(-3px);
+  }
 }
 
 .ph-todas .product-card__media::after {
@@ -1905,9 +1907,11 @@
   transition: transform 700ms var(--ease), filter 700ms var(--ease), opacity 500ms var(--ease);
 }
 
-.ph-todas .product-card:hover .product-card__media img {
-  transform: scale(1.045);
-  filter: saturate(1.04) contrast(1.02);
+@media (hover: hover) and (pointer: fine) {
+  .ph-todas .product-card:hover .product-card__media img {
+    transform: scale(1.045);
+    filter: saturate(1.04) contrast(1.02);
+  }
 }
 
 .ph-todas .product-card__badge {
@@ -2059,10 +2063,12 @@
               transform var(--duration) var(--ease);
 }
 
-.product-card:hover {
-  border-color: rgba(115, 130, 105, 0.34);
-  box-shadow: 0 12px 34px rgba(43, 37, 32, 0.09);
-  transform: translateY(-3px);
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover {
+    border-color: rgba(115, 130, 105, 0.34);
+    box-shadow: 0 12px 34px rgba(43, 37, 32, 0.09);
+    transform: translateY(-3px);
+  }
 }
 
 .product-card__media::after {
@@ -2073,9 +2079,11 @@
   transition: transform 700ms var(--ease), filter 700ms var(--ease), opacity 500ms var(--ease);
 }
 
-.product-card:hover .product-card__media img {
-  transform: scale(1.045);
-  filter: saturate(1.04) contrast(1.02);
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover .product-card__media img {
+    transform: scale(1.045);
+    filter: saturate(1.04) contrast(1.02);
+  }
 }
 
 .product-card__body {
@@ -3086,8 +3094,10 @@
   z-index: 2;
   pointer-events: none;
 }
-.ph-curadoria .product-card:hover::after {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .ph-curadoria .product-card:hover::after {
+    opacity: 1;
+  }
 }
 
 /* Badge "Favorita/Mais vendidos" em "Mais amadas" — dourado-cremoso */
