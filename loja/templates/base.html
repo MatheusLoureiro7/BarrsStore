@@ -11,12 +11,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 <link rel="dns-prefetch" href="https://connect.facebook.net">
-<!-- Google Fonts: carga não-bloqueante (print → all no onload) + variantes reduzidas -->
+<!-- Google Fonts: carga não-bloqueante (print → all via listener externo, sem handler inline) + variantes reduzidas -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" media="print" onload="this.media='all'">
+<link id="gfonts-stylesheet" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" media="print">
+<script nonce="{{ csp_nonce }}">
+document.getElementById('gfonts-stylesheet').addEventListener('load', function () { this.media = 'all'; });
+</script>
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap"></noscript>
-{% include "partials/seo_head.html" %}
+{# extra_head primeiro: garante que preloads de LCP (ex.: hero da home) sejam descobertos antes dos scripts de tracking #}
 {% block extra_head %}{% endblock %}
+{% include "partials/seo_head.html" %}
 <style>
 {% inline_static 'loja/css/base.css' %}
 :root {

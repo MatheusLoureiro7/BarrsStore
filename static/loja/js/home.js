@@ -1,3 +1,12 @@
+// Select de ordenacao: envia o formulario sozinho ao trocar (sem handler inline, exigido pelo CSP).
+(function () {
+  const sortSelect = document.querySelector('.controls__sort');
+  if (!sortSelect) return;
+  sortSelect.addEventListener('change', function () {
+    this.form.submit();
+  });
+})();
+
 // Carrossel mobile da faixa de confianca (proof-strip).
 (function () {
   const strip = document.querySelector('.proof-strip');

@@ -206,9 +206,9 @@
       <div class="qty-section">
         <span class="qty-section__label">Quantidade</span>
         <div class="qty-control">
-          <button type="button" onclick="alterarQtd(-1)" aria-label="Diminuir quantidade">−</button>
+          <button type="button" data-qtd-delta="-1" aria-label="Diminuir quantidade">−</button>
           <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ produto.estoque }}">
-          <button type="button" onclick="alterarQtd(1)" aria-label="Aumentar quantidade">+</button>
+          <button type="button" data-qtd-delta="1" aria-label="Aumentar quantidade">+</button>
         </div>
       </div>
 
@@ -370,6 +370,12 @@ function alterarQtd(delta) {
   const max = parseInt(input.max || '99');
   if (val >= 1 && val <= max) input.value = val;
 }
+
+document.querySelectorAll('[data-qtd-delta]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    alterarQtd(parseInt(this.dataset.qtdDelta, 10));
+  });
+});
 
 // Toast ao adicionar ao carrinho
 const formCarrinho = document.getElementById('form-add-carrinho');

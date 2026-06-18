@@ -7,7 +7,8 @@
 {# Preload hero LCP apenas na home sem filtros (hero visível) #}
 {% if not busca and not categoria_ativa and not ordem and not request.GET.ver and not request.GET.page %}
 <link rel="preload" as="image"
-  href="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_900,q_auto,f_auto/v1781634478/ChatGPT_Image_16_de_jun._de_2026_15_27_33_xohqbg.png"
+  href="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_721,q_auto,f_auto/v1781634478/ChatGPT_Image_16_de_jun._de_2026_15_27_33_xohqbg.png"
+  imagesrcset="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_721,q_auto,f_auto/v1781634478/ChatGPT_Image_16_de_jun._de_2026_15_27_33_xohqbg.png 1x, https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_1442,q_auto,f_auto/v1781634478/ChatGPT_Image_16_de_jun._de_2026_15_27_33_xohqbg.png 2x"
   media="(max-width: 767px)"
   fetchpriority="high">
 <link rel="preload" as="image"
@@ -60,7 +61,7 @@
 <!-- HERO -->
 <section class="hero">
   <picture class="hero__bg" aria-hidden="true">
-    <source media="(max-width: 767px)" srcset="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_900,q_auto,f_auto/v1781634478/ChatGPT_Image_16_de_jun._de_2026_15_27_33_xohqbg.png">
+    <source media="(max-width: 767px)" srcset="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_721,q_auto,f_auto/v1781634478/ChatGPT_Image_16_de_jun._de_2026_15_27_33_xohqbg.png 1x, https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_1442,q_auto,f_auto/v1781634478/ChatGPT_Image_16_de_jun._de_2026_15_27_33_xohqbg.png 2x">
     <img src="https://res.cloudinary.com/dsw5fkmwp/image/upload/c_limit,w_1920,q_auto,f_auto/v1781548487/ChatGPT_Image_15_de_jun._de_2026_15_34_19_iva0qy.png" alt="Coleção Inverno 2026 Barrs — semijoias premium" width="2162" height="727" loading="eager" fetchpriority="high">
   </picture>
   <div class="hero__inner">
@@ -133,7 +134,7 @@
     <form method="GET" action="{{ listing_base_url }}" class="controls__sort-form">
       {% if busca %}<input type="hidden" name="q" value="{{ busca }}">{% endif %}
       {% if categoria_ativa and listing_base_url == '/' %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
-      <select name="ordem" class="controls__sort" onchange="this.form.submit()" aria-label="Ordenar produtos">
+      <select name="ordem" class="controls__sort" aria-label="Ordenar produtos">
         <option value="" {% if not ordem %}selected{% endif %}>Mais recentes</option>
         <option value="menor" {% if ordem == 'menor' %}selected{% endif %}>Menor preço</option>
         <option value="maior" {% if ordem == 'maior' %}selected{% endif %}>Maior preço</option>

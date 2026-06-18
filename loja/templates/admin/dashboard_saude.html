@@ -75,7 +75,7 @@
     Receita por período
     <form class="mes-filter" method="get">
       <label for="mes-sel">Ver mês:</label>
-      <select id="mes-sel" name="mes" onchange="this.form.submit()">
+      <select id="mes-sel" name="mes">
         {% for d in meses_disponiveis %}
         <option value="{{ d|date:'Y-m' }}"{% if d|date:'Y-m' == mes_selecionado %} selected{% endif %}>
           {{ d|date:"m/Y" }}
@@ -255,4 +255,9 @@
 
   <div class="updated">Atualizado em {{ agora|date:"d/m/Y H:i:s" }}</div>
 </div>
+<script nonce="{{ csp_nonce }}">
+document.getElementById('mes-sel').addEventListener('change', function () {
+  this.form.submit();
+});
+</script>
 {% endblock %}

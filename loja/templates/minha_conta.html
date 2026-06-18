@@ -56,11 +56,11 @@
 
   <!-- ABAS -->
   <div class="tabs">
-    <a class="tab active" onclick="trocarAba(event, 'pedidos', this, 'Pedidos')" href="#">
+    <a class="tab active" data-aba="pedidos" data-aba-label="Pedidos" href="#">
       <svg class="icon icon--14" aria-hidden="true"><use href="#i-package"/></svg>
       Meus pedidos
     </a>
-    <a class="tab" onclick="trocarAba(event, 'dados', this, 'Meus dados')" href="#">
+    <a class="tab" data-aba="dados" data-aba-label="Meus dados" href="#">
       <svg class="icon icon--14" aria-hidden="true"><use href="#i-user"/></svg>
       Meus dados
     </a>
@@ -186,6 +186,12 @@ function trocarAba(event, nome, el, label) {
   const bc = document.getElementById('bc-active');
   if (bc) bc.textContent = label;
 }
+
+document.querySelectorAll('.tab[data-aba]').forEach(function (tab) {
+  tab.addEventListener('click', function (event) {
+    trocarAba(event, this.dataset.aba, this, this.dataset.abaLabel);
+  });
+});
 
 const cepInput = document.getElementById('cep');
 if (cepInput) {

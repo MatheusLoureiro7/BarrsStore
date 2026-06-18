@@ -8,10 +8,9 @@
     Depois de adicionar, volte ao dispositivo e confirme um código de 6 dígitos para ativar.
   </p>
   <p id="qrcode">
-    <img width="220" height="220"
+    <img id="qrcode-img" width="220" height="220"
          style="background-color: white; padding: 8px; border:1px solid #ddd"
          src="{% url "admin:otp_totp_totpdevice_qrcode" pk=device.pk %}"
-         onerror="document.getElementById('qrcode').style.display = 'none'; document.getElementById('no-qrcode').style.display = 'block';"
     >
   </p>
   <p id="no-qrcode" style="display: none">
@@ -21,4 +20,10 @@
     {{ device.config_url }}
   </p>
 </div>
+<script nonce="{{ csp_nonce }}">
+document.getElementById('qrcode-img').addEventListener('error', function () {
+  document.getElementById('qrcode').style.display = 'none';
+  document.getElementById('no-qrcode').style.display = 'block';
+});
+</script>
 {% endblock %}

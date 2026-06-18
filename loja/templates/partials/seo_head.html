@@ -20,7 +20,7 @@
 {% if not seo_no_tracking %}
 {% include "partials/meta_pixel.html" %}
 {% if google_analytics_id %}
-<script async src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id }}"></script>
+<script async fetchpriority="low" src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id }}"></script>
 <script nonce="{{ csp_nonce }}">
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
