@@ -5,6 +5,10 @@
 
 {% block extra_head %}
 <script src="https://sdk.mercadopago.com/js/v2"></script>
+<!-- Device ID do Mercado Pago: coleta o fingerprint do dispositivo e popula
+     window.MP_DEVICE_SESSION_ID. Enviado ao backend e repassado a API do MP
+     como X-meli-session-id para reduzir recusas antifraude (cc_rejected_high_risk). -->
+<script src="https://www.mercadopago.com/v2/security.js" view="checkout"></script>
 {% endblock %}
 
 {% block page_css %}<style>

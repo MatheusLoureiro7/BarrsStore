@@ -318,13 +318,18 @@
             var formData = _ref.formData;
             showStatus('Processando pagamento com segurança...');
             showOverlay('loading');
+            // Device ID (security.js) ajuda o antifraude do MP a aprovar.
+            // Se o script nao carregou, segue vazio: o backend trata a ausencia.
+            var payload = Object.assign({}, formData, {
+              device_id: window.MP_DEVICE_SESSION_ID || '',
+            });
             return fetch(cfg.urls.processar, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken':  cfg.csrfToken,
               },
-              body: JSON.stringify(formData),
+              body: JSON.stringify(payload),
             })
               .then(async function (response) {
                 var data = await response.json().catch(function () { return {}; });

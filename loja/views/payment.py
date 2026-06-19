@@ -215,6 +215,26 @@ def dados_pagador_mercadopago(pedido):
     return payer
 
 
+def descricao_item_mp(item):
+    """Descricao por item para o antifraude do Mercado Pago.
+
+    O suporte do MP recomenda enviar items.description para validar melhor a
+    compra e reduzir recusas por alto risco (cc_rejected_high_risk). Usa a
+    descricao real do produto; se vazia, compoe categoria + nome; em ultimo
+    caso usa so o nome. Texto apenas para o backend do MP — nao afeta a UI.
+    """
+    produto = item.produto
+    if produto and (produto.descricao or '').strip():
+        # Colapsa quebras de linha/espacos do TextField num texto de uma linha.
+        texto = ' '.join(produto.descricao.split())
+    elif produto and produto.categoria_id and produto.categoria:
+        texto = f'{produto.categoria.nome} - {item.nome_produto}'
+    else:
+        texto = item.nome_produto
+    # MP limita a descricao; corta com folga para nao ser rejeitado por tamanho.
+    return texto[:256]
+
+
 def baixar_estoque_pedido(pedido):
     """Baixa o estoque uma unica vez quando o pagamento e confirmado."""
     with transaction.atomic():
@@ -506,16 +526,24 @@ def criar_preferencia(request, pedido_id, token):
 
     items = []
     if pedido.desconto > 0:
+        # Linha unica (cupom aplicado): descreve os produtos reais do pedido
+        # para o antifraude do MP, mesmo sem detalhar preco por item.
+        nomes_produtos = ', '.join(
+            i.nome_produto for i in pedido.itens.all()
+        )[:256] or f'Pedido #{pedido.id} - Barrs Store'
         items.append({
             "title": f"Pedido #{pedido.id} - Barrs Store",
+            "description": nomes_produtos,
             "quantity": 1,
             "unit_price": float(pedido.total),
             "currency_id": "BRL",
         })
     else:
-        for item in pedido.itens.select_related('produto').all():
+        for item in pedido.itens.select_related('produto', 'produto__categoria').all():
             items.append({
+                "id": str(item.produto_id or item.id),
                 "title": item.nome_produto,
+                "description": descricao_item_mp(item),
                 "quantity": int(item.quantidade),
                 "unit_price": float(item.preco_unitario),
                 "currency_id": "BRL",
@@ -635,6 +663,19 @@ def processar_pagamento_brick(request, pedido_id, token):
         pedido.id, pedido.subtotal, pedido.desconto, pedido.frete, pedido.total, valor_cobranca,
     )
 
+    # additional_info.items: detalhe por produto (com description) para o
+    # antifraude do MP validar a compra e reduzir cc_rejected_high_risk.
+    # E informativo — nao precisa somar o transaction_amount (que muda no Pix).
+    info_items = []
+    for item in pedido.itens.select_related('produto', 'produto__categoria').all():
+        info_items.append({
+            'id': str(item.produto_id or item.id),
+            'title': item.nome_produto,
+            'description': descricao_item_mp(item),
+            'quantity': int(item.quantidade),
+            'unit_price': float(item.preco_unitario),
+        })
+
     payment_data = {
         'transaction_amount': float(valor_cobranca),
         'description': f'Pedido #{pedido.id} - Barrs Store',
@@ -646,6 +687,8 @@ def processar_pagamento_brick(request, pedido_id, token):
         },
         'statement_descriptor': 'BARRS STORE',
     }
+    if info_items:
+        payment_data['additional_info'] = {'items': info_items}
     # Notificacoes chegam apenas pelo webhook configurado no painel do MP;
     # notification_url gerava duplicatas com assinatura propria que falhavam
     # na validacao (403 + retries).
@@ -700,9 +743,22 @@ def processar_pagamento_brick(request, pedido_id, token):
         str(payment_data.get('token') or '')[:32],
         str(payment_data.get('installments') or ''),
     ])
-    request_options.custom_headers = {
+    custom_headers = {
         'X-Idempotency-Key': hashlib.sha256(idem_seed.encode('utf-8')).hexdigest(),
     }
+    # Device ID coletado pelo security.js no front (window.MP_DEVICE_SESSION_ID).
+    # Repassado como X-meli-session-id melhora a aprovacao antifraude do MP.
+    # Se o script nao carregou, segue sem o header — nao trava o checkout.
+    device_id = (form_data.get('device_id') or '').strip()
+    if device_id:
+        custom_headers['X-meli-session-id'] = device_id
+    else:
+        logger.warning(
+            '[MP-BRICK] Device ID ausente no pedido %s; pagamento seguira sem '
+            'X-meli-session-id (maior risco de recusa antifraude).',
+            pedido.id,
+        )
+    request_options.custom_headers = custom_headers
     try:
         payment_response = sdk.payment().create(payment_data, request_options)
     except (RetryError, RequestException) as exc:
