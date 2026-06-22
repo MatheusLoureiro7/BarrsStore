@@ -424,7 +424,14 @@ def adicionar_carrinho(request, produto_id):
     # Meta CAPI AddToCart (server-side). Pixel ja disparou client-side com o mesmo event_id;
     # Meta deduplica os dois. Se o front nao enviou event_id (adblocker ou JS off), o CAPI cobre.
     try:
-        event_id = request.POST.get('meta_event_id') or f'addtocart_{produto.id}_{int(time.time())}_{carrinho.id}'
+        frontend_event_id = request.POST.get('meta_event_id')
+        event_id = frontend_event_id or f'addtocart_{produto.id}_{int(time.time())}_{carrinho.id}'
+        logger.info(
+            '[META EVENT ID] AddToCart frontend=%s backend=%s capi=%s',
+            frontend_event_id or '',
+            event_id,
+            event_id,
+        )
         send_add_to_cart_event(produto, request, event_id)
     except Exception:
         logger.debug('[META CAPI] AddToCart silencioso (nao quebra fluxo de carrinho).', exc_info=True)
@@ -706,6 +713,12 @@ def checkout(request):
         # Meta CAPI InitiateCheckout server-side com mesmo event_id do Pixel client-side
         # (deduplicacao no Meta). So dispara no GET inicial; POST nao retransmite.
         meta_event_id = f'initcheckout_{carrinho.id}_{int(time.time())}'
+        logger.info(
+            '[META EVENT ID] InitiateCheckout frontend=%s backend=%s capi=%s',
+            meta_event_id,
+            meta_event_id,
+            meta_event_id,
+        )
         if request.method == 'GET':
             try:
                 send_initiate_checkout_event(carrinho, request, meta_event_id)

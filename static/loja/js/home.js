@@ -141,6 +141,14 @@
     window.bsToast(msg, { action: { label: 'Ver carrinho', href: '/carrinho/' } });
   }
 
+  function logMetaPixelEvent(eventName, payload, options) {
+    if (typeof window.logMetaPixelEvent === 'function') {
+      window.logMetaPixelEvent(eventName, payload, options || {});
+    } else {
+      console.log('[META PIXEL]', eventName, payload || {}, options || {});
+    }
+  }
+
   // Gera (uma vez por form) o event_id de deduplicacao e o injeta como hidden input.
   // Assim o mesmo id vai no Pixel (eventID) e no POST (meta_event_id) -> Meta deduplica
   // o AddToCart do navegador com o da Conversions API. O FormData(form) abaixo o captura.
@@ -161,6 +169,7 @@
       form.appendChild(input);
     }
     input.value = id;
+    console.log('[META EVENT ID]', 'AddToCart', { frontend: id });
     return id;
   }
 
@@ -174,14 +183,17 @@
     if (typeof fbq !== 'function') return;
     const valor = Number(String(form.dataset.pixelValue || '0').replace(',', '.')) || 0;
     const pid = String(form.dataset.pixelId || '');
-    fbq('track', 'AddToCart', {
+    const payload = {
       content_ids: [pid],
       content_type: 'product',
       content_name: form.dataset.pixelName || '',
       contents: [{ id: pid, quantity: 1 }],
       value: valor,
       currency: 'BRL',
-    }, { eventID: eventId });
+    };
+    const options = { eventID: eventId };
+    logMetaPixelEvent('AddToCart', payload, options);
+    fbq('track', 'AddToCart', payload, options);
   }, true);
 
   document.addEventListener('submit', async function (event) {

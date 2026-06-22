@@ -308,6 +308,11 @@
   let descontoCupom = 0;
 
   function trackMetaPixel(eventName, data) {
+    if (typeof window.logMetaPixelEvent === 'function') {
+      window.logMetaPixelEvent(eventName, data, {});
+    } else {
+      console.log('[META PIXEL]', eventName, data || {}, {});
+    }
     if (typeof fbq === 'function') {
       fbq('track', eventName, data);
     }
@@ -339,7 +344,14 @@
     if (!sessionStorage.getItem(checkoutPixelKey)) {
       // eventID consistente com o CAPI server-side para dedupe no Meta.
       if (typeof fbq === 'function') {
-        fbq('track', 'InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
+        const checkoutPixelOptions = { eventID: '{{ meta_event_id|escapejs }}' };
+        console.log('[META EVENT ID]', 'InitiateCheckout', { frontend: checkoutPixelOptions.eventID });
+        if (typeof window.logMetaPixelEvent === 'function') {
+          window.logMetaPixelEvent('InitiateCheckout', checkoutPixelData, checkoutPixelOptions);
+        } else {
+          console.log('[META PIXEL]', 'InitiateCheckout', checkoutPixelData, checkoutPixelOptions);
+        }
+        fbq('track', 'InitiateCheckout', checkoutPixelData, checkoutPixelOptions);
       }
       sessionStorage.setItem(checkoutPixelKey, '1');
     }

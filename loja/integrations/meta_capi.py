@@ -11,12 +11,47 @@ from django.urls import reverse
 logger = logging.getLogger(__name__)
 
 
+def mask_meta_value(value):
+    if value is None:
+        return None
+    text = str(value)
+    if not text:
+        return ''
+    if len(text) <= 10:
+        return f'{text[:2]}***'
+    return f'{text[:6]}...{text[-4:]}'
+
+
+def mask_user_data(user_data):
+    masked = {}
+    for key, value in (user_data or {}).items():
+        if isinstance(value, list):
+            masked[key] = [mask_meta_value(item) for item in value]
+        else:
+            masked[key] = mask_meta_value(value)
+    return masked
+
+
 def safe_payload_for_log(payload):
     """Copia o payload para log sem expor o access_token."""
     safe_payload = dict(payload)
     if 'access_token' in safe_payload:
         safe_payload['access_token'] = '***'
+    data = []
+    for item in safe_payload.get('data', []):
+        safe_item = dict(item)
+        safe_item['user_data'] = mask_user_data(safe_item.get('user_data', {}))
+        data.append(safe_item)
+    if data:
+        safe_payload['data'] = data
     return safe_payload
+
+
+def response_json_for_log(response):
+    try:
+        return response.json()
+    except ValueError:
+        return None
 
 
 def normalize_and_hash(value):
@@ -60,6 +95,13 @@ def _post_capi(event_name, event_id, source_url, user_data, custom_data):
     access_token = getattr(settings, 'META_ACCESS_TOKEN', '').strip()
     test_event_code = getattr(settings, 'META_TEST_EVENT_CODE', '').strip()
     if not pixel_id or not access_token:
+        logger.warning(
+            '[META CAPI] %s CONFIG INCOMPLETA pixel_id=%s access_token_present=%s test_event_code=%s',
+            event_name,
+            pixel_id or '',
+            bool(access_token),
+            test_event_code or '',
+        )
         return False
 
     payload = {
@@ -80,8 +122,32 @@ def _post_capi(event_name, event_id, source_url, user_data, custom_data):
         payload['test_event_code'] = test_event_code
 
     url = f'https://graph.facebook.com/v22.0/{pixel_id}/events'
+    logger.info(
+        '[META EVENT ID] %s capi=%s',
+        event_name,
+        event_id,
+    )
+    logger.info(
+        '[META CAPI] %s PREPARANDO event_id=%s pixel_id=%s test_event_code=%s event_source_url=%s custom_data=%s user_data=%s payload=%s',
+        event_name,
+        event_id,
+        pixel_id,
+        test_event_code or '',
+        source_url,
+        custom_data,
+        mask_user_data(user_data),
+        safe_payload_for_log(payload),
+    )
     try:
         response = requests.post(url, json=payload, timeout=8)
+        response_json = response_json_for_log(response)
+        logger.info(
+            '[META CAPI] %s RESPOSTA status=%s response=%s response_json=%s',
+            event_name,
+            response.status_code,
+            response.text,
+            response_json,
+        )
         if response.status_code >= 400:
             logger.warning('[META CAPI] %s falhou status=%s resposta=%s',
                            event_name, response.status_code, response.text[:300])
@@ -246,10 +312,30 @@ def send_purchase_event(pedido):
         payload['test_event_code'] = test_event_code
 
     url = f'https://graph.facebook.com/v22.0/{pixel_id}/events'
+    logger.info('[META EVENT ID] Purchase frontend=%s backend=%s capi=%s', event_id, event_id, event_id)
+    logger.info(
+        '[META CAPI] Purchase PREPARANDO pedido=%s event_id=%s pixel_id=%s test_event_code=%s event_source_url=%s custom_data=%s user_data=%s payload=%s',
+        pedido.id,
+        event_id,
+        pixel_id,
+        test_event_code or '',
+        order_success_url(pedido),
+        custom_data,
+        mask_user_data(user_data),
+        safe_payload_for_log(payload),
+    )
     logger.info('[META CAPI] Preparando Purchase pedido=%s event_id=%s teste=%s', pedido.id, event_id, bool(test_event_code))
     logger.info('[META CAPI] Payload pedido=%s: %s', pedido.id, safe_payload_for_log(payload))
     try:
         response = requests.post(url, json=payload, timeout=10)
+        response_json = response_json_for_log(response)
+        logger.info(
+            '[META CAPI] Purchase RESPOSTA pedido=%s status=%s response=%s response_json=%s',
+            pedido.id,
+            response.status_code,
+            response.text,
+            response_json,
+        )
         if response.status_code >= 400:
             logger.warning(
                 '[META CAPI] Falha ao enviar Purchase pedido=%s status=%s resposta=%s',
