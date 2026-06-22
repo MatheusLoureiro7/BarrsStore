@@ -10,12 +10,15 @@ from django.utils.safestring import mark_safe
 register = template.Library()
 
 
+# utf-8-sig: descarta o BOM (﻿) se existir. Como o conteúdo é inlineado
+# dentro de <style>, um BOM no início viraria parte do primeiro seletor
+# (ex.: "﻿.auth"), invalidando a regra silenciosamente.
 @lru_cache(maxsize=64)
 def _read_static_file_cached(path):
     found_path = finders.find(path)
     if not found_path:
         return ''
-    return Path(found_path).read_text(encoding='utf-8')
+    return Path(found_path).read_text(encoding='utf-8-sig')
 
 
 def _read_static_file(path):
@@ -23,7 +26,7 @@ def _read_static_file(path):
         found_path = finders.find(path)
         if not found_path:
             return ''
-        return Path(found_path).read_text(encoding='utf-8')
+        return Path(found_path).read_text(encoding='utf-8-sig')
     return _read_static_file_cached(path)
 
 

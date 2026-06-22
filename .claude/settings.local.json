@@ -150,7 +150,8 @@
       "Bash(rm -f /tmp/choker.html /tmp/conjunto.html /tmp/runserver_prod.log)",
       "Bash(railway variables *)",
       "Bash(pkill -f \"manage.py runserver 127.0.0.1:8767\")",
-      "Bash(rm -f /tmp/brinco.html /tmp/home.html /tmp/lista.html /tmp/qs.html /tmp/runserver_check.log)"
+      "Bash(rm -f /tmp/brinco.html /tmp/home.html /tmp/lista.html /tmp/qs.html /tmp/runserver_check.log)",
+      "Bash(command -v python3)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Bibico\\Documents\\projetos\\BarrsStore\\ads-dashboard\\src"
