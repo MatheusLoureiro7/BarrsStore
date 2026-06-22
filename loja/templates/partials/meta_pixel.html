@@ -1,9 +1,31 @@
-<!-- Meta Pixel: carrega somente após interação do usuário ou 3 s -->
+<!-- Meta Pixel: carrega somente após interação do usuário, evento pendente ou 3 s -->
 <script nonce="{{ csp_nonce }}">
 (function(){
   var _loaded=false;
+  var _ready=false;
+  var _queue=[];
+
+  function _trackNow(item){
+    if(typeof fbq!=='function')return false;
+    if(item.options){
+      fbq('track',item.name,item.data||{},item.options);
+    }else if(item.data){
+      fbq('track',item.name,item.data);
+    }else{
+      fbq('track',item.name);
+    }
+    return true;
+  }
+
+  function _flush(){
+    if(!_ready||typeof fbq!=='function')return;
+    while(_queue.length){
+      _trackNow(_queue.shift());
+    }
+  }
+
   function _fbLoad(){
-    if(_loaded)return;
+    if(_loaded){_flush();return;}
     _loaded=true;
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -15,8 +37,22 @@
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init','{{ meta_pixel_id }}');
     fbq('track','PageView');
+    _ready=true;
+    _flush();
+    try{
+      window.dispatchEvent(new CustomEvent('metaPixelReady'));
+    }catch(e){
+      var event=document.createEvent('Event');
+      event.initEvent('metaPixelReady',false,false);
+      window.dispatchEvent(event);
+    }
   }
   window._fbPixelLoad = _fbLoad;
+  window.trackMetaPixel = function(eventName,data,options){
+    if(!eventName)return;
+    _queue.push({name:eventName,data:data,options:options});
+    _fbLoad();
+  };
   ['scroll','click','touchstart'].forEach(function(e){
     window.addEventListener(e,_fbLoad,{once:true,passive:true});
   });

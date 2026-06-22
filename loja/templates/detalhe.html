@@ -355,18 +355,17 @@ const metaProduto = {
   setSlide(0);
 })();
 
-function trackMetaPixel(eventName, data, options) {
-  if (typeof fbq === 'function') {
-    if (options) {
-      fbq('track', eventName, data, options);
-    } else {
-      fbq('track', eventName, data);
-    }
+function trackMetaPixelEvent(eventName, data, options) {
+  if (typeof window.trackMetaPixel === 'function') {
+    window.trackMetaPixel(eventName, data, options);
+  } else if (typeof fbq === 'function') {
+    if (options) fbq('track', eventName, data, options);
+    else fbq('track', eventName, data);
   }
 }
 
 // Meta Pixel: visualizacao de produto.
-trackMetaPixel('ViewContent', metaProduto);
+trackMetaPixelEvent('ViewContent', metaProduto);
 
 function alterarQtd(delta) {
   const input = document.getElementById('quantidade');
@@ -382,26 +381,102 @@ document.querySelectorAll('[data-qtd-delta]').forEach(function (btn) {
   });
 });
 
-// Toast ao adicionar ao carrinho
+function metaEventId(form) {
+  const id = (window.crypto && crypto.randomUUID)
+    ? 'atc_' + crypto.randomUUID()
+    : 'atc_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  let input = form.querySelector('input[name="meta_event_id"]');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'meta_event_id';
+    form.appendChild(input);
+  }
+  input.value = id;
+  return id;
+}
+
+function updateCartBadges(count) {
+  if (!Number.isFinite(count)) return;
+  const cartUrl = document.body?.dataset?.cartUrl || '/carrinho/';
+  document.body.dataset.cartCount = String(count);
+  document.querySelectorAll('.badge-count').forEach((badge) => {
+    badge.textContent = String(count);
+  });
+  document.querySelectorAll('a[href="' + cartUrl + '"], a[href="' + cartUrl.replace(/\/$/, '') + '"]').forEach((link) => {
+    let badge = link.querySelector('.badge-count');
+    if (!badge && count > 0) {
+      badge = document.createElement('span');
+      badge.className = 'badge-count';
+      link.appendChild(badge);
+    }
+    if (badge) badge.textContent = String(count);
+  });
+}
+
+function showAddToCartFeedback(button, message) {
+  if (button) {
+    const original = button.textContent;
+    button.textContent = 'Adicionado';
+    window.setTimeout(() => {
+      button.textContent = original || 'Adicionar ao carrinho';
+    }, 1200);
+  }
+  if (typeof window.bsToast === 'function') {
+    window.bsToast(message || 'Produto adicionado ao carrinho.', {
+      action: { label: 'Ver carrinho', href: "{% url 'carrinho' %}" },
+    });
+  }
+}
+
+function showAddToCartError(message) {
+  if (typeof window.bsToast === 'function') {
+    const toast = window.bsToast(message || 'Nao foi possivel adicionar o produto.', {
+      duration: 5000,
+    });
+    if (toast) {
+      toast.classList.remove('bs-toast--success');
+      toast.classList.add('bs-toast--error');
+    }
+  }
+}
+
+// AddToCart por AJAX para o Pixel ter tempo de registrar o evento antes de qualquer navegacao.
 const formCarrinho = document.getElementById('form-add-carrinho');
 if (formCarrinho) {
-  formCarrinho.addEventListener('submit', function() {
-    // Gera o event_id de deduplicacao e o injeta no form (vai no POST como
-    // meta_event_id) e no Pixel (eventID). Mesmo id nos dois lados -> Meta deduplica
-    // o AddToCart do navegador com o da Conversions API.
-    const eventId = (window.crypto && crypto.randomUUID)
-      ? 'atc_' + crypto.randomUUID()
-      : 'atc_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    let input = formCarrinho.querySelector('input[name="meta_event_id"]');
-    if (!input) {
-      input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'meta_event_id';
-      formCarrinho.appendChild(input);
+  formCarrinho.addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const eventId = metaEventId(formCarrinho);
+    trackMetaPixelEvent('AddToCart', metaProduto, { eventID: eventId });
+
+    if (!('fetch' in window) || !('FormData' in window)) {
+      window.setTimeout(() => formCarrinho.submit(), 220);
+      return;
     }
-    input.value = eventId;
-    // Meta Pixel: produto adicionado ao carrinho antes do envio do formulario.
-    trackMetaPixel('AddToCart', metaProduto, { eventID: eventId });
+
+    const button = formCarrinho.querySelector('.product__cta');
+    if (button) button.disabled = true;
+
+    try {
+      const res = await fetch(formCarrinho.action, {
+        method: 'POST',
+        body: new FormData(formCarrinho),
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.erro || 'Nao foi possivel adicionar.');
+      updateCartBadges(Number(data.cart_count));
+      showAddToCartFeedback(button, data.message);
+    } catch (error) {
+      showAddToCartError(error.message);
+    } finally {
+      if (button) button.disabled = false;
+    }
   });
 }
 
