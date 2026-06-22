@@ -5,15 +5,8 @@
   var _ready=false;
   var _queue=[];
 
-  window.logMetaPixelEvent = function(eventName,payload,options){
-    try{
-      console.log('[META PIXEL]',eventName,payload||{},options||{});
-    }catch(e){}
-  };
-
   function _trackNow(item){
     if(typeof fbq!=='function')return false;
-    window.logMetaPixelEvent(item.name,item.data||{},item.options||{});
     if(item.options){
       fbq('track',item.name,item.data||{},item.options);
     }else if(item.data){
@@ -43,7 +36,6 @@
     s.parentNode.insertBefore(t,s)}(window,document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init','{{ meta_pixel_id }}');
-    window.logMetaPixelEvent('PageView',{},{});
     fbq('track','PageView');
     _ready=true;
     _flush();

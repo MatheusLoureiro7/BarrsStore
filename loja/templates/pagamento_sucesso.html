@@ -354,22 +354,14 @@
   var contentIds = [{% for item in pedido.itens.all %}'{{ item.produto_id|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}];
   var contents = [{% for item in pedido.itens.all %}{ id: '{{ item.produto_id|escapejs }}', quantity: Number('{{ item.quantidade|escapejs }}') }{% if not forloop.last %},{% endif %}{% endfor %}];
 
-  var purchasePayload = {
+  fbq('track', 'Purchase', {
     value: parseMoney('{{ pedido.total|stringformat:"0.2f" }}'),
     currency: 'BRL',
     content_ids: contentIds,
     content_type: 'product',
     contents: contents,
     order_id: '{{ pedido.id }}'
-  };
-  var purchaseOptions = { eventID: '{{ meta_event_id|escapejs }}' };
-  console.log('[META EVENT ID]', 'Purchase', { frontend: purchaseOptions.eventID });
-  if (typeof window.logMetaPixelEvent === 'function') {
-    window.logMetaPixelEvent('Purchase', purchasePayload, purchaseOptions);
-  } else {
-    console.log('[META PIXEL]', 'Purchase', purchasePayload, purchaseOptions);
-  }
-  fbq('track', 'Purchase', purchasePayload, purchaseOptions);
+  }, { eventID: '{{ meta_event_id|escapejs }}' });
 
   sessionStorage.setItem(storageKey, '1');
 })();

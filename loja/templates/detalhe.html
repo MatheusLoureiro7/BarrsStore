@@ -359,11 +359,6 @@ function trackMetaPixelEvent(eventName, data, options) {
   if (typeof window.trackMetaPixel === 'function') {
     window.trackMetaPixel(eventName, data, options);
   } else if (typeof fbq === 'function') {
-    if (typeof window.logMetaPixelEvent === 'function') {
-      window.logMetaPixelEvent(eventName, data, options || {});
-    } else {
-      console.log('[META PIXEL]', eventName, data || {}, options || {});
-    }
     if (options) fbq('track', eventName, data, options);
     else fbq('track', eventName, data);
   }
@@ -398,7 +393,6 @@ function metaEventId(form) {
     form.appendChild(input);
   }
   input.value = id;
-  console.log('[META EVENT ID]', 'AddToCart', { frontend: id });
   return id;
 }
 
