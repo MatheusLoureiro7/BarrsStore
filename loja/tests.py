@@ -6,7 +6,7 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase, override_settings
+from django.test import Client, RequestFactory, TestCase, override_settings
 
 from .mercadopago_security import (
     _parse_signature_header,
@@ -569,6 +569,112 @@ class CheckoutTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Informe um CPF valido.')
+
+    @patch('loja.views.cart.send_add_to_cart_event')
+    def test_add_to_cart_repassa_quantidade_para_capi(self, mock_capi):
+        produto = Produto.objects.create(nome='Produto Pixel', preco=Decimal('25.00'), estoque=5)
+
+        response = self.client.post(
+            f'/add/{produto.id}/',
+            {
+                'quantidade': '3',
+                'meta_event_id': 'atc_teste_123',
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            HTTP_ACCEPT='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        mock_capi.assert_called_once()
+        args, kwargs = mock_capi.call_args
+        self.assertEqual(args[0], produto)
+        self.assertEqual(args[2], 'atc_teste_123')
+        self.assertEqual(kwargs['quantity'], 3)
+
+    @patch('loja.views.cart.send_initiate_checkout_event', return_value=True)
+    def test_checkout_reusa_event_id_e_nao_reenvia_capi_no_reload(self, mock_capi):
+        produto = Produto.objects.create(nome='Produto Checkout', preco=Decimal('100.00'), estoque=5)
+        carrinho = Carrinho.objects.create()
+        ItemCarrinho.objects.create(carrinho=carrinho, produto=produto, quantidade=2)
+        session = self.client.session
+        session['carrinho_id'] = carrinho.id
+        session.save()
+
+        response_1 = self.client.get('/finalizar/?frete_valor=15.00')
+        response_2 = self.client.get('/finalizar/?frete_valor=15.00')
+
+        self.assertEqual(response_1.status_code, 200)
+        self.assertEqual(response_2.status_code, 200)
+        event_id_1 = response_1.context['meta_event_id']
+        event_id_2 = response_2.context['meta_event_id']
+        self.assertEqual(event_id_1, event_id_2)
+        mock_capi.assert_called_once()
+        self.assertEqual(mock_capi.call_args.kwargs['value'], Decimal('215.00'))
+
+
+class MetaCapiPayloadTests(TestCase):
+    @override_settings(META_PIXEL_ID='123456', META_ACCESS_TOKEN='token_teste', META_TEST_EVENT_CODE='')
+    @patch('loja.integrations.meta_capi.requests.post')
+    def test_initiate_checkout_payload_inclui_contents_e_valor_total(self, mock_post):
+        from loja.integrations.meta_capi import send_initiate_checkout_event
+
+        produto = Produto.objects.create(nome='Produto CAPI', preco=Decimal('40.00'), estoque=5)
+        carrinho = Carrinho.objects.create()
+        ItemCarrinho.objects.create(carrinho=carrinho, produto=produto, quantidade=2)
+        request = RequestFactory().get('/finalizar/')
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.text = '{"events_received":1}'
+
+        enviado = send_initiate_checkout_event(carrinho, request, 'init_teste', value=Decimal('90.00'))
+
+        self.assertTrue(enviado)
+        payload = mock_post.call_args.kwargs['json']
+        custom_data = payload['data'][0]['custom_data']
+        self.assertEqual(custom_data['value'], 90.0)
+        self.assertEqual(custom_data['contents'], [{'id': str(produto.id), 'quantity': 2}])
+
+    @override_settings(META_PIXEL_ID='123456', META_ACCESS_TOKEN='token_teste', META_TEST_EVENT_CODE='')
+    @patch('loja.integrations.meta_capi.requests.post')
+    def test_purchase_payload_usa_total_liquido_do_pix(self, mock_post):
+        from loja.integrations.meta_capi import send_purchase_event
+
+        produto = Produto.objects.create(nome='Produto Pix', preco=Decimal('100.00'), estoque=5)
+        pedido = Pedido.objects.create(
+            nome='Cliente Pix',
+            email='pix@example.com',
+            telefone='11999999999',
+            cpf='52998224725',
+            cep='01001000',
+            rua='Rua Teste',
+            numero='1',
+            bairro='Centro',
+            cidade='Sao Paulo',
+            estado='SP',
+            forma_pagamento='pix',
+            status='confirmado',
+            subtotal=Decimal('100.00'),
+            desconto=Decimal('0.00'),
+            frete=Decimal('10.00'),
+            total=Decimal('110.00'),
+            desconto_pix_aplicado=Decimal('4.00'),
+        )
+        ItemPedido.objects.create(
+            pedido=pedido,
+            produto=produto,
+            nome_produto=produto.nome,
+            quantidade=1,
+            preco_unitario=produto.preco,
+        )
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.text = '{"events_received":1}'
+
+        enviado = send_purchase_event(pedido)
+
+        self.assertTrue(enviado)
+        payload = mock_post.call_args.kwargs['json']
+        custom_data = payload['data'][0]['custom_data']
+        self.assertEqual(custom_data['value'], 106.0)
+        self.assertEqual(custom_data['contents'], [{'id': str(produto.id), 'quantity': 1}])
 
 
 class EnviarEmailContaCriadaTests(TestCase):

@@ -143,14 +143,20 @@ def _user_data_from_request(request):
     return ud
 
 
-def send_add_to_cart_event(produto, request, event_id):
+def send_add_to_cart_event(produto, request, event_id, quantity=1):
     """AddToCart server-side. Use o MESMO event_id do Pixel para dedupe."""
+    try:
+        quantity = max(1, int(quantity))
+    except (TypeError, ValueError):
+        quantity = 1
     value = produto.preco if isinstance(produto.preco, Decimal) else Decimal(str(produto.preco or '0'))
+    total_value = value * quantity
     custom = {
         'content_ids': [str(produto.id)],
         'content_type': 'product',
         'content_name': produto.nome,
-        'value': float(value),
+        'contents': [{'id': str(produto.id), 'quantity': quantity}],
+        'value': float(total_value),
         'currency': 'BRL',
     }
     source_url = request.build_absolute_uri(produto.get_absolute_url())
@@ -159,15 +165,23 @@ def send_add_to_cart_event(produto, request, event_id):
     return _post_capi_async('AddToCart', event_id, source_url, user_data, custom)
 
 
-def send_initiate_checkout_event(carrinho, request, event_id):
+def send_initiate_checkout_event(carrinho, request, event_id, value=None):
     """InitiateCheckout server-side. Use o MESMO event_id do Pixel para dedupe."""
     itens = list(carrinho.itens.select_related('produto').all())
     content_ids = [str(item.produto_id) for item in itens if item.produto_id]
     total = sum((item.subtotal() for item in itens), Decimal('0'))
+    event_value = value if value is not None else total
+    if not isinstance(event_value, Decimal):
+        event_value = Decimal(str(event_value or '0'))
     custom = {
         'content_ids': content_ids,
         'content_type': 'product',
-        'value': float(total),
+        'contents': [
+            {'id': str(item.produto_id), 'quantity': item.quantidade}
+            for item in itens
+            if item.produto_id
+        ],
+        'value': float(event_value),
         'currency': 'BRL',
         'num_items': sum(item.quantidade for item in itens),
     }
@@ -186,7 +200,13 @@ def send_purchase_event(pedido):
         return False
 
     event_id = f'purchase_{pedido.id}'
-    content_ids = [str(item.produto_id) for item in pedido.itens.all() if item.produto_id]
+    itens = list(pedido.itens.all())
+    content_ids = [str(item.produto_id) for item in itens if item.produto_id]
+    contents = [
+        {'id': str(item.produto_id), 'quantity': item.quantidade}
+        for item in itens
+        if item.produto_id
+    ]
 
     user_data = {}
     email_hash = normalize_and_hash(pedido.email)
@@ -196,13 +216,20 @@ def send_purchase_event(pedido):
     if phone_hash:
         user_data['ph'] = [phone_hash]
 
-    value = pedido.total if isinstance(pedido.total, Decimal) else Decimal(str(pedido.total or '0'))
+    total = pedido.total if isinstance(pedido.total, Decimal) else Decimal(str(pedido.total or '0'))
+    desconto_pix = (
+        pedido.desconto_pix_aplicado
+        if isinstance(pedido.desconto_pix_aplicado, Decimal)
+        else Decimal(str(pedido.desconto_pix_aplicado or '0'))
+    )
+    value = max(total - desconto_pix, Decimal('0'))
     custom_data = {
         'currency': 'BRL',
         'value': float(value),
         'order_id': str(pedido.id),
         'content_ids': content_ids,
         'content_type': 'product',
+        'contents': contents,
     }
     # Inclui UTM/gclid/fbclid no custom_data para atribuicao server-side no Meta.
     utm = getattr(pedido, 'origem_utm', None) or {}

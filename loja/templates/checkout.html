@@ -307,9 +307,12 @@
   const freteGet = parseMoney("{{ frete_valor_selecionado|default:'0'|unlocalize }}");
   let descontoCupom = 0;
 
-  function trackMetaPixel(eventName, data) {
-    if (typeof fbq === 'function') {
-      fbq('track', eventName, data);
+  function trackMetaPixel(eventName, data, options) {
+    if (typeof window.trackMetaPixel === 'function') {
+      window.trackMetaPixel(eventName, data, options);
+    } else if (typeof fbq === 'function') {
+      if (options) fbq('track', eventName, data, options);
+      else fbq('track', eventName, data);
     }
   }
 
@@ -338,13 +341,11 @@
 
     if (!sessionStorage.getItem(checkoutPixelKey)) {
       // eventID consistente com o CAPI server-side para dedupe no Meta.
-      if (typeof fbq === 'function') {
-        fbq('track', 'InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
-      }
+      trackMetaPixel('InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
       sessionStorage.setItem(checkoutPixelKey, '1');
     }
   } catch (error) {
-    trackMetaPixel('InitiateCheckout', checkoutPixelData);
+    trackMetaPixel('InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
   }
 
   function formatarMoeda(valor) {

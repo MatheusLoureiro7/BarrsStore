@@ -396,6 +396,15 @@ function metaEventId(form) {
   return id;
 }
 
+function buildAddToCartMetaProduto() {
+  const quantidadeInput = document.getElementById('quantidade');
+  const quantidade = Math.max(1, parseInt(quantidadeInput?.value || '1', 10) || 1);
+  const payload = Object.assign({}, metaProduto);
+  payload.contents = [{ id: '{{ produto.id }}', quantity: quantidade }];
+  payload.value = Number((metaProduto.value * quantidade).toFixed(2));
+  return payload;
+}
+
 function updateCartBadges(count) {
   if (!Number.isFinite(count)) return;
   const cartUrl = document.body?.dataset?.cartUrl || '/carrinho/';
@@ -448,7 +457,7 @@ if (formCarrinho) {
     event.preventDefault();
 
     const eventId = metaEventId(formCarrinho);
-    trackMetaPixelEvent('AddToCart', metaProduto, { eventID: eventId });
+    trackMetaPixelEvent('AddToCart', buildAddToCartMetaProduto(), { eventID: eventId });
 
     if (!('fetch' in window) || !('FormData' in window)) {
       window.setTimeout(() => formCarrinho.submit(), 220);

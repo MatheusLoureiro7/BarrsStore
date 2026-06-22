@@ -337,25 +337,11 @@
     return isFinite(n) ? n : 0;
   }
 
-  function getCookie(name) {
-    var m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
-    return m ? decodeURIComponent(m[1]) : '';
-  }
-
-  var fbc = getCookie('_fbc');
-  var fbp = getCookie('_fbp');
-  var advMatch = {};
-  if (fbc) advMatch.fbc = fbc;
-  if (fbp) advMatch.fbp = fbp;
-  if (fbc || fbp) {
-    fbq('init', '{{ meta_pixel_id|escapejs }}', advMatch);
-  }
-
   var contentIds = [{% for item in pedido.itens.all %}'{{ item.produto_id|escapejs }}'{% if not forloop.last %},{% endif %}{% endfor %}];
   var contents = [{% for item in pedido.itens.all %}{ id: '{{ item.produto_id|escapejs }}', quantity: Number('{{ item.quantidade|escapejs }}') }{% if not forloop.last %},{% endif %}{% endfor %}];
 
   fbq('track', 'Purchase', {
-    value: parseMoney('{{ pedido.total|stringformat:"0.2f" }}'),
+    value: parseMoney('{{ meta_purchase_value|stringformat:"0.2f" }}'),
     currency: 'BRL',
     content_ids: contentIds,
     content_type: 'product',

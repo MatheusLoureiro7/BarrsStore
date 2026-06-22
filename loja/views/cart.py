@@ -320,6 +320,44 @@ def _notificar_novo_pedido(pedido):
     enviar_whatsapp_pedido(pedido)
 
 
+def _decimal_optional(value):
+    raw = str(value or '').replace(',', '.').strip()
+    if not raw:
+        return Decimal('0')
+    try:
+        parsed = Decimal(raw)
+    except (InvalidOperation, ValueError):
+        return Decimal('0')
+    return max(parsed, Decimal('0'))
+
+
+def _checkout_meta_fingerprint(carrinho, itens, frete_valor):
+    item_parts = []
+    total_itens = Decimal('0')
+    for item in itens:
+        subtotal = item.subtotal()
+        total_itens += subtotal
+        item_parts.append(f'{item.produto_id}:{item.quantidade}:{subtotal}')
+    frete = _decimal_optional(frete_valor)
+    fingerprint = '|'.join(sorted(item_parts))
+    return fingerprint, total_itens + frete
+
+
+def _get_checkout_meta_event(request, carrinho, itens, frete_valor):
+    fingerprint, event_value = _checkout_meta_fingerprint(carrinho, itens, frete_valor)
+    session_key = f'meta_initiate_checkout_{carrinho.id}'
+    state = request.session.get(session_key) or {}
+    if state.get('fingerprint') != fingerprint or not state.get('event_id'):
+        state = {
+            'fingerprint': fingerprint,
+            'event_id': f'initcheckout_{carrinho.id}_{int(time.time())}',
+            'sent': False,
+        }
+        request.session[session_key] = state
+        request.session.modified = True
+    return session_key, state, event_value
+
+
 def ver_carrinho(request):
     carrinho_id = request.session.get('carrinho_id')
     seo = noindex_context(request, 'Carrinho - Barrs Store')
@@ -425,7 +463,7 @@ def adicionar_carrinho(request, produto_id):
     # Meta deduplica os dois. Se o front nao enviou event_id (adblocker ou JS off), o CAPI cobre.
     try:
         event_id = request.POST.get('meta_event_id') or f'addtocart_{produto.id}_{int(time.time())}_{carrinho.id}'
-        send_add_to_cart_event(produto, request, event_id)
+        send_add_to_cart_event(produto, request, event_id, quantity=quantidade)
     except Exception:
         logger.debug('[META CAPI] AddToCart silencioso (nao quebra fluxo de carrinho).', exc_info=True)
 
@@ -704,11 +742,18 @@ def checkout(request):
         frete_nome = request.POST.get('frete_nome') or request.GET.get('frete_nome', '')
         frete_service_id = request.POST.get('frete_service_id') or request.GET.get('frete_service_id', '')
         # Meta CAPI InitiateCheckout server-side com mesmo event_id do Pixel client-side
-        # (deduplicacao no Meta). So dispara no GET inicial; POST nao retransmite.
-        meta_event_id = f'initcheckout_{carrinho.id}_{int(time.time())}'
-        if request.method == 'GET':
+        # (deduplicacao no Meta). Reusa o id para o mesmo estado do carrinho.
+        checkout_itens = list(itens)
+        meta_session_key, meta_state, meta_event_value = _get_checkout_meta_event(
+            request, carrinho, checkout_itens, frete_valor,
+        )
+        meta_event_id = meta_state['event_id']
+        if request.method == 'GET' and not meta_state.get('sent'):
             try:
-                send_initiate_checkout_event(carrinho, request, meta_event_id)
+                if send_initiate_checkout_event(carrinho, request, meta_event_id, value=meta_event_value):
+                    meta_state['sent'] = True
+                    request.session[meta_session_key] = meta_state
+                    request.session.modified = True
             except Exception:
                 logger.debug('[META CAPI] InitiateCheckout silencioso (nao quebra checkout).', exc_info=True)
         context = {

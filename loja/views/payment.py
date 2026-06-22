@@ -805,22 +805,20 @@ def processar_pagamento_brick(request, pedido_id, token):
         status_detail,
     )
 
-    if payment_id:
-        confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=str(pedido.id))
-        pedido.refresh_from_db()
-
     # Registra o método real e o desconto Pix efetivamente cobrado.
-    # Feito após confirmar_pagamento_mercadopago para não pisar em atualizações
-    # feitas pelo sinal de confirmação.
+    # Feito antes da confirmação para que o Purchase da CAPI use o valor cobrado.
     forma_real = 'pix' if pagamento_pix else 'cartao'
     campos_registrar = {}
     if pedido.forma_pagamento != forma_real:
         campos_registrar['forma_pagamento'] = forma_real
     if pagamento_pix and pedido.desconto_pix_aplicado == 0:
-        from decimal import Decimal as _D
         campos_registrar['desconto_pix_aplicado'] = pedido.desconto_pix
     if campos_registrar:
         Pedido.objects.filter(pk=pedido.pk).update(**campos_registrar)
+        pedido.refresh_from_db()
+
+    if payment_id:
+        confirmar_pagamento_mercadopago(payment_id, pedido_id_fallback=str(pedido.id))
         pedido.refresh_from_db()
 
     if status == 'approved' or pedido.status == 'confirmado':
@@ -854,7 +852,12 @@ def pagamento_sucesso(request, pedido_id, token):
     # polling atualiza assim que o status chegar.
     if pedido.status != 'confirmado':
         return redirect('pagamento_pendente', pedido_id=pedido.id, token=pedido.access_token)
-    context = {'pedido': pedido, 'meta_event_id': f'purchase_{pedido.id}'}
+    meta_purchase_value = max(pedido.total - pedido.desconto_pix_aplicado, 0)
+    context = {
+        'pedido': pedido,
+        'meta_event_id': f'purchase_{pedido.id}',
+        'meta_purchase_value': meta_purchase_value,
+    }
     context.update(noindex_context(request, 'Pagamento - Barrs Store'))
     return render(request, 'pagamento_sucesso.html', context)
 
@@ -950,4 +953,3 @@ def webhook_mercadopago(request):
             logger.exception('[MP] Erro ao confirmar merchant_order webhook id=%s: %s', payment_id, exc)
 
     return HttpResponse(status=200)
-
