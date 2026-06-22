@@ -292,6 +292,7 @@ const metaProduto = {
   content_ids: ['{{ produto.id }}'],
   content_type: 'product',
   content_name: '{{ produto.nome|escapejs }}',
+  contents: [{ id: '{{ produto.id }}', quantity: 1 }],
   value: Number('{{ produto.preco|stringformat:"0.2f" }}'.replace(',', '.')),
   currency: 'BRL'
 };
@@ -354,9 +355,13 @@ const metaProduto = {
   setSlide(0);
 })();
 
-function trackMetaPixel(eventName, data) {
+function trackMetaPixel(eventName, data, options) {
   if (typeof fbq === 'function') {
-    fbq('track', eventName, data);
+    if (options) {
+      fbq('track', eventName, data, options);
+    } else {
+      fbq('track', eventName, data);
+    }
   }
 }
 
@@ -381,8 +386,22 @@ document.querySelectorAll('[data-qtd-delta]').forEach(function (btn) {
 const formCarrinho = document.getElementById('form-add-carrinho');
 if (formCarrinho) {
   formCarrinho.addEventListener('submit', function() {
+    // Gera o event_id de deduplicacao e o injeta no form (vai no POST como
+    // meta_event_id) e no Pixel (eventID). Mesmo id nos dois lados -> Meta deduplica
+    // o AddToCart do navegador com o da Conversions API.
+    const eventId = (window.crypto && crypto.randomUUID)
+      ? 'atc_' + crypto.randomUUID()
+      : 'atc_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    let input = formCarrinho.querySelector('input[name="meta_event_id"]');
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'meta_event_id';
+      formCarrinho.appendChild(input);
+    }
+    input.value = eventId;
     // Meta Pixel: produto adicionado ao carrinho antes do envio do formulario.
-    trackMetaPixel('AddToCart', metaProduto);
+    trackMetaPixel('AddToCart', metaProduto, { eventID: eventId });
   });
 }
 

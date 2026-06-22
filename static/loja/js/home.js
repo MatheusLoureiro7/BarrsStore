@@ -141,19 +141,47 @@
     window.bsToast(msg, { action: { label: 'Ver carrinho', href: '/carrinho/' } });
   }
 
+  // Gera (uma vez por form) o event_id de deduplicacao e o injeta como hidden input.
+  // Assim o mesmo id vai no Pixel (eventID) e no POST (meta_event_id) -> Meta deduplica
+  // o AddToCart do navegador com o da Conversions API. O FormData(form) abaixo o captura.
+  function metaEventId(form) {
+    // Gera um event_id NOVO a cada clique (sem cachear): re-adicionar o mesmo
+    // produto sem recarregar a pagina deve contar como um novo AddToCart, nao
+    // como duplicata. O id e gravado no hidden input; o listener de AJAX abaixo
+    // (que roda depois, no MESMO submit) o reaproveita via FormData -> Pixel e
+    // CAPI usam o mesmo id e o Meta deduplica corretamente os dois lados.
+    const id = (window.crypto && crypto.randomUUID)
+      ? 'atc_' + crypto.randomUUID()
+      : 'atc_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    let input = form.querySelector('input[name="meta_event_id"]');
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'meta_event_id';
+      form.appendChild(input);
+    }
+    input.value = id;
+    return id;
+  }
+
   document.addEventListener('submit', function (event) {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
     if (form.dataset.pixelAdd !== '1') return;
+    // Sempre gera o event_id (mesmo sem fbq): o POST levara meta_event_id para a CAPI
+    // cobrir o evento caso o Pixel esteja bloqueado por adblocker.
+    const eventId = metaEventId(form);
     if (typeof fbq !== 'function') return;
     const valor = Number(String(form.dataset.pixelValue || '0').replace(',', '.')) || 0;
+    const pid = String(form.dataset.pixelId || '');
     fbq('track', 'AddToCart', {
-      content_ids: [String(form.dataset.pixelId || '')],
+      content_ids: [pid],
       content_type: 'product',
       content_name: form.dataset.pixelName || '',
+      contents: [{ id: pid, quantity: 1 }],
       value: valor,
       currency: 'BRL',
-    });
+    }, { eventID: eventId });
   }, true);
 
   document.addEventListener('submit', async function (event) {

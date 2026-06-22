@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import threading
 import time
 from decimal import Decimal
 
@@ -92,6 +93,24 @@ def _post_capi(event_name, event_id, source_url, user_data, custom_data):
         return False
 
 
+def _post_capi_async(event_name, event_id, source_url, user_data, custom_data):
+    """Dispara _post_capi numa thread daemon: nao bloqueia a resposta ao usuario.
+
+    Use para eventos no caminho critico de UX (ex: AddToCart), onde segurar a
+    resposta ate a Meta responder degradaria a experiencia. O user_data/source_url
+    ja devem ter sido extraidos do request ANTES de chamar (a thread nao acessa o
+    request, que pode estar fechado depois que a resposta e enviada).
+    """
+    thread = threading.Thread(
+        target=_post_capi,
+        args=(event_name, event_id, source_url, user_data, custom_data),
+        name=f'capi-{event_name}',
+        daemon=True,
+    )
+    thread.start()
+    return True
+
+
 def _user_data_from_request(request):
     """Monta user_data a partir da sessao/cookies para AddToCart/InitiateCheckout.
 
@@ -135,7 +154,9 @@ def send_add_to_cart_event(produto, request, event_id):
         'currency': 'BRL',
     }
     source_url = request.build_absolute_uri(produto.get_absolute_url())
-    return _post_capi('AddToCart', event_id, source_url, _user_data_from_request(request), custom)
+    # user_data extraido do request AQUI (thread principal); a thread so faz o HTTP.
+    user_data = _user_data_from_request(request)
+    return _post_capi_async('AddToCart', event_id, source_url, user_data, custom)
 
 
 def send_initiate_checkout_event(carrinho, request, event_id):

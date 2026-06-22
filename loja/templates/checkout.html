@@ -322,6 +322,7 @@
   const checkoutPixelData = {
     content_ids: checkoutPixelItems.map(item => item.id),
     content_type: 'product',
+    contents: checkoutPixelItems,
     value: Math.max(0, subtotal + freteGet),
     currency: 'BRL',
     num_items: checkoutPixelItems.reduce((total, item) => total + item.quantity, 0)
