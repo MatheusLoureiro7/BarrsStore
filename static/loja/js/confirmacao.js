@@ -17,26 +17,6 @@
   var statusInFlight = false;
   var statusStartedAt = 0;
 
-  // O security.js do MP popula window.MP_DEVICE_SESSION_ID de forma assincrona.
-  // Se o cliente clica em pagar antes de terminar, o device_id vai vazio e o
-  // antifraude recusa muito mais (cc_rejected_high_risk). Esperamos ele aparecer
-  // (ate maxMs); se nao vier, segue sem — o backend trata a ausencia.
-  function aguardarDeviceId(maxMs) {
-    return new Promise(function (resolve) {
-      if (window.MP_DEVICE_SESSION_ID) return resolve(window.MP_DEVICE_SESSION_ID);
-      var inicio = Date.now();
-      var iv = setInterval(function () {
-        if (window.MP_DEVICE_SESSION_ID) {
-          clearInterval(iv);
-          resolve(window.MP_DEVICE_SESSION_ID);
-        } else if (Date.now() - inicio > maxMs) {
-          clearInterval(iv);
-          resolve('');
-        }
-      }, 150);
-    });
-  }
-
   function showError(msg, options) {
     options = options || {};
     loadingEl.style.display = 'none';
@@ -339,10 +319,9 @@
             showStatus('Processando pagamento com segurança...');
             showOverlay('loading');
             // Device ID (security.js) ajuda o antifraude do MP a aprovar.
-            // Espera ele ficar pronto antes de enviar (ate 4s).
-            return aguardarDeviceId(4000).then(function (deviceId) {
+            // Se o script nao carregou, segue vazio: o backend trata a ausencia.
             var payload = Object.assign({}, formData, {
-              device_id: deviceId,
+              device_id: window.MP_DEVICE_SESSION_ID || '',
             });
             return fetch(cfg.urls.processar, {
               method: 'POST',
@@ -399,7 +378,6 @@
                 });
                 throw error;
               });
-            });
           },
 
           onError: function (error) {
