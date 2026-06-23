@@ -114,12 +114,22 @@ class ContentSecurityPolicyReportOnlyMiddleware:
         request.csp_nonce = secrets.token_urlsafe(16)
         response = self.get_response(request)
         policy = getattr(settings, 'CONTENT_SECURITY_POLICY', '')
+        path = request.path_info or request.path
         if policy:
+            # A pagina de pagamento (/pedido/) carrega o SDK do Mercado Pago e o
+            # security.js, que injetam <script> inline em runtime SEM o nosso
+            # nonce. O navegador IGNORA 'unsafe-inline' quando existe um nonce no
+            # script-src, entao com a CSP estrita esses scripts eram bloqueados —
+            # o que mutilava o fingerprint antifraude do MP e causava
+            # cc_rejected_high_risk em TODOS os cartoes. Apenas nesta pagina
+            # trocamos o nonce por 'unsafe-inline' (exigencia do MP). O resto do
+            # site mantem a CSP estrita baseada em nonce.
+            if path.startswith('/pedido/'):
+                policy = policy.replace("'nonce-{nonce}'", "'unsafe-inline'")
             policy = policy.replace('{nonce}', request.csp_nonce)
             header = 'Content-Security-Policy' if getattr(settings, 'CSP_ENFORCE', False) else 'Content-Security-Policy-Report-Only'
             if header not in response:
                 response[header] = policy
-        path = request.path_info or request.path
         if path.startswith(('/pagamento/', '/finalizar/', '/minha-conta/')):
             response['X-Robots-Tag'] = 'noindex, nofollow'
         # O HTML e renderizado com CSS/JS inline; sem revalidacao, o navegador
