@@ -347,7 +347,23 @@
                   return;
                 }
                 if (data.redirect_url) {
-                  showOverlay('success');
+                  // O overlay precisa refletir o status real: nao mostrar
+                  // "confirmado" quando o destino e a tela de falha/pendente.
+                  var aprovado = data.status === 'approved' || data.pedido_status === 'confirmado';
+                  var pendente = data.status === 'pending' || data.status === 'in_process';
+                  if (aprovado) {
+                    showOverlay('success');
+                  } else if (pendente) {
+                    showOverlay('loading', {
+                      titulo: 'Confirmando seu pagamento...',
+                      sub: 'Você será redirecionado em instantes.',
+                    });
+                  } else {
+                    showOverlay('error', {
+                      titulo: 'Pagamento não aprovado',
+                      sub: 'Vamos te levar para tentar outra forma de pagamento.',
+                    });
+                  }
                   setTimeout(function () { window.location.href = data.redirect_url; }, 1400);
                 }
               })
