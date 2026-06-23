@@ -225,9 +225,13 @@ def additional_info_pagador_mp(pedido):
     """Bloco payer do additional_info — sinal extra para o antifraude do MP.
 
     Diferente do payer principal (que carrega token e identification), este e
-    puramente informativo. Inclui registration_date (data de cadastro da conta
-    ou, no guest checkout, do proprio pedido), que o MP usa como sinal de
-    confianca. So preenche o que existe — nunca quebra se faltar dado.
+    puramente informativo (nome, telefone e endereco) e ajuda o MP a validar
+    a compra. So preenche o que existe — nunca quebra se faltar dado.
+
+    IMPORTANTE: NAO enviamos registration_date. O checkout cria a conta no
+    momento do pedido, entao a data de cadastro seria sempre "agora" — o MP
+    interpreta comprador recem-cadastrado como alto risco e recusa TODOS os
+    pagamentos (cc_rejected_high_risk). Omitir e melhor que enviar data falsa.
     """
     partes_nome = (pedido.nome or '').strip().split()
     info = {
@@ -243,9 +247,6 @@ def additional_info_pagador_mp(pedido):
             "street_name": pedido.rua,
             "street_number": pedido.numero,
         }
-    registro = getattr(getattr(pedido, 'cliente', None), 'date_joined', None) or pedido.criado_em
-    if registro:
-        info["registration_date"] = registro.isoformat()
     return info
 
 
