@@ -184,9 +184,7 @@ def dados_pagador_mercadopago(pedido):
     email_pagador = pedido.email
     if settings.DEBUG:
         email_pagador = getattr(settings, 'MP_TEST_BUYER_EMAIL', None) or pedido.email
-        
-    logger.warning(f"[MP-BRICK] EMAIL PAGADOR ENVIADO AO MP: {email_pagador}")
-     
+
     payer = {
         "name": pedido.nome,
         "first_name": partes_nome[0] if partes_nome else pedido.nome,
@@ -213,6 +211,73 @@ def dados_pagador_mercadopago(pedido):
             "federal_unit": pedido.estado,
         }
     return payer
+
+
+def _telefone_mp(pedido):
+    """Telefone no formato {area_code, number} aceito pelo MP, ou None."""
+    telefone_limpo = "".join(filter(str.isdigit, pedido.telefone or ""))
+    if len(telefone_limpo) >= 10:
+        return {"area_code": telefone_limpo[:2], "number": telefone_limpo[2:]}
+    return None
+
+
+def additional_info_pagador_mp(pedido):
+    """Bloco payer do additional_info — sinal extra para o antifraude do MP.
+
+    Diferente do payer principal (que carrega token e identification), este e
+    puramente informativo. Inclui registration_date (data de cadastro da conta
+    ou, no guest checkout, do proprio pedido), que o MP usa como sinal de
+    confianca. So preenche o que existe — nunca quebra se faltar dado.
+    """
+    partes_nome = (pedido.nome or '').strip().split()
+    info = {
+        "first_name": partes_nome[0] if partes_nome else pedido.nome,
+        "last_name": " ".join(partes_nome[1:]) if len(partes_nome) > 1 else "",
+    }
+    telefone = _telefone_mp(pedido)
+    if telefone:
+        info["phone"] = telefone
+    if pedido.cep and pedido.rua and pedido.numero:
+        info["address"] = {
+            "zip_code": apenas_digitos(pedido.cep),
+            "street_name": pedido.rua,
+            "street_number": pedido.numero,
+        }
+    registro = getattr(getattr(pedido, 'cliente', None), 'date_joined', None) or pedido.criado_em
+    if registro:
+        info["registration_date"] = registro.isoformat()
+    return info
+
+
+def shipments_receiver_address_mp(pedido):
+    """Endereco de entrega para o MP (shipments.receiver_address).
+
+    O MP avalia este bloco separado do payer.address, tanto no antifraude
+    quanto na nota de qualidade da integracao. Retorna None se faltar o
+    endereco minimo (cep/rua/numero)."""
+    if not (pedido.cep and pedido.rua and pedido.numero):
+        return None
+    endereco = {
+        "zip_code": apenas_digitos(pedido.cep),
+        "street_name": pedido.rua,
+        "street_number": pedido.numero,
+        "city_name": pedido.cidade,
+        "state_name": pedido.estado,
+    }
+    if pedido.complemento:
+        endereco["apartment"] = pedido.complemento
+    return endereco
+
+
+def categoria_item_mp(item):
+    """category_id do item para o antifraude do MP.
+
+    Usa o nome da categoria real do produto quando existe; senao 'others'
+    (valor neutro aceito pelo MP). Apenas informativo — nao afeta a UI."""
+    produto = item.produto
+    if produto and produto.categoria_id and produto.categoria:
+        return produto.categoria.nome
+    return 'others'
 
 
 def descricao_item_mp(item):
@@ -544,6 +609,7 @@ def criar_preferencia(request, pedido_id, token):
                 "id": str(item.produto_id or item.id),
                 "title": item.nome_produto,
                 "description": descricao_item_mp(item),
+                "category_id": categoria_item_mp(item),
                 "quantity": int(item.quantidade),
                 "unit_price": float(item.preco_unitario),
                 "currency_id": "BRL",
@@ -579,6 +645,11 @@ def criar_preferencia(request, pedido_id, token):
         },
         "statement_descriptor": "BARRS STORE",
     }
+    # Endereco de entrega: o MP avalia shipments.receiver_address separado do
+    # payer.address (antifraude + nota de qualidade da integracao).
+    receiver_address = shipments_receiver_address_mp(pedido)
+    if receiver_address:
+        preference_data["shipments"] = {"receiver_address": receiver_address}
     # Em dev (DEBUG=True) o MP recusa auto_return apontando para dominio
     # nao publico. Notificacoes chegam apenas pelo webhook configurado no
     # painel do MP; notification_url gerava duplicatas com assinatura propria
@@ -672,6 +743,7 @@ def processar_pagamento_brick(request, pedido_id, token):
             'id': str(item.produto_id or item.id),
             'title': item.nome_produto,
             'description': descricao_item_mp(item),
+            'category_id': categoria_item_mp(item),
             'quantity': int(item.quantidade),
             'unit_price': float(item.preco_unitario),
         })
@@ -687,8 +759,18 @@ def processar_pagamento_brick(request, pedido_id, token):
         },
         'statement_descriptor': 'BARRS STORE',
     }
+    # additional_info: items (detalhe por produto), payer (com registration_date)
+    # e shipments.receiver_address (endereco de entrega). O MP usa esses blocos
+    # para validar a compra e melhorar a nota de qualidade da integracao.
+    additional_info = {}
     if info_items:
-        payment_data['additional_info'] = {'items': info_items}
+        additional_info['items'] = info_items
+    additional_info['payer'] = additional_info_pagador_mp(pedido)
+    receiver_address = shipments_receiver_address_mp(pedido)
+    if receiver_address:
+        additional_info['shipments'] = {'receiver_address': receiver_address}
+    if additional_info:
+        payment_data['additional_info'] = additional_info
     # Notificacoes chegam apenas pelo webhook configurado no painel do MP;
     # notification_url gerava duplicatas com assinatura propria que falhavam
     # na validacao (403 + retries).

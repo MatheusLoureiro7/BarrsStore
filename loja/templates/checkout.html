@@ -307,7 +307,7 @@
   const freteGet = parseMoney("{{ frete_valor_selecionado|default:'0'|unlocalize }}");
   let descontoCupom = 0;
 
-  function trackMetaPixel(eventName, data, options) {
+  function trackMetaPixelEvent(eventName, data, options) {
     if (typeof window.trackMetaPixel === 'function') {
       window.trackMetaPixel(eventName, data, options);
     } else if (typeof fbq === 'function') {
@@ -341,11 +341,11 @@
 
     if (!sessionStorage.getItem(checkoutPixelKey)) {
       // eventID consistente com o CAPI server-side para dedupe no Meta.
-      trackMetaPixel('InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
+      trackMetaPixelEvent('InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
       sessionStorage.setItem(checkoutPixelKey, '1');
     }
   } catch (error) {
-    trackMetaPixel('InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
+    trackMetaPixelEvent('InitiateCheckout', checkoutPixelData, { eventID: '{{ meta_event_id|escapejs }}' });
   }
 
   function formatarMoeda(valor) {
