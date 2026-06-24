@@ -163,7 +163,7 @@
     {% if produto.descricao %}
     <div class="product__description">
       <div class="product__description-label">Sobre a peça</div>
-      <p>{{ produto.descricao }}</p>
+      <div>{{ produto.descricao|linebreaksbr }}</div>
     </div>
     {% endif %}
 

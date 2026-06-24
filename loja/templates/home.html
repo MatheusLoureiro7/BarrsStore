@@ -258,7 +258,6 @@
           <span class="price__amount">{{ produto.preco }}</span>
         </div>
         {% include "partials/price_note.html" with produto=produto compact=True %}
-        {% if produto.descricao %}<div class="product-card__desc">{{ produto.descricao }}</div>{% endif %}
       </div>
       <div class="product-card__actions">
         <a href="{% url 'detalhe_produto' produto.slug %}" class="product-card__view">Ver produto</a>
